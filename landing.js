@@ -581,13 +581,14 @@ function runBracketDemo() {
   }
 
   function renderRows(rows, showDeltas = false) {
+    let rankCounter = 1;
     demoTable.innerHTML = rows
-      .map((row, idx) => {
+      .map((row) => {
         const movingClass = row.moving ? " moving-up" : "";
         const eliminatedClass = row.eliminated ? " eliminated" : "";
         const deltaVisible = showDeltas && row.delta ? " visible" : "";
         const featuredClass = row.featured ? " featured-scenario" : "";
-        const rankValue = row.featured ? "" : String(idx);
+        const rankValue = row.featured ? "&nbsp;" : String(rankCounter++);
         return `
           <div class="demo-table-row${eliminatedClass}${featuredClass}">
             <span class="demo-rank">${rankValue}</span>

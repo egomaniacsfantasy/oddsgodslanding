@@ -834,11 +834,26 @@ h1 {
   background: rgba(184, 125, 24, 0.08);
   border-left: 2px solid rgba(184, 125, 24, 0.55);
   padding-left: 8px;
+  box-shadow: inset 0 0 0 1px rgba(184, 125, 24, 0.12);
 }
 
 .demo-table-row.featured-scenario .demo-rank {
-  color: var(--amber-soft);
-  font-weight: 700;
+  visibility: hidden;
+}
+
+.demo-table-row.featured-scenario .demo-name {
+  color: #f1d7a6;
+}
+
+.demo-table-row.featured-scenario .demo-name::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--amber-soft);
+  margin-right: 8px;
+  transform: translateY(-1px);
 }
 
 .demo-table-row:last-child {
