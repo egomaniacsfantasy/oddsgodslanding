@@ -11,6 +11,8 @@ import { buildPlayerOutcomes, buildPerformanceThresholdOutcome } from "./engine/
 import { parseIntent } from "./engine/intent.js";
 import { buildBaselineEstimate, buildPlayerSeasonStatEstimate } from "./engine/baselines.js";
 import { applyConsistencyRules } from "./engine/consistency.js";
+import { getAllPosts, getPostBySlug, getRecentPosts } from "./lib/blog.js";
+import { renderBlogIndexPage, renderBlogPostPage } from "./lib/blogRender.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -508,6 +510,20 @@ installExternalToolProxy("/bracket", BRACKET_APP_URL);
 installExternalToolProxy("/bracket-lab", BRACKET_APP_URL);
 installExternalToolProxy("/what-are-the-odds", WATO_APP_URL);
 installExternalToolProxy("/odds", WATO_APP_URL);
+
+app.get("/blog", (_req, res) => {
+  const posts = getAllPosts();
+  res.type("html").send(renderBlogIndexPage(posts));
+});
+
+app.get("/blog/:slug", (req, res) => {
+  const post = getPostBySlug(String(req.params.slug || "").trim());
+  if (!post) {
+    res.status(404).type("html").send(renderBlogIndexPage(getRecentPosts(3)));
+    return;
+  }
+  res.type("html").send(renderBlogPostPage(post));
+});
 
 app.use(express.static("."));
 
