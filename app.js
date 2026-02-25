@@ -1179,11 +1179,9 @@ function toShareImageUrl(inputUrl) {
   if (!raw) return null;
   try {
     const resolved = new URL(raw, window.location.origin);
+    if (resolved.protocol === "http:") resolved.protocol = "https:";
     if (resolved.origin === window.location.origin) return resolved.toString();
-    if (SHARE_IMAGE_PROXY_HOSTS.has(resolved.hostname)) {
-      return `${window.location.origin}/api/image-proxy?u=${encodeURIComponent(resolved.toString())}`;
-    }
-    return resolved.toString();
+    return `${window.location.origin}/api/image-proxy?u=${encodeURIComponent(resolved.toString())}`;
   } catch (_error) {
     return raw;
   }
@@ -1372,21 +1370,21 @@ async function generateShareCard({ query, oddsStr, impliedStr, entityImageUrl, l
 
   // Layer 8.
   const qSize =
-    normalizedQuery.length < 42 ? 50 : normalizedQuery.length < 58 ? 42 : normalizedQuery.length < 75 ? 36 : 31;
+    normalizedQuery.length < 42 ? 52 : normalizedQuery.length < 58 ? 44 : normalizedQuery.length < 75 ? 38 : 32;
   ctx.font = `italic 400 ${qSize}px "Instrument Serif",serif`;
   ctx.fillStyle = "rgba(240,230,208,0.90)";
   ctx.textAlign = "center";
   const qLines = wrapText(ctx, normalizedQuery, 1020);
   const qLineH = qSize * 1.4;
-  let qY = labelY + 44;
+  let qY = labelY + 56;
   qLines.forEach((line) => {
     ctx.fillText(line, 600, qY);
     qY += qLineH;
   });
-  const qBottom = qY + 14;
+  const qBottom = qY + 18;
 
   // Layer 9.
-  const HS_R = 76;
+  const HS_R = 84;
   const HS_CX = 600;
   const HS_CY = qBottom + HS_R + 16;
   if (entityImg) {
@@ -1406,11 +1404,24 @@ async function generateShareCard({ query, oddsStr, impliedStr, entityImageUrl, l
     ctx.beginPath();
     ctx.arc(HS_CX, HS_CY, HS_R + 10, 0, Math.PI * 2);
     ctx.stroke();
+  } else if (logoImg) {
+    ctx.fillStyle = "rgba(20,16,11,0.95)";
+    ctx.beginPath();
+    ctx.arc(HS_CX, HS_CY, HS_R, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(184,125,24,0.52)";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(HS_CX, HS_CY, HS_R + 3, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 0.95;
+    ctx.drawImage(logoImg, HS_CX - 28, HS_CY - 28, 56, 56);
+    ctx.globalAlpha = 1;
   }
-  const imageBottom = entityImg ? HS_CY + HS_R : qBottom + 8;
+  const imageBottom = entityImg || logoImg ? HS_CY + HS_R : qBottom + 8;
 
   // Layer 10.
-  const ODDS_SIZE = 200;
+  const ODDS_SIZE = 190;
   ctx.font = `400 ${ODDS_SIZE}px "Space Grotesk",monospace`;
   ctx.textAlign = "center";
   const value = String(oddsStr || "").trim().toUpperCase();
@@ -1434,12 +1445,12 @@ async function generateShareCard({ query, oddsStr, impliedStr, entityImageUrl, l
   ctx.fillText(String(impliedStr || "").trim() || "N/A", 600, implLabelY + 62);
 
   // Layer 12.
-  const barY = 812;
+  const barY = 806;
   ctx.strokeStyle = "rgba(184,125,24,0.26)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(80, barY - 24);
-  ctx.lineTo(1120, barY - 24);
+  ctx.moveTo(80, barY - 36);
+  ctx.lineTo(1120, barY - 36);
   ctx.stroke();
   ctx.font = '700 34px "Space Grotesk",monospace';
   ctx.fillStyle = "rgba(184,125,24,0.85)";
@@ -1448,7 +1459,7 @@ async function generateShareCard({ query, oddsStr, impliedStr, entityImageUrl, l
   ctx.font = '400 15px "Space Grotesk",monospace';
   ctx.fillStyle = "rgba(240,230,208,0.22)";
   ctx.textAlign = "center";
-  ctx.fillText("Hypothetical estimate · Not betting advice", 600, barY + 30);
+  ctx.fillText("Hypothetical estimate · Not betting advice", 600, barY + 28);
 
   // Layer 13.
   addCanvasGrain(ctx, WIDTH, HEIGHT, 0.028);

@@ -511,6 +511,55 @@ installExternalToolProxy("/odds", WATO_APP_URL);
 
 app.use(express.static("."));
 
+function isUnsafeImageHost(hostname) {
+  const host = String(hostname || "").toLowerCase();
+  if (!host) return true;
+  if (host === "localhost" || host.endsWith(".localhost")) return true;
+  if (host === "0.0.0.0" || host === "::1") return true;
+  if (/^10\./.test(host)) return true;
+  if (/^127\./.test(host)) return true;
+  if (/^169\.254\./.test(host)) return true;
+  if (/^192\.168\./.test(host)) return true;
+  if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(host)) return true;
+  return false;
+}
+
+app.get("/api/image-proxy", async (req, res) => {
+  const raw = String(req.query?.u || "").trim();
+  if (!raw) {
+    res.status(400).json({ error: "Missing image URL" });
+    return;
+  }
+  let target;
+  try {
+    target = new URL(raw);
+  } catch (_error) {
+    res.status(400).json({ error: "Invalid image URL" });
+    return;
+  }
+  if (!/^https?:$/.test(target.protocol)) {
+    res.status(400).json({ error: "Invalid image protocol" });
+    return;
+  }
+  if (isUnsafeImageHost(target.hostname)) {
+    res.status(403).json({ error: "Image host not allowed" });
+    return;
+  }
+  try {
+    const upstream = await fetch(target.toString(), { redirect: "follow" });
+    if (!upstream.ok || !upstream.body) {
+      res.status(502).json({ error: "Image upstream unavailable" });
+      return;
+    }
+    const contentType = upstream.headers.get("content-type") || "image/jpeg";
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    Readable.fromWeb(upstream.body).pipe(res);
+  } catch (_error) {
+    res.status(502).json({ error: "Image proxy fetch failed" });
+  }
+});
+
 function shouldRefuse(prompt) {
   if (REFUSAL_PATTERNS.some((pattern) => pattern.test(prompt))) return true;
   if (/\b(parlay|bet|wager|stake|units)\b/i.test(prompt)) return true;
