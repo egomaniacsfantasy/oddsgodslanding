@@ -27,7 +27,7 @@ const ODDS_API_BASE = process.env.ODDS_API_BASE || "https://api.the-odds-api.com
 const ODDS_API_REGIONS = process.env.ODDS_API_REGIONS || "us";
 const ODDS_API_BOOKMAKERS = process.env.ODDS_API_BOOKMAKERS || "draftkings,fanduel";
 const CACHE_VERSION = "v43";
-const API_PUBLIC_VERSION = "2026.02.23.12";
+const API_PUBLIC_VERSION = "2026.02.25.1";
 const DEFAULT_NFL_SEASON = "2026-27";
 const oddsCache = new Map();
 const PLAYER_STATUS_TIMEOUT_MS = Number(process.env.PLAYER_STATUS_TIMEOUT_MS || 7000);
@@ -857,6 +857,8 @@ function applyDefaultNflSeasonInterpretation(prompt) {
   if (/\b(hall of fame|hof)\b/i.test(text)) return text;
   if (/\b(ever|career|all[- ]time)\b/i.test(text)) return text;
   if (/\b(retire|retires|retired|retirement)\b/i.test(text)) return text;
+  if (/\b(win|wins|won)\s+\d+\s*(mvp|most valuable player|super bowls?|championships?|titles?|rings?)\b/i.test(text)) return text;
+  if (/\b(win|wins|won)\s+(?:a|an|his|her|their)?\s*(second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+(mvp|most valuable player|super bowls?|championships?|titles?|rings?)\b/i.test(text)) return text;
   if (/\bbefore\b/i.test(text) && /\b(super bowl|mvp|championship|title|ring)\b/i.test(text)) return text;
   if (hasExplicitSeasonYear(text)) return text;
 
