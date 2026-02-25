@@ -348,6 +348,14 @@ h1 {
   transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
 }
 
+.btn-icon {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 0.95em;
+  line-height: 1;
+  transform: translateY(1px);
+}
+
 .btn:hover {
   transform: translateY(-1px);
 }
