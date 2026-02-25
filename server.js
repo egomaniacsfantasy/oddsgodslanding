@@ -469,7 +469,11 @@ function installExternalToolProxy(localPath, externalBase) {
           responseHeaders[key] = `${sourcePath}${value.slice(normalizedBase.length)}`;
           return;
         }
-        if (key.toLowerCase() === "transfer-encoding") return;
+        const header = key.toLowerCase();
+        if (header === "transfer-encoding") return;
+        if (header === "content-encoding") return;
+        if (header === "content-length") return;
+        if (header === "connection") return;
         responseHeaders[key] = value;
       });
 
