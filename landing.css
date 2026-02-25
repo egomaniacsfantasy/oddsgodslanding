@@ -439,11 +439,14 @@ h1 {
 }
 
 .cta-icon {
+  display: inline-block;
   width: 14px;
   height: 14px;
-  object-fit: contain;
+  font-size: 13px;
+  line-height: 1;
   margin-right: 8px;
   vertical-align: middle;
+  transform: translateY(-1px);
 }
 
 .btn:hover {
