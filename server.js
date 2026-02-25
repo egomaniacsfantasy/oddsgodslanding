@@ -856,6 +856,8 @@ function applyDefaultNflSeasonInterpretation(prompt) {
   if (!hasNflContext(text) && !statLike) return text;
   if (/\b(hall of fame|hof)\b/i.test(text)) return text;
   if (/\b(ever|career|all[- ]time)\b/i.test(text)) return text;
+  if (/\b(retire|retires|retired|retirement)\b/i.test(text)) return text;
+  if (/\bbefore\b/i.test(text) && /\b(super bowl|mvp|championship|title|ring)\b/i.test(text)) return text;
   if (hasExplicitSeasonYear(text)) return text;
 
   // Product rule: between seasons, "this year" and "next year" both reference upcoming NFL season.
@@ -5257,17 +5259,44 @@ function singularizeAchievement(noun) {
 }
 
 function parseMultiAchievementIntent(prompt) {
-  const match = String(prompt || "").match(
+  const text = String(prompt || "");
+  const numericMatch = text.match(
     /\b(win|wins|won)\s+(\d+)\s+(super bowls?|mvps?|championships?|titles?|rings?)\b/i
   );
-  if (!match) return null;
-  const count = Number(match[2]);
+  if (numericMatch) {
+    const count = Number(numericMatch[2]);
+    if (!Number.isFinite(count) || count < 2) return null;
+    return {
+      count,
+      phrase: numericMatch[0],
+      verb: numericMatch[1],
+      noun: numericMatch[3],
+    };
+  }
+
+  const ordinalMap = {
+    second: 2,
+    third: 3,
+    fourth: 4,
+    fifth: 5,
+    sixth: 6,
+    seventh: 7,
+    eighth: 8,
+    ninth: 9,
+    tenth: 10,
+  };
+  const ordinalMatch = text.match(
+    /\b(win|wins|won)\s+(?:a|an|his|her|their)?\s*(second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+(super bowls?|mvps?|championships?|titles?|rings?)\b/i
+  );
+  if (!ordinalMatch) return null;
+  const ordinalWord = String(ordinalMatch[2] || "").toLowerCase();
+  const count = Number(ordinalMap[ordinalWord]);
   if (!Number.isFinite(count) || count < 2) return null;
   return {
     count,
-    phrase: match[0],
-    verb: match[1],
-    noun: match[3],
+    phrase: ordinalMatch[0],
+    verb: ordinalMatch[1],
+    noun: ordinalMatch[3],
   };
 }
 
