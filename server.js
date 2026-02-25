@@ -2775,12 +2775,12 @@ async function estimateCareerSuperBowlOdds(prompt, playerName, localPlayerStatus
 function parseMvpIntent(prompt) {
   const lower = normalizePrompt(numberWordsToDigits(prompt));
   if (!/\b(mvp|most valuable player)\b/.test(lower)) return null;
-  const m = lower.match(/\b(win|wins|won|to win)\s+(?:exactly\s+)?(\d+)\s+(mvp|most valuable player)s?\b/);
+  const m = lower.match(/\b(win|wins|won|to win)\s+(?:exactly\s+)?(\d+)\s*(mvp|most valuable player)s?\b/);
   const count = m ? Number(m[2]) : 1;
   if (!Number.isFinite(count) || count < 1 || count > 8) return null;
   const exactBefore = new RegExp(`\\b(win|wins|won|to win)\\s+exactly\\s+${count}\\s+(mvp|most valuable player)s?\\b`, "i").test(lower)
-    || new RegExp(`\\bexactly\\s+${count}\\s+(mvp|most valuable player)s?\\b`, "i").test(lower);
-  const exactAfter = new RegExp(`\\b(win|wins|won)\\s+${count}\\s+(mvp|most valuable player)s?\\s+exactly\\b`, "i").test(lower);
+    || new RegExp(`\\bexactly\\s+${count}\\s*(mvp|most valuable player)s?\\b`, "i").test(lower);
+  const exactAfter = new RegExp(`\\b(win|wins|won)\\s+${count}\\s*(mvp|most valuable player)s?\\s+exactly\\b`, "i").test(lower);
   const exact = Boolean(exactBefore || exactAfter);
   return { count, exact };
 }
@@ -2840,8 +2840,12 @@ async function estimatePlayerMvpOdds(prompt, intent, playerName, localPlayerStat
   const mvpIntent = parseMvpIntent(prompt);
   if (!mvpIntent || !playerName || !localPlayerStatus) return null;
   const isSeasonHorizon = intent?.horizon === "season" || intent?.horizon === "next_season";
+  const explicitSeasonMarker = /\b(this season|next season|upcoming season|in \d{4}|20\d{2})\b/i.test(String(prompt || ""));
   const seasonLikePrompt = /\b(this season|next season|season|20\d{2})\b/i.test(String(prompt || ""));
-  const treatAsSeasonMvp = isSeasonHorizon || seasonLikePrompt;
+  // Multi-MVP asks are career asks unless the prompt explicitly season-scopes the question.
+  const treatAsSeasonMvp =
+    (isSeasonHorizon || seasonLikePrompt) &&
+    !(mvpIntent.count >= 2 && !explicitSeasonMarker);
   const existingMvpWins = knownCareerAccoladeCount(playerName, "mvp_wins");
   const resolvedMvp = isSeasonHorizon
     ? {
