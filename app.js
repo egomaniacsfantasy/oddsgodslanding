@@ -1,5 +1,9 @@
 const form = document.getElementById("odds-form");
 const scenarioInput = document.getElementById("scenario-input");
+const promptContainer = document.getElementById("prompt-container");
+const watoContent = document.getElementById("wato-content");
+const flipBtn = document.getElementById("flip-btn");
+const flipTip = document.getElementById("flip-tip");
 const submitBtn = document.getElementById("submit-btn");
 const resultCard = document.getElementById("result-card");
 const refusalCard = document.getElementById("refusal-card");
@@ -20,16 +24,19 @@ const headshotProfilePop = document.getElementById("headshot-profile-pop");
 const headshotProfileLogo = document.getElementById("headshot-profile-logo");
 const headshotProfileName = document.getElementById("headshot-profile-name");
 const headshotProfileMeta = document.getElementById("headshot-profile-meta");
+const queryEcho = document.getElementById("query-echo");
 const promptSummary = document.getElementById("prompt-summary");
 const shareBtn = document.getElementById("share-btn");
 const copyBtn = document.getElementById("copy-btn");
 const statusLine = document.getElementById("status-line");
 const examplesWrap = document.querySelector(".examples");
-const shareCard = document.getElementById("share-card");
-const shareOddsOutput = document.getElementById("share-odds-output");
-const shareSummaryOutput = document.getElementById("share-summary-output");
-const shareProbabilityOutput = document.getElementById("share-probability-output");
-const shareSourceOutput = document.getElementById("share-source-output");
+const shareModalOverlay = document.getElementById("share-modal-overlay");
+const shareXBtn = document.getElementById("share-x-btn");
+const shareIgBtn = document.getElementById("share-ig-btn");
+const shareCopyImageBtn = document.getElementById("share-copy-image-btn");
+const shareDownloadBtn = document.getElementById("share-download-btn");
+const shareCancelBtn = document.getElementById("share-cancel-btn");
+const shareToast = document.getElementById("share-toast");
 const hofWarning = document.getElementById("hof-warning");
 const rationalePanel = document.getElementById("rationale-panel");
 const rationaleList = document.getElementById("rationale-list");
@@ -38,11 +45,18 @@ const feedbackQuestion = document.getElementById("feedback-question");
 const feedbackUpBtn = document.getElementById("feedback-up");
 const feedbackDownBtn = document.getElementById("feedback-down");
 const feedbackThanks = document.getElementById("feedback-thanks");
-const PLACEHOLDER_ROTATE_MS = 3200;
+const PLACEHOLDER_ROTATE_MS = 3000;
 const EXAMPLE_REFRESH_MS = 12000;
 const CLIENT_API_VERSION = "2026.02.23.12";
 const FEEDBACK_RATED_MAP_KEY = "ewa_feedback_rated_map";
 const FEEDBACK_SESSION_ID_KEY = "ewa_feedback_session_id";
+const SHARE_IMAGE_PROXY_HOSTS = new Set([
+  "sleepercdn.com",
+  "a.espncdn.com",
+  "r2.thesportsdb.com",
+  "www.thesportsdb.com",
+  "cdn.nba.com",
+]);
 
 const DEFAULT_EXAMPLE_POOL = [
   "Josh Allen throws 30 touchdowns this season",
@@ -72,8 +86,10 @@ let exampleTimer = null;
 let feedbackContext = null;
 let primaryPlayerInfo = null;
 let secondaryPlayerInfo = null;
+let latestShareData = null;
 let allowFeedbackForCurrentResult = false;
 let profileHideTimer = null;
+let flipTipSeen = false;
 
 const NFL_TEAM_ABBR = {
   "arizona cardinals": "ARI",
@@ -132,6 +148,51 @@ function setBusy(isBusy) {
   submitBtn.disabled = isBusy;
   submitBtn.textContent = isBusy ? "Estimating..." : "Estimate";
   submitBtn.classList.toggle("is-loading", isBusy);
+  promptContainer?.classList.toggle("loading", isBusy);
+  if (flipBtn) {
+    flipBtn.disabled = isBusy;
+  }
+}
+
+function splitBeforePrompt(prompt) {
+  const text = normalizePrompt(prompt || "");
+  if (!text) return null;
+  const parts = text.split(/\bbefore\b/i);
+  if (parts.length < 2) return null;
+  const left = String(parts[0] || "").trim();
+  const right = String(parts.slice(1).join(" before ") || "").trim();
+  if (!left || !right) return null;
+  return { left, right };
+}
+
+function isTwoSidedBeforePrompt(prompt) {
+  const parts = splitBeforePrompt(prompt);
+  if (!parts) return false;
+  if (/^(20\d{2})(\s*-\s*(?:20)?\d{2})?$/i.test(parts.right)) return false;
+  if (/\bbefore\s+20\d{2}\b/i.test(String(prompt || ""))) return false;
+  return true;
+}
+
+function updateFlipVisibility() {
+  if (!flipBtn) return;
+  const show = isTwoSidedBeforePrompt(scenarioInput.value);
+  flipBtn.classList.toggle("hidden", !show);
+  if (show && !flipTipSeen && flipTip) {
+    flipTip.classList.remove("hidden");
+    setTimeout(() => {
+      flipTip.classList.add("hidden");
+    }, 2300);
+    flipTipSeen = true;
+  }
+  if (!show && flipTip) flipTip.classList.add("hidden");
+}
+
+function flipPrompt() {
+  const parts = splitBeforePrompt(scenarioInput.value);
+  if (!parts) return;
+  scenarioInput.value = `${parts.right} before ${parts.left}`;
+  updateFlipVisibility();
+  form.requestSubmit();
 }
 
 function isTouchLikeDevice() {
@@ -276,6 +337,8 @@ function maybeShowFeedback(prompt, result) {
   };
   feedbackQuestion.textContent = "Was this estimate helpful?";
   feedbackThanks.classList.add("hidden");
+  feedbackUpBtn?.classList.remove("selected-up", "selected-down");
+  feedbackDownBtn?.classList.remove("selected-up", "selected-down");
   feedbackPop.classList.remove("feedback-closing", "feedback-thanked");
   feedbackPop.classList.remove("hidden");
 }
@@ -284,6 +347,8 @@ async function submitFeedback(vote) {
   if (!feedbackContext || !["up", "down"].includes(vote)) return;
   feedbackUpBtn?.setAttribute("disabled", "true");
   feedbackDownBtn?.setAttribute("disabled", "true");
+  feedbackUpBtn?.classList.toggle("selected-up", vote === "up");
+  feedbackDownBtn?.classList.toggle("selected-down", vote === "down");
   feedbackPop.classList.add("feedback-thanked");
   feedbackThanks.classList.add("hidden");
   feedbackQuestion.textContent = "Thanks for your feedback!";
@@ -322,6 +387,7 @@ function parseAmericanOdds(oddsText) {
 
 function renderOddsDisplay(oddsText) {
   const n = parseAmericanOdds(oddsText);
+  oddsOutput.classList.remove("positive", "negative", "even");
   oddsOutput.classList.remove("live-shimmer", "heartbeat-glow");
   oddsOutput.style.animation = "none";
   void oddsOutput.offsetWidth;
@@ -341,6 +407,11 @@ function renderOddsDisplay(oddsText) {
   oddsOutput.classList.remove("lock-mode");
   oddsOutput.classList.add("live-shimmer", "heartbeat-glow");
   oddsOutput.textContent = oddsText;
+  if (n !== null) {
+    if (n > 0) oddsOutput.classList.add("positive");
+    else if (n < 0) oddsOutput.classList.add("negative");
+    else oddsOutput.classList.add("even");
+  }
   return "normal";
 }
 
@@ -529,25 +600,8 @@ function toggleHallOfFameWarning(show) {
   hofWarning.classList.toggle("hidden", !show);
 }
 
-function formatOddsForShare(oddsText) {
-  const n = parseAmericanOdds(oddsText);
-  if (n !== null && n <= -10000) return "IT'S A LOCK!";
-  if (n !== null && n >= 10000) return "NO SHOT.";
-  return String(oddsText || "");
-}
-
 function syncShareCard(result, prompt) {
-  shareOddsOutput.textContent = formatOddsForShare(result.odds);
-  shareSummaryOutput.textContent = getDisplaySummaryLabel(result.summaryLabel, prompt, result);
-  shareProbabilityOutput.textContent = result.impliedProbability || "";
-
-  if (result.sourceType === "sportsbook" && result.sourceBook) {
-    shareSourceOutput.textContent = `${result.sourceBook} reference`;
-  } else if (result.liveChecked) {
-    shareSourceOutput.textContent = "Live context checked";
-  } else {
-    shareSourceOutput.textContent = "Hypothetical model";
-  }
+  latestShareData = buildShareData(result, prompt);
 }
 
 function normalizeSummaryText(text) {
@@ -627,6 +681,7 @@ function showResult(result, prompt) {
   const oddsMode = renderOddsDisplay(result.odds);
   applyResultCardState(oddsMode);
   probabilityOutput.textContent = result.impliedProbability;
+  if (queryEcho) queryEcho.textContent = normalizePrompt(prompt);
   const displaySummary = getDisplaySummaryLabel(result.summaryLabel, prompt, result);
   promptSummary.textContent = displaySummary;
   applyPromptSummarySizing(displaySummary);
@@ -710,11 +765,13 @@ function showResult(result, prompt) {
   } else {
     hideFeedbackPop();
   }
+  watoContent?.classList.add("has-result");
 }
 
 function showRefusal(message, options = {}) {
   resultCard.classList.add("hidden");
   refusalCard.classList.remove("hidden");
+  latestShareData = null;
   resultTypeLabel.textContent = "Estimated Odds";
   clearHeadshot();
   clearSourceLine();
@@ -729,11 +786,13 @@ function showRefusal(message, options = {}) {
     "What Are the Odds? provides hypothetical entertainment estimates only. It does not provide sportsbook lines or betting advice.";
   refusalHint.textContent = options.hint || "Try a sports hypothetical instead.";
   statusLine.textContent = message || "Hypothetical entertainment odds only.";
+  watoContent?.classList.add("has-result");
 }
 
 function showSystemError(message) {
   resultCard.classList.add("hidden");
   refusalCard.classList.add("hidden");
+  latestShareData = null;
   clearHeadshot();
   clearSourceLine();
   clearFreshness();
@@ -742,6 +801,7 @@ function showSystemError(message) {
   hideFeedbackPop();
   applyResultCardState("normal");
   statusLine.textContent = message;
+  watoContent?.classList.add("has-result");
 }
 
 function encodePromptInUrl(prompt) {
@@ -864,74 +924,535 @@ async function copyCurrentResult() {
   try {
     await navigator.clipboard.writeText(payload);
     copyBtn.textContent = "Copied";
+    copyBtn.classList.add("copied");
     setTimeout(() => {
       copyBtn.textContent = "Copy";
+      copyBtn.classList.remove("copied");
     }, 1300);
   } catch (_error) {
     statusLine.textContent = "Copy failed. You can still screenshot this result.";
   }
 }
 
-async function createShareBlob() {
-  if (!window.html2canvas) {
-    throw new Error("Share renderer unavailable.");
-  }
-  const isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
-  const canvas = await window.html2canvas(shareCard, {
-    backgroundColor: "#1e1810",
-    scale: isiOS ? 1.25 : 1.6,
-    useCORS: true,
-    logging: false,
-  });
+function showShareToast(message) {
+  if (!shareToast) return;
+  shareToast.textContent = String(message || "");
+  shareToast.classList.remove("hidden");
+  setTimeout(() => {
+    shareToast.classList.add("hidden");
+  }, 1800);
+}
 
+function slugifyShare(str) {
+  return String(str || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\+/g, "plus")
+    .replace(/-/g, "minus")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+function openShareModal() {
+  if (!shareModalOverlay) return;
+  shareModalOverlay.classList.remove("hidden");
+}
+
+function closeShareModal() {
+  if (!shareModalOverlay) return;
+  shareModalOverlay.classList.add("hidden");
+}
+
+async function createShareBlob(shareData, type = "image/jpeg", quality = 0.95) {
+  const canvas = await generateShareCard(shareData);
   return await new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) resolve(blob);
-      else reject(new Error("Could not build image."));
-    }, "image/jpeg", 0.9);
+    canvas.toBlob(
+      (blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("Could not build image."));
+      },
+      type,
+      quality
+    );
   });
 }
 
-async function shareCurrentResult() {
-  if (resultCard.classList.contains("hidden")) return;
+function downloadShareBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1200);
+}
 
-  const oldText = shareBtn.textContent;
-  shareBtn.disabled = true;
-  shareBtn.textContent = "Preparing...";
+function buildTweetText(shareData) {
+  return (
+    `Odds Gods says ${shareData.oddsStr} — ${shareData.query}.\n\n` +
+    `Somebody tell me I'm wrong.\n\noddsgods.net`
+  );
+}
+
+async function handleShareTwitter() {
+  if (!latestShareData) return;
   try {
-    const blob = await createShareBlob();
-    const file = new File([blob], "egomaniacs-odds.jpg", { type: "image/jpeg" });
-    const shareText = `${promptSummary.textContent} — ${oddsOutput.textContent}`;
-
-    const canShareFiles =
-      typeof navigator.share === "function" &&
-      typeof navigator.canShare === "function" &&
-      navigator.canShare({ files: [file] });
-    if (canShareFiles) {
-      await navigator.share({
-        files: [file],
-        title: "What Are the Odds?",
-        text: shareText,
-      });
-      statusLine.textContent = "Share card ready. Sent.";
-      return;
-    }
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "egomaniacs-odds.jpg";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-    statusLine.textContent = "Share image downloaded. Send it anywhere.";
+    const blob = await createShareBlob(latestShareData, "image/jpeg", 0.95);
+    const filename = `odds-gods-${slugifyShare(latestShareData.oddsStr)}.jpg`;
+    downloadShareBlob(blob, filename);
+    setTimeout(() => {
+      const text = buildTweetText(latestShareData);
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+    }, 300);
+    statusLine.textContent = "Share image downloaded.";
   } catch (_error) {
     statusLine.textContent = "Could not generate share image right now.";
   } finally {
-    shareBtn.disabled = false;
-    shareBtn.textContent = oldText;
+    closeShareModal();
   }
+}
+
+async function handleCopyImage() {
+  if (!latestShareData) return;
+  try {
+    const blob = await createShareBlob(latestShareData, "image/png", 1);
+    if (navigator.clipboard && typeof window.ClipboardItem !== "undefined") {
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      showShareToast("Image copied");
+    } else {
+      showShareToast("Copy not supported in this browser");
+    }
+  } catch (_error) {
+    showShareToast("Copy not supported in this browser");
+  } finally {
+    closeShareModal();
+  }
+}
+
+async function handleDownloadShare() {
+  if (!latestShareData) return;
+  try {
+    const blob = await createShareBlob(latestShareData, "image/jpeg", 0.95);
+    const filename = `odds-gods-${slugifyShare(latestShareData.oddsStr)}.jpg`;
+    downloadShareBlob(blob, filename);
+    statusLine.textContent = "Share image downloaded.";
+  } catch (_error) {
+    statusLine.textContent = "Could not generate share image right now.";
+  } finally {
+    closeShareModal();
+  }
+}
+
+async function handleShareInstagram() {
+  await handleDownloadShare();
+  showShareToast("Image saved — open Instagram and share from your camera roll");
+}
+
+function shareCurrentResult() {
+  if (resultCard.classList.contains("hidden")) return;
+  const liveData = getCurrentShareData();
+  latestShareData = {
+    ...(latestShareData || {}),
+    ...liveData,
+    entityImageUrl: liveData.entityImageUrl || latestShareData?.entityImageUrl || null,
+  };
+  openShareModal();
+}
+
+function hashQuery(text) {
+  let hash = 0;
+  const input = String(text || "");
+  for (let i = 0; i < input.length; i += 1) {
+    hash = (hash + input.charCodeAt(i) * (i + 1)) >>> 0;
+  }
+  return hash || 1;
+}
+
+function seededRng(seed) {
+  let s = Math.max(1, Number(seed) || 1);
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function roundRectPath(ctx, x, y, w, h, r) {
+  const rr = Math.max(0, Math.min(r, Math.min(w, h) / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.lineTo(x + w - rr, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + rr);
+  ctx.lineTo(x + w, y + h - rr);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
+  ctx.lineTo(x + rr, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - rr);
+  ctx.lineTo(x, y + rr);
+  ctx.quadraticCurveTo(x, y, x + rr, y);
+  ctx.closePath();
+}
+
+function wrapText(ctx, text, maxWidth) {
+  const words = String(text || "").split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  const lines = [];
+  let line = "";
+  words.forEach((word) => {
+    const test = line ? `${line} ${word}` : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  });
+  if (line) lines.push(line);
+  return lines;
+}
+
+function addCanvasGrain(ctx, w, h, opacity = 0.03) {
+  const gc = document.createElement("canvas");
+  gc.width = w;
+  gc.height = h;
+  const gx = gc.getContext("2d");
+  const img = gx.createImageData(w, h);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = Math.random() * 255;
+    img.data[i] = v;
+    img.data[i + 1] = v;
+    img.data[i + 2] = v;
+    img.data[i + 3] = Math.random() * opacity * 255;
+  }
+  gx.putImageData(img, 0, 0);
+  ctx.drawImage(gc, 0, 0);
+}
+
+function getCurrentShareData() {
+  const query = normalizeSummaryText(queryEcho?.textContent || scenarioInput.value || "");
+  const oddsStr = String(oddsOutput.textContent || "").trim();
+  const impliedStr = String(probabilityOutput.textContent || "").trim();
+  const primaryCluster = document.querySelector("#entity-strip img.entity-avatar");
+  const visiblePrimary = playerHeadshot && !playerHeadshot.classList.contains("hidden") ? playerHeadshot : null;
+  const visibleSecondary =
+    playerHeadshotSecondary && !playerHeadshotSecondary.classList.contains("hidden") ? playerHeadshotSecondary : null;
+  const entityImageUrlRaw =
+    (primaryCluster && primaryCluster.getAttribute("src")) ||
+    (visiblePrimary && visiblePrimary.getAttribute("src")) ||
+    (visibleSecondary && visibleSecondary.getAttribute("src")) ||
+    null;
+  const entityImageUrl = toShareImageUrl(entityImageUrlRaw);
+  return {
+    query,
+    oddsStr,
+    impliedStr,
+    entityImageUrl,
+    logoPath: "/logo-icon.png",
+  };
+}
+
+function buildShareData(result, prompt) {
+  const query = normalizeSummaryText(prompt || queryEcho?.textContent || scenarioInput.value || "");
+  const oddsStr = String(result?.odds || oddsOutput.textContent || "").trim();
+  const impliedStr = String(result?.impliedProbability || probabilityOutput.textContent || "").trim();
+  const firstEntityImage =
+    (Array.isArray(result?.entityAssets) && result.entityAssets.length
+      ? String(result.entityAssets[0]?.imageUrl || "").trim()
+      : "") || "";
+  const entityImageUrlRaw =
+    firstEntityImage ||
+    String(result?.headshotUrl || "").trim() ||
+    String(result?.secondaryHeadshotUrl || "").trim() ||
+    String(playerHeadshot?.getAttribute("src") || "").trim() ||
+    null;
+  const entityImageUrl = toShareImageUrl(entityImageUrlRaw);
+  return {
+    query,
+    oddsStr,
+    impliedStr,
+    entityImageUrl,
+    logoPath: "/logo-icon.png",
+  };
+}
+
+function toShareImageUrl(inputUrl) {
+  const raw = String(inputUrl || "").trim();
+  if (!raw) return null;
+  try {
+    const resolved = new URL(raw, window.location.origin);
+    if (resolved.origin === window.location.origin) return resolved.toString();
+    if (SHARE_IMAGE_PROXY_HOSTS.has(resolved.hostname)) {
+      return `${window.location.origin}/api/image-proxy?u=${encodeURIComponent(resolved.toString())}`;
+    }
+    return resolved.toString();
+  } catch (_error) {
+    return raw;
+  }
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function drawBolt(ctx, pts, color, lineWidth) {
+  if (!pts || pts.length < 2) return;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i += 1) {
+    ctx.lineTo(pts[i][0], pts[i][1]);
+  }
+  ctx.stroke();
+}
+
+function genBolt(bRng, x1, y1, x2, y2, disp, depth) {
+  if (depth === 0) return [[x1, y1], [x2, y2]];
+  const mx = (x1 + x2) / 2 + (bRng() - 0.5) * disp;
+  const my = (y1 + y2) / 2 + (bRng() - 0.5) * disp;
+  const left = genBolt(bRng, x1, y1, mx, my, disp * 0.55, depth - 1);
+  const right = genBolt(bRng, mx, my, x2, y2, disp * 0.55, depth - 1);
+  return [...left, ...right.slice(1)];
+}
+
+async function generateShareCard({ query, oddsStr, impliedStr, entityImageUrl, logoPath }) {
+  const WIDTH = 1200;
+  const HEIGHT = 900;
+  const canvas = document.createElement("canvas");
+  canvas.width = WIDTH;
+  canvas.height = HEIGHT;
+  const ctx = canvas.getContext("2d");
+  const normalizedQuery = normalizeSummaryText(query || "What Are the Odds?");
+  const queryHash = hashQuery(normalizedQuery);
+  const rng = seededRng(queryHash * 31337);
+  const boltRng = seededRng(queryHash * 99991);
+
+  let logoImg = null;
+  let entityImg = null;
+  try {
+    logoImg = await loadImage(logoPath || "/logo-icon.png");
+  } catch (_error) {
+    try {
+      logoImg = await loadImage("/assets/logo-icon.png");
+    } catch (_error2) {
+      logoImg = null;
+    }
+  }
+  if (entityImageUrl) {
+    try {
+      entityImg = await loadImage(entityImageUrl);
+    } catch (_error) {
+      entityImg = null;
+    }
+  }
+
+  // Layer 1.
+  ctx.fillStyle = "#0e0c09";
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+  // Layer 2.
+  const g1 = ctx.createRadialGradient(600, 1020, 0, 600, 1020, 760);
+  g1.addColorStop(0, "rgba(139,90,18,0.60)");
+  g1.addColorStop(0.5, "rgba(139,90,18,0.20)");
+  g1.addColorStop(1, "rgba(139,90,18,0)");
+  ctx.fillStyle = g1;
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+  const g2 = ctx.createRadialGradient(1100, 50, 0, 1100, 50, 400);
+  g2.addColorStop(0, "rgba(110,70,12,0.36)");
+  g2.addColorStop(1, "rgba(110,70,12,0)");
+  ctx.fillStyle = g2;
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+  const vignette = ctx.createRadialGradient(WIDTH / 2, HEIGHT / 2, 260, WIDTH / 2, HEIGHT / 2, 780);
+  vignette.addColorStop(0, "rgba(0,0,0,0)");
+  vignette.addColorStop(1, "rgba(0,0,0,0.34)");
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+  // Layer 3.
+  const FRAGS = [
+    "-110", "+3300", "-450", "+220", "EVEN", "-175", "+550", "-3040", "+1400", "-800", "+290", "+6500",
+    "+105", "-190", "+380", "+4500", "XIV", "XLVIII", "IX", "MMXXV", "XCIX", "IV", "LXIII", "LVII", "VII",
+    "XVI", "XLII", "XXXII", "Σ", "Δ", "μ", "σ", "π", "Ω", "β", "λ", "φ", "ALEA IACTA EST", "SORS",
+    "PROBABILITAS", "FATA", "RATIO", "EVENTUS", "CALCULUS", "VINCULUM", "45.3 WIN%", "61.2%", "28.6% IMP",
+    "73.4%", "19.2% IMP", "88.1%", "33.3%", "4,832 YDS", "38 TD", "QBR 84.2", "DVOA +24.8", "EPA/P 0.24",
+    "CPOE +4.1", "ELO 1842", "KC -450", "PHI -3.5", "BAL -6.5", "SF ML -175",
+  ];
+  const SERIF_FRAGS = new Set([
+    "ALEA IACTA EST", "SORS", "PROBABILITAS", "FATA", "RATIO", "EVENTUS", "CALCULUS", "VINCULUM",
+    "XIV", "VII", "IX", "MMXXV", "XLVIII", "XCIX", "LVII", "LXIII", "XVI", "IV", "XLII", "XXXII",
+  ]);
+  const placed = [];
+  const cornerExclusion = [
+    [0, 0, 170, 170],
+    [WIDTH - 170, 0, WIDTH, 170],
+    [0, HEIGHT - 170, 170, HEIGHT],
+    [WIDTH - 170, HEIGHT - 170, WIDTH, HEIGHT],
+  ];
+  let count = 0;
+  while (count < 95) {
+    const txt = FRAGS[Math.floor(rng() * FRAGS.length)];
+    const serif = SERIF_FRAGS.has(txt) || /[ΣΔμσπΩβλφ]/.test(txt);
+    const size = serif ? 16 + Math.floor(rng() * 12) : 13 + Math.floor(rng() * 10);
+    ctx.font = serif ? `400 ${size}px "Instrument Serif",serif` : `400 ${size}px "Space Grotesk",monospace`;
+    const tw = ctx.measureText(txt).width;
+    const th = size * 1.3;
+    const x = rng() * (WIDTH - tw - 20) + 10;
+    const y = rng() * (HEIGHT - th - 20) + 10;
+    const r0 = [x - 6, y - 4, x + tw + 6, y + th + 4];
+    const overlapsCorner = cornerExclusion.some((z) => r0[0] < z[2] && r0[2] > z[0] && r0[1] < z[3] && r0[3] > z[1]);
+    if (overlapsCorner) continue;
+    if (!placed.some((o) => r0[0] < o[2] && r0[2] > o[0] && r0[1] < o[3] && r0[3] > o[1])) {
+      ctx.globalAlpha = 0.01 + rng() * 0.012;
+      ctx.fillStyle = "#f0e6d0";
+      ctx.textAlign = "left";
+      ctx.fillText(txt, x, y + th * 0.8);
+      placed.push(r0);
+      count += 1;
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  // Layer 4.
+  const bolt = genBolt(boltRng, 990, 18, 680, 520, 58, 5);
+  const mid = bolt[Math.floor(bolt.length * 0.35)];
+  const branch = genBolt(boltRng, mid[0], mid[1], mid[0] + 80 + boltRng() * 55, mid[1] + 60 + boltRng() * 45, 28, 3);
+  drawBolt(ctx, bolt, "rgba(184,125,24,0.020)", 20);
+  drawBolt(ctx, bolt, "rgba(184,125,24,0.036)", 12);
+  drawBolt(ctx, bolt, "rgba(184,125,24,0.055)", 6);
+  drawBolt(ctx, bolt, "rgba(184,125,24,0.044)", 3);
+  drawBolt(ctx, bolt, "rgba(240,230,208,0.070)", 1);
+  drawBolt(ctx, branch, "rgba(184,125,24,0.026)", 5);
+  drawBolt(ctx, branch, "rgba(184,125,24,0.040)", 2);
+
+  // Layer 5.
+  ctx.strokeStyle = "rgba(184,125,24,0.22)";
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(20, 20, 1160, 860);
+  [[40, 40, 1, 1], [1160, 40, -1, 1], [40, 860, 1, -1], [1160, 860, -1, -1]].forEach(([x, y, dx, dy]) => {
+    ctx.strokeStyle = "rgba(184,125,24,0.68)";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + dx * 52, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y + dy * 52);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(184,125,24,0.55)";
+    ctx.beginPath();
+    ctx.arc(x + dx * 6, y + dy * 6, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Layer 6.
+  if (logoImg) {
+    ctx.drawImage(logoImg, 88, 30, 48, 48);
+  } else {
+    ctx.strokeStyle = "rgba(184,125,24,0.62)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(112, 54, 20, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // Layer 7.
+  const labelY = 130;
+  ctx.font = '400 17px "Space Grotesk",monospace';
+  ctx.fillStyle = "rgba(240,230,208,0.36)";
+  ctx.textAlign = "center";
+  ctx.fillText("WHAT ARE THE ODDS THAT...", 600, labelY);
+
+  // Layer 8.
+  const qSize =
+    normalizedQuery.length < 42 ? 50 : normalizedQuery.length < 58 ? 42 : normalizedQuery.length < 75 ? 36 : 31;
+  ctx.font = `italic 400 ${qSize}px "Instrument Serif",serif`;
+  ctx.fillStyle = "rgba(240,230,208,0.90)";
+  ctx.textAlign = "center";
+  const qLines = wrapText(ctx, normalizedQuery, 1020);
+  const qLineH = qSize * 1.4;
+  let qY = labelY + 44;
+  qLines.forEach((line) => {
+    ctx.fillText(line, 600, qY);
+    qY += qLineH;
+  });
+  const qBottom = qY + 14;
+
+  // Layer 9.
+  const HS_R = 76;
+  const HS_CX = 600;
+  const HS_CY = qBottom + HS_R + 16;
+  if (entityImg) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(HS_CX, HS_CY, HS_R, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(entityImg, HS_CX - HS_R, HS_CY - HS_R, HS_R * 2, HS_R * 2);
+    ctx.restore();
+    ctx.strokeStyle = "rgba(184,125,24,0.52)";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(HS_CX, HS_CY, HS_R + 3, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(184,125,24,0.16)";
+    ctx.lineWidth = 9;
+    ctx.beginPath();
+    ctx.arc(HS_CX, HS_CY, HS_R + 10, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  const imageBottom = entityImg ? HS_CY + HS_R : qBottom + 8;
+
+  // Layer 10.
+  const ODDS_SIZE = 200;
+  ctx.font = `400 ${ODDS_SIZE}px "Space Grotesk",monospace`;
+  ctx.textAlign = "center";
+  const value = String(oddsStr || "").trim().toUpperCase();
+  ctx.fillStyle = "rgba(240,230,208,0.96)";
+  ctx.shadowColor = "rgba(0,0,0,0.60)";
+  ctx.shadowBlur = 16;
+  ctx.shadowOffsetX = 3;
+  ctx.shadowOffsetY = 3;
+  const oddsY = imageBottom + 20;
+  ctx.fillText(value || "N/A", 600, oddsY + ODDS_SIZE * 0.8);
+  ctx.shadowColor = "transparent";
+  const oddsBottom = oddsY + ODDS_SIZE * 0.92;
+
+  // Layer 11.
+  const implLabelY = oddsBottom + 16;
+  ctx.font = '400 17px "Space Grotesk",monospace';
+  ctx.fillStyle = "rgba(240,230,208,0.36)";
+  ctx.fillText("IMPLIED PROBABILITY", 600, implLabelY);
+  ctx.font = '700 52px "Space Grotesk",monospace';
+  ctx.fillStyle = "rgba(240,230,208,0.86)";
+  ctx.fillText(String(impliedStr || "").trim() || "N/A", 600, implLabelY + 62);
+
+  // Layer 12.
+  const barY = 812;
+  ctx.strokeStyle = "rgba(184,125,24,0.26)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(80, barY - 24);
+  ctx.lineTo(1120, barY - 24);
+  ctx.stroke();
+  ctx.font = '700 34px "Space Grotesk",monospace';
+  ctx.fillStyle = "rgba(184,125,24,0.85)";
+  ctx.textAlign = "center";
+  ctx.fillText("Try it yourself at OddsGods.net", 600, barY);
+  ctx.font = '400 15px "Space Grotesk",monospace';
+  ctx.fillStyle = "rgba(240,230,208,0.22)";
+  ctx.textAlign = "center";
+  ctx.fillText("Hypothetical estimate · Not betting advice", 600, barY + 30);
+
+  // Layer 13.
+  addCanvasGrain(ctx, WIDTH, HEIGHT, 0.028);
+  return canvas;
 }
 
 function hydrateFromUrl() {
@@ -1051,10 +1572,114 @@ async function hydrateLiveSuggestions() {
   }
 }
 
+function startBackgroundLayers() {
+  const canvases = [
+    document.getElementById("bg-stats"),
+    document.getElementById("bg-lightning"),
+    document.getElementById("bg-text"),
+  ].filter(Boolean);
+  if (!canvases.length) return;
+
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const contexts = canvases.map((canvas) => canvas.getContext("2d"));
+  let frame = 0;
+
+  const resize = () => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    canvases.forEach((canvas) => {
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+    });
+    contexts.forEach((ctx) => ctx?.setTransform(dpr, 0, 0, dpr, 0, 0));
+  };
+
+  const draw = () => {
+    frame += 1;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const t = frame * 0.01;
+    const [statsCtx, boltCtx, textCtx] = contexts;
+
+    if (statsCtx) {
+      statsCtx.clearRect(0, 0, w, h);
+      statsCtx.strokeStyle = "rgba(220,170,90,0.05)";
+      statsCtx.lineWidth = 1;
+      for (let i = 0; i < 14; i += 1) {
+        const y = (i + 1) * (h / 15);
+        statsCtx.beginPath();
+        statsCtx.moveTo(0, y + Math.sin(t + i) * 6);
+        statsCtx.lineTo(w, y + Math.cos(t + i * 0.8) * 6);
+        statsCtx.stroke();
+      }
+    }
+
+    if (boltCtx) {
+      boltCtx.clearRect(0, 0, w, h);
+      boltCtx.strokeStyle = "rgba(232,185,105,0.08)";
+      boltCtx.lineWidth = 1.3;
+      boltCtx.beginPath();
+      const x = w * 0.77;
+      boltCtx.moveTo(x, h * 0.05);
+      boltCtx.lineTo(x - 34, h * 0.24);
+      boltCtx.lineTo(x + 16, h * 0.24);
+      boltCtx.lineTo(x - 30, h * 0.46);
+      boltCtx.stroke();
+    }
+
+    if (textCtx) {
+      textCtx.clearRect(0, 0, w, h);
+      textCtx.fillStyle = "rgba(210,197,168,0.06)";
+      textCtx.font = "12px Space Grotesk";
+      const words = ["XIII", "YPA", "DVOA", "EPA", "SB", "MVP", "W-L", "ANY/A", "QBR"];
+      for (let i = 0; i < 24; i += 1) {
+        const text = words[i % words.length];
+        const px = (i * 173 + (frame % 700)) % (w + 180) - 120;
+        const py = 40 + ((i * 89) % (h - 80));
+        textCtx.fillText(text, px, py);
+      }
+    }
+
+    window.requestAnimationFrame(draw);
+  };
+
+  resize();
+  draw();
+  window.addEventListener("resize", resize);
+}
+
 form.addEventListener("submit", onSubmit);
 copyBtn.addEventListener("click", copyCurrentResult);
 if (shareBtn) {
   shareBtn.addEventListener("click", shareCurrentResult);
+}
+if (shareModalOverlay) {
+  shareModalOverlay.addEventListener("click", (event) => {
+    if (event.target === shareModalOverlay) closeShareModal();
+  });
+}
+if (shareCancelBtn) {
+  shareCancelBtn.addEventListener("click", closeShareModal);
+}
+if (shareXBtn) {
+  shareXBtn.addEventListener("click", handleShareTwitter);
+}
+if (shareIgBtn) {
+  shareIgBtn.addEventListener("click", handleShareInstagram);
+}
+if (shareCopyImageBtn) {
+  shareCopyImageBtn.addEventListener("click", handleCopyImage);
+}
+if (shareDownloadBtn) {
+  shareDownloadBtn.addEventListener("click", handleDownloadShare);
+}
+if (flipBtn) {
+  flipBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    flipPrompt();
+  });
 }
 playerHeadshot.addEventListener("click", () => {
   if (!primaryPlayerInfo?.name) return;
@@ -1104,6 +1729,9 @@ document.addEventListener("click", (event) => {
   }
   hideHeadshotProfile();
 });
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeShareModal();
+});
 if (feedbackUpBtn) {
   feedbackUpBtn.addEventListener("click", (event) => {
     event.preventDefault();
@@ -1134,10 +1762,13 @@ scenarioInput.addEventListener("keydown", (event) => {
     form.requestSubmit();
   }
 });
+scenarioInput.addEventListener("input", updateFlipVisibility);
 const hasSharedPrompt = hydrateFromUrl();
 setupExampleChips();
 checkVersionHandshake();
 hydrateLiveSuggestions();
+startBackgroundLayers();
+updateFlipVisibility();
 
 if (hasSharedPrompt) {
   form.requestSubmit();
