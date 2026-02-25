@@ -838,7 +838,8 @@ h1 {
 }
 
 .demo-table-row.featured-scenario .demo-rank {
-  visibility: hidden;
+  color: var(--amber-soft);
+  font-weight: 700;
 }
 
 .demo-table-row.featured-scenario .demo-name {
@@ -863,6 +864,10 @@ h1 {
 .demo-rank {
   color: var(--muted);
   font-size: 11px;
+}
+
+.demo-rank.rank-empty {
+  visibility: hidden;
 }
 
 .demo-name {

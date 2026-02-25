@@ -588,10 +588,11 @@ function runBracketDemo() {
         const eliminatedClass = row.eliminated ? " eliminated" : "";
         const deltaVisible = showDeltas && row.delta ? " visible" : "";
         const featuredClass = row.featured ? " featured-scenario" : "";
-        const rankValue = row.featured ? "&nbsp;" : String(rankCounter++);
+        const rankValue = row.featured ? (row.seed === 1 ? "1" : "") : String(rankCounter++);
+        const rankEmptyClass = rankValue ? "" : " rank-empty";
         return `
           <div class="demo-table-row${eliminatedClass}${featuredClass}">
-            <span class="demo-rank">${rankValue}</span>
+            <span class="demo-rank${rankEmptyClass}">${rankValue}</span>
             <span class="demo-name">${row.name}</span>
             <span class="demo-pct${movingClass}">${formatPct(row.pct)}</span>
             <span class="demo-delta${deltaVisible}">${row.delta ? `↑ ${row.delta}` : ""}</span>
