@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { Readable } from "node:stream";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { buildPlayerOutcomes, buildPerformanceThresholdOutcome } from "./engine/outcomes.js";
@@ -419,24 +420,83 @@ function normalizeExternalBase(url) {
   return String(url || "").replace(/\/+$/, "");
 }
 
-function installExternalToolRedirect(localPath, externalBase) {
+function getProxyBody(req) {
+  if (req.method === "GET" || req.method === "HEAD") return undefined;
+  if (req.body && typeof req.body === "object") {
+    return JSON.stringify(req.body);
+  }
+  return req;
+}
+
+function copyProxyHeaders(incoming) {
+  const next = { ...incoming };
+  delete next.host;
+  delete next.connection;
+  delete next["content-length"];
+  delete next["accept-encoding"];
+  return next;
+}
+
+function installExternalToolProxy(localPath, externalBase) {
   const normalizedBase = normalizeExternalBase(externalBase);
   if (!normalizedBase) return;
 
   const sourcePath = localPath.endsWith("/") ? localPath.slice(0, -1) : localPath;
-  app.get([sourcePath, `${sourcePath}/`], (_req, res) => {
-    res.redirect(302, `${normalizedBase}/`);
-  });
+  app.use(sourcePath, async (req, res) => {
+    try {
+      const suffixWithQuery = req.originalUrl.slice(sourcePath.length) || "/";
+      const target = new URL(suffixWithQuery, `${normalizedBase}/`);
+      const method = req.method.toUpperCase();
+      const headers = copyProxyHeaders(req.headers);
+      const body = getProxyBody(req);
+      const fetchOptions = {
+        method,
+        headers,
+        body,
+        redirect: "manual",
+      };
+      if (body === req) {
+        fetchOptions.duplex = "half";
+      }
 
-  app.get(`${sourcePath}/*`, (req, res) => {
-    const suffix = String(req.params[0] || "").replace(/^\/+/, "");
-    const target = suffix ? `${normalizedBase}/${suffix}` : `${normalizedBase}/`;
-    res.redirect(302, target);
+      const upstream = await fetch(target, {
+        ...fetchOptions,
+      });
+
+      const responseHeaders = {};
+      upstream.headers.forEach((value, key) => {
+        if (key.toLowerCase() === "location" && value.startsWith(normalizedBase)) {
+          responseHeaders[key] = `${sourcePath}${value.slice(normalizedBase.length)}`;
+          return;
+        }
+        if (key.toLowerCase() === "transfer-encoding") return;
+        responseHeaders[key] = value;
+      });
+
+      res.status(upstream.status);
+      Object.entries(responseHeaders).forEach(([key, value]) => {
+        res.setHeader(key, value);
+      });
+
+      if (!upstream.body) {
+        res.end();
+        return;
+      }
+
+      Readable.fromWeb(upstream.body).pipe(res);
+    } catch (error) {
+      res.status(502).json({
+        error: "Tool proxy unavailable",
+        detail: error?.message || "Unknown proxy error",
+      });
+    }
   });
 }
 
-installExternalToolRedirect("/bracket", BRACKET_APP_URL);
-installExternalToolRedirect("/what-are-the-odds", WATO_APP_URL);
+installExternalToolProxy("/bracket", BRACKET_APP_URL);
+installExternalToolProxy("/bracket-lab", BRACKET_APP_URL);
+installExternalToolProxy("/what-are-the-odds", WATO_APP_URL);
+installExternalToolProxy("/odds", WATO_APP_URL);
 
 app.use(express.static("."));
 
@@ -7907,20 +7967,21 @@ app.get("/feedback", (_req, res) => {
   <title>Egomaniacs Feedback Admin</title>
   <style>
     :root {
-      --bg: #0f0f10;
-      --panel: #18181b;
-      --border: #3b3b42;
-      --text: #f4f4f5;
-      --muted: #a1a1aa;
-      --good: #22c55e;
-      --bad: #ef4444;
-      --chip: #232327;
+      --bg: #090b10;
+      --panel: rgba(16, 18, 24, 0.84);
+      --border: rgba(255,255,255,0.08);
+      --text: #f3efe6;
+      --muted: #9e927f;
+      --good: #5bd08f;
+      --bad: #f06d6d;
+      --chip: rgba(23, 26, 34, 0.82);
+      --amber: #c8903f;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: radial-gradient(circle at 20% 10%, #2a2208 0%, var(--bg) 45%);
+      background: radial-gradient(circle at 20% 10%, #23180c 0%, var(--bg) 45%);
       color: var(--text);
     }
     .wrap {
@@ -7928,14 +7989,27 @@ app.get("/feedback", (_req, res) => {
       margin: 32px auto;
       padding: 0 16px;
     }
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
     h1 {
-      margin: 0 0 4px;
+      margin: 0;
       font-size: 28px;
+      font-family: "Instrument Serif", serif;
+      font-weight: 400;
     }
     .sub {
-      margin: 0 0 18px;
+      margin: 0;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: "Space Grotesk", sans-serif;
     }
     .cards {
       display: grid;
@@ -7944,7 +8018,7 @@ app.get("/feedback", (_req, res) => {
       margin-bottom: 16px;
     }
     .card {
-      background: linear-gradient(180deg, #1f1f23, #17171a);
+      background: linear-gradient(180deg, rgba(24,28,37,0.86), rgba(17,20,28,0.86));
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 12px;
@@ -7959,7 +8033,7 @@ app.get("/feedback", (_req, res) => {
       align-items: center;
       margin-bottom: 10px;
     }
-    select, button {
+    input, select, button {
       background: var(--chip);
       color: var(--text);
       border: 1px solid var(--border);
@@ -7973,6 +8047,7 @@ app.get("/feedback", (_req, res) => {
       border-radius: 12px;
       overflow: hidden;
       background: var(--panel);
+      backdrop-filter: blur(8px);
     }
     table {
       width: 100%;
@@ -7983,7 +8058,7 @@ app.get("/feedback", (_req, res) => {
       text-align: left;
       vertical-align: top;
       padding: 10px;
-      border-bottom: 1px solid #2b2b30;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
     th { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
     tr:last-child td { border-bottom: 0; }
@@ -7994,8 +8069,8 @@ app.get("/feedback", (_req, res) => {
       font-size: 12px;
       font-weight: 700;
     }
-    .up { background: rgba(34,197,94,.15); color: var(--good); border: 1px solid rgba(34,197,94,.4); }
-    .down { background: rgba(239,68,68,.15); color: var(--bad); border: 1px solid rgba(239,68,68,.4); }
+    .up { background: rgba(91,208,143,.14); color: var(--good); border: 1px solid rgba(91,208,143,.4); }
+    .down { background: rgba(240,109,109,.14); color: var(--bad); border: 1px solid rgba(240,109,109,.4); }
     .none { background: rgba(161,161,170,.12); color: #d4d4d8; border: 1px solid rgba(161,161,170,.35); }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: var(--muted); }
     .small { color: var(--muted); font-size: 12px; }
@@ -8017,9 +8092,13 @@ app.get("/feedback", (_req, res) => {
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Feedback Admin</h1>
-    <p class="sub">Thumbs-up / thumbs-down feedback with prompt + returned output</p>
+  <div class="wrap admin-root">
+    <div class="admin-header">
+      <div>
+        <h1 class="admin-title">Feedback Admin</h1>
+        <p class="sub">Thumbs-up / thumbs-down feedback with prompt + returned output</p>
+      </div>
+    </div>
     <div class="cards">
       <div class="card"><div class="label">Total</div><div class="value" id="total">-</div></div>
       <div class="card"><div class="label">Thumbs Up</div><div class="value good" id="up">-</div></div>
