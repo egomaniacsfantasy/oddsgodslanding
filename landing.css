@@ -102,6 +102,22 @@ body {
   gap: 18px;
 }
 
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+}
+
+.brand-logo {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  border-radius: 4px;
+  object-fit: contain;
+  display: block;
+}
+
 .og-wordmark,
 .footer-wordmark {
   text-decoration: none;
