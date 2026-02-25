@@ -23,6 +23,12 @@ const miniSubmit = document.getElementById("mini-submit");
 const miniStatus = document.getElementById("mini-status");
 const miniLine = document.getElementById("mini-line");
 const miniReason = document.getElementById("mini-reason");
+const demoWidget = document.getElementById("bracket-demo-widget");
+const demoLabel = document.getElementById("demo-label");
+const demoGame = document.getElementById("demo-game");
+const demoLongwoodRow = document.getElementById("demo-longwood-row");
+const demoTable = document.getElementById("demo-table");
+const demoFooter = document.getElementById("demo-footer");
 
 const heroPromptExamples = [
   {
@@ -319,6 +325,157 @@ function setupMiniOddsForm() {
       miniSubmit.removeAttribute("disabled");
     }
   });
+}
+
+function runBracketDemo() {
+  if (!demoWidget || !demoLabel || !demoGame || !demoLongwoodRow || !demoTable || !demoFooter) return;
+
+  const baselineRows = [
+    { name: "Houston", rank: 1, pct: 18.4, target: 0.0, delta: null, eliminated: false },
+    { name: "Kansas", rank: 2, pct: 14.2, target: 19.1, delta: "+4.9", eliminated: false },
+    { name: "Duke", rank: 3, pct: 9.7, target: 12.8, delta: "+3.1", eliminated: false },
+    { name: "Tennessee", rank: 4, pct: 7.0, target: 9.4, delta: "+2.4", eliminated: false },
+    { name: "Auburn", rank: 5, pct: 6.3, target: 8.5, delta: "+2.2", eliminated: false },
+  ];
+
+  const afterOrder = ["Kansas", "Duke", "Tennessee", "Auburn", "Houston"];
+  let cycleTimers = [];
+  let frameId = 0;
+
+  function clearCycleTimers() {
+    cycleTimers.forEach((timerId) => window.clearTimeout(timerId));
+    cycleTimers = [];
+    if (frameId) {
+      window.cancelAnimationFrame(frameId);
+      frameId = 0;
+    }
+  }
+
+  function schedule(fn, delay) {
+    const id = window.setTimeout(fn, delay);
+    cycleTimers.push(id);
+  }
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function formatPct(value) {
+    return `${value.toFixed(1)}%`;
+  }
+
+  function renderRows(rows, showDeltas = false) {
+    demoTable.innerHTML = rows
+      .map((row, idx) => {
+        const movingClass = row.moving ? " moving-up" : "";
+        const eliminatedClass = row.eliminated ? " eliminated" : "";
+        const deltaVisible = showDeltas && row.delta ? " visible" : "";
+        return `
+          <div class="demo-table-row${eliminatedClass}">
+            <span class="demo-rank">${idx + 1}</span>
+            <span class="demo-name">${row.name}</span>
+            <span class="demo-pct${movingClass}">${formatPct(row.pct)}</span>
+            <span class="demo-delta${deltaVisible}">${row.delta ? `↑ ${row.delta}` : ""}</span>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  function resetBaseline() {
+    demoWidget.classList.remove("fading");
+    demoLabel.textContent = "TITLE ODDS · BASELINE";
+    demoGame.classList.remove("visible");
+    demoLongwoodRow.classList.remove("beckoning", "locked-upset");
+    demoFooter.classList.remove("visible");
+    const rows = baselineRows.map((row) => ({ ...row, moving: false, eliminated: false }));
+    renderRows(rows, false);
+  }
+
+  function animateAfterState() {
+    const startMap = Object.fromEntries(baselineRows.map((row) => [row.name, row.pct]));
+    const targetMap = Object.fromEntries(baselineRows.map((row) => [row.name, row.target]));
+    const deltaMap = Object.fromEntries(baselineRows.map((row) => [row.name, row.delta]));
+
+    const rows = afterOrder.map((name, index) => ({
+      name,
+      pct: startMap[name],
+      start: startMap[name],
+      target: targetMap[name],
+      delta: deltaMap[name],
+      moving: name !== "Houston",
+      eliminated: false,
+      rank: index + 1,
+    }));
+
+    const startTime = performance.now();
+    const duration = 600;
+
+    function tick(now) {
+      const progress = Math.min(1, (now - startTime) / duration);
+      const eased = easeOutCubic(progress);
+
+      rows.forEach((row) => {
+        if (row.name === "Houston") {
+          row.pct = progress < 1 ? row.start * (1 - eased) : 0;
+          row.eliminated = progress >= 1;
+          return;
+        }
+        row.pct = row.start + (row.target - row.start) * eased;
+      });
+
+      renderRows(rows, progress >= 1);
+
+      if (progress < 1) {
+        frameId = window.requestAnimationFrame(tick);
+      } else {
+        rows.forEach((row) => {
+          row.pct = row.target;
+          row.moving = false;
+          if (row.name === "Houston") {
+            row.eliminated = true;
+          }
+        });
+        renderRows(rows, true);
+      }
+    }
+
+    frameId = window.requestAnimationFrame(tick);
+  }
+
+  function runCycle() {
+    clearCycleTimers();
+    resetBaseline();
+
+    schedule(() => {
+      demoGame.classList.add("visible");
+    }, 1200);
+
+    schedule(() => {
+      demoLongwoodRow.classList.add("beckoning");
+    }, 1800);
+
+    schedule(() => {
+      demoLongwoodRow.classList.remove("beckoning");
+      demoLongwoodRow.classList.add("locked-upset");
+    }, 2200);
+
+    schedule(() => {
+      demoLabel.textContent = "TITLE ODDS · AFTER LONGWOOD WIN";
+      animateAfterState();
+    }, 2600);
+
+    schedule(() => {
+      demoFooter.classList.add("visible");
+    }, 4800);
+
+    schedule(() => {
+      demoWidget.classList.add("fading");
+    }, 6200);
+  }
+
+  runCycle();
+  window.setInterval(runCycle, 7000);
 }
 
 function setupLightningBackground() {
@@ -940,9 +1097,7 @@ setScrolledNav();
 setupMobileNav();
 revealOnScroll();
 setupLightningBackground();
-animateHeroBracket();
-animateHeroPrompt();
-setupBracketInline();
+runBracketDemo();
 setRotatingPlaceholder();
 loadApiVersion();
 setupMiniOddsForm();
