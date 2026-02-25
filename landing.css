@@ -110,9 +110,9 @@ body {
 }
 
 .brand-logo {
-  width: 20px;
-  height: 20px;
-  flex: 0 0 20px;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
   border-radius: 4px;
   object-fit: contain;
   display: block;
@@ -387,25 +387,14 @@ h1 {
 }
 
 .btn-ghost,
-.btn-outline,
-.btn-launch {
+.btn-outline {
   color: var(--text);
   background: transparent;
   border: 1px solid rgba(240, 230, 208, 0.26);
 }
 
-.btn-launch {
-  min-width: 102px;
-  text-align: center;
-}
-
-.og-nav.is-scrolled .btn-launch {
-  border-color: rgba(195, 136, 43, 0.5);
-}
-
 .btn-ghost:hover,
-.btn-outline:hover,
-.btn-launch:hover {
+.btn-outline:hover {
   border-color: var(--amber-soft);
   background: rgba(195, 136, 43, 0.08);
 }
@@ -1137,6 +1126,12 @@ h1 {
 }
 
 @media (max-width: 760px) {
+  .brand-logo {
+    width: 18px;
+    height: 18px;
+    flex-basis: 18px;
+  }
+
   .og-menu-btn {
     display: inline-flex;
   }
