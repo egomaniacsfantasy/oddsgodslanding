@@ -24,21 +24,44 @@
 
     <header class="og-nav" id="site-nav">
       <div class="og-nav-inner">
-        <a class="brand-lockup" href="#top" aria-label="Odds Gods">
-          <img class="brand-logo" src="./assets/odds-gods-dice-logo.svg" alt="Odds Gods" width="20" height="20" />
-          <span class="og-wordmark"><span>ODDS</span> <strong>GODS</strong></span>
-        </a>
+        <a class="og-wordmark" href="#top"><span>ODDS</span> <strong>GODS</strong></a>
         <button class="og-menu-btn" id="menu-btn" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
         <nav class="og-links" id="nav-links">
           <a href="https://bracket.oddsgods.net/">The Bracket Lab</a>
           <a href="https://wato.oddsgods.net/">What Are the Odds?</a>
+          <a class="btn btn-launch" href="https://bracket.oddsgods.net/">&rarr; Launch</a>
         </nav>
       </div>
     </header>
 
     <main id="top">
       <section class="hero section-reveal">
-        <div class="hero-copy-mask" aria-hidden="true"></div>
+        <div class="hero-ambient-glow" aria-hidden="true"></div>
+        <svg class="hero-lightning" viewBox="0 0 700 520" aria-hidden="true">
+          <path d="M458 72 L396 210 L462 210 L404 356" />
+          <path d="M536 118 L492 216 L540 216 L500 320" />
+          <path d="M338 136 L304 214 L342 214 L310 286" />
+        </svg>
+        <svg class="hero-halo-arcs" viewBox="0 0 620 620" aria-hidden="true">
+          <circle cx="310" cy="310" r="182" />
+          <circle cx="310" cy="310" r="210" />
+          <path d="M128 310h34M458 310h34M310 128v34M310 458v34" />
+        </svg>
+        <div class="hero-starfield" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <svg class="hero-classical-figure" viewBox="0 0 480 480" aria-hidden="true">
+          <circle cx="240" cy="240" r="208" />
+          <circle cx="240" cy="240" r="186" />
+          <path d="M140 288c12-30 35-56 65-70 32-16 70-18 104-7" />
+          <path d="M176 194c8-30 33-52 64-55 33-3 64 17 76 47" />
+          <path d="M168 260c30-8 62-7 92 2 20 6 38 18 52 33" />
+          <path d="M233 170c14-8 31-8 45 0 14 9 22 26 19 42-3 18-18 32-36 36-18 4-38-4-48-20-10-15-8-38 6-52 4-3 9-6 14-6z" />
+          <path d="M216 244c6 24 9 48 9 72" />
+          <path d="M264 242c2 30 0 59-7 88" />
+          <path d="M205 326c22 8 48 9 71 3" />
+          <path d="M152 126h176M158 356h164" />
+        </svg>
         <div class="hero-copy-col">
           <p class="eyebrow">ODDS GODS</p>
           <h1>Gods don&apos;t guess.<br />Neither should you.</h1>
@@ -51,12 +74,7 @@
             <a class="btn btn-primary" href="https://bracket.oddsgods.net/"><span class="btn-icon" aria-hidden="true">🏀</span>Build your NCAA bracket &rarr;</a>
             <a class="btn btn-ghost" href="https://wato.oddsgods.net/"><span class="btn-icon" aria-hidden="true">🏈</span>Ask an NFL question &rarr;</a>
           </div>
-          <div class="hero-badges" aria-label="Product access details">
-            <span>FREE TO USE</span>
-            <span>NO SIGNUP</span>
-            <span>MARCH MADNESS + NFL</span>
-          </div>
-          <p class="hero-more">More markets are on deck.</p>
+          <p class="hero-trust">Free to use &middot; No signup &middot; March Madness + NFL</p>
         </div>
 
         <div class="hero-preview-wrap">
@@ -65,12 +83,12 @@
               <p class="preview-label">THE BRACKET LAB</p>
               <div class="preview-game">
                 <div class="preview-team">
-                  <span class="preview-team-name"><img src="https://a.espncdn.com/i/teamlogos/ncaa/500/248.png" alt="Houston logo" width="20" height="20" />1 Houston</span>
-                  <strong id="hero-houston-odds">-2990</strong>
+                  <span>1 &nbsp; Houston</span>
+                  <strong id="hero-houston-odds">-3040</strong>
                 </div>
                 <div class="preview-team">
-                  <span class="preview-team-name"><img src="https://a.espncdn.com/i/teamlogos/ncaa/500/2565.png" alt="SIU Edwardsville logo" width="20" height="20" />16 SIU Edwardsville</span>
-                  <strong id="hero-siu-odds">+2990</strong>
+                  <span>16 &nbsp; SIU Edwardsville</span>
+                  <strong id="hero-longwood-odds">+2990</strong>
                 </div>
               </div>
               <p class="preview-mini" id="hero-bracket-note">South region repricing around one lock</p>
@@ -87,6 +105,16 @@
           </article>
         </div>
       </section>
+      <div class="classical-divider section-reveal" aria-hidden="true">
+        <svg viewBox="0 0 1200 12" preserveAspectRatio="none">
+          <defs>
+            <pattern id="meander" x="0" y="0" width="24" height="12" patternUnits="userSpaceOnUse">
+              <path d="M0,6 H6 V0 H18 V12 H12 V6 H24" fill="none" stroke="currentColor" stroke-width="1.4" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="12" fill="url(#meander)" />
+        </svg>
+      </div>
 
       <section class="manifesto section-reveal">
         <h2>We think in odds.</h2>
@@ -110,8 +138,7 @@
           </div>
           <h3>Your bracket. Stress-tested.</h3>
           <p>Lock outcomes. Watch every contender reprice instantly, round by round, to the title.</p>
-          <p>Most brackets are vibes.</p>
-          <p>Build this one on dependencies.</p>
+          <p>Most brackets are vibes. Build this one on dependencies.</p>
           <a class="btn btn-outline" href="https://bracket.oddsgods.net/"><span class="btn-icon" aria-hidden="true">🏀</span>Build your NCAA bracket &rarr;</a>
         </article>
 
@@ -190,8 +217,8 @@
         <div class="inline-demo" id="bracket-inline-demo">
           <p class="inline-try">Try it now &darr;</p>
           <div class="inline-matchup">
-            <button class="chip team-chip" data-team="houston"><img src="https://a.espncdn.com/i/teamlogos/ncaa/500/248.png" alt="Houston logo" width="20" height="20" />Houston <span class="chip-odds" id="chip-houston">-2990</span></button>
-            <button class="chip team-chip" data-team="siu"><img src="https://a.espncdn.com/i/teamlogos/ncaa/500/2565.png" alt="SIU Edwardsville logo" width="20" height="20" />SIU Edwardsville <span class="chip-odds" id="chip-siu">+2990</span></button>
+            <button class="chip team-chip" data-team="houston">Houston <span class="chip-odds" id="chip-houston">-2990</span></button>
+            <button class="chip team-chip" data-team="longwood">SIU Edwardsville <span class="chip-odds" id="chip-longwood">+2990</span></button>
           </div>
           <div class="inline-futures">
             <p><span>Kansas title odds</span><strong id="futures-kansas">14.2%</strong></p>
@@ -244,25 +271,35 @@
             <article class="example-card example-bracket"><p>IF DUKE LOSES R1</p><p>Kansas title odds</p><strong>14.2% &rarr; 19.7% &uarr;</strong></article>
             <article class="example-card example-bracket"><p>IF AUBURN WINS THE SOUTH</p><p>Auburn championship</p><strong>8.1% &rarr; 31.4% &uarr;</strong></article>
             <article class="example-card example-bracket"><p>IF ALL 1-SEEDS SURVIVE R1</p><p>Houston title odds</p><strong>19.8% &rarr; 24.1% &uarr;</strong></article>
-            <article class="example-card example-odds"><p>Chiefs three-peat</p><strong>-115 &middot; 53.5% implied</strong></article>
-            <article class="example-card example-odds"><p>Saquon rushes for 2,000 yards</p><strong>+380 &middot; 20.8% implied</strong></article>
-            <article class="example-card example-odds"><p>A kicker wins Super Bowl MVP before 2035</p><strong>+4500 &middot; 2.2% implied</strong></article>
-            <article class="example-card example-odds"><p>Bills win the Super Bowl before the Chiefs do</p><strong>+420 &middot; 19.2% implied</strong></article>
-            <article class="example-card example-odds"><p>Josh Allen wins 3 MVPs</p><strong>+290 &middot; 25.6% implied</strong></article>
+            <article class="example-card example-odds"><p>Chiefs three-peat</p><strong>-115</strong><p>53.5% implied</p></article>
+            <article class="example-card example-odds"><p>Saquon rushes for 2,000 yards</p><strong>+380</strong><p>20.8% implied</p></article>
+            <article class="example-card example-odds"><p>A kicker wins Super Bowl MVP before 2035</p><strong>+4500</strong><p>2.2% implied</p></article>
+            <article class="example-card example-odds"><p>Bills win the Super Bowl before the Chiefs do</p><strong>+420</strong><p>19.2% implied</p></article>
+            <article class="example-card example-odds"><p>Josh Allen wins 3 MVPs</p><strong>+290</strong><p>25.6% implied</p></article>
 
             <article class="example-card example-bracket" aria-hidden="true"><p>IF DUKE LOSES R1</p><p>Kansas title odds</p><strong>14.2% &rarr; 19.7% &uarr;</strong></article>
             <article class="example-card example-bracket" aria-hidden="true"><p>IF AUBURN WINS THE SOUTH</p><p>Auburn championship</p><strong>8.1% &rarr; 31.4% &uarr;</strong></article>
             <article class="example-card example-bracket" aria-hidden="true"><p>IF ALL 1-SEEDS SURVIVE R1</p><p>Houston title odds</p><strong>19.8% &rarr; 24.1% &uarr;</strong></article>
-            <article class="example-card example-odds" aria-hidden="true"><p>Chiefs three-peat</p><strong>-115 &middot; 53.5% implied</strong></article>
-            <article class="example-card example-odds" aria-hidden="true"><p>Saquon rushes for 2,000 yards</p><strong>+380 &middot; 20.8% implied</strong></article>
-            <article class="example-card example-odds" aria-hidden="true"><p>A kicker wins Super Bowl MVP before 2035</p><strong>+4500 &middot; 2.2% implied</strong></article>
-            <article class="example-card example-odds" aria-hidden="true"><p>Bills win the Super Bowl before the Chiefs do</p><strong>+420 &middot; 19.2% implied</strong></article>
-            <article class="example-card example-odds" aria-hidden="true"><p>Josh Allen wins 3 MVPs</p><strong>+290 &middot; 25.6% implied</strong></article>
+            <article class="example-card example-odds" aria-hidden="true"><p>Chiefs three-peat</p><strong>-115</strong><p>53.5% implied</p></article>
+            <article class="example-card example-odds" aria-hidden="true"><p>Saquon rushes for 2,000 yards</p><strong>+380</strong><p>20.8% implied</p></article>
+            <article class="example-card example-odds" aria-hidden="true"><p>A kicker wins Super Bowl MVP before 2035</p><strong>+4500</strong><p>2.2% implied</p></article>
+            <article class="example-card example-odds" aria-hidden="true"><p>Bills win the Super Bowl before the Chiefs do</p><strong>+420</strong><p>19.2% implied</p></article>
+            <article class="example-card example-odds" aria-hidden="true"><p>Josh Allen wins 3 MVPs</p><strong>+290</strong><p>25.6% implied</p></article>
           </div>
         </div>
       </section>
 
       <section class="closing section-reveal">
+        <svg class="closing-lightning" viewBox="0 0 700 380" aria-hidden="true">
+          <path d="M132 64 L98 136 L136 136 L104 206" />
+          <path d="M590 86 L552 168 L594 168 L560 242" />
+        </svg>
+        <svg class="closing-classical-figure" viewBox="0 0 500 520" aria-hidden="true">
+          <path d="M250 44c48 0 86 37 86 84 0 22-9 42-24 56 20 18 31 44 31 72 0 55-43 100-93 100s-93-45-93-100c0-28 11-54 31-72-15-14-24-34-24-56 0-47 38-84 86-84z" />
+          <path d="M188 150c18-10 40-14 62-14s44 4 62 14M177 232c24-8 49-11 73-11s49 3 73 11M170 312c26-7 53-10 80-10s54 3 80 10" />
+          <path d="M228 182c7-18 20-28 36-28s29 10 36 28c7 18 3 41-12 57-7 8-15 14-24 18-9-4-17-10-24-18-15-16-19-39-12-57z" />
+          <path d="M214 368h72M198 390h104M182 416h136" />
+        </svg>
         <h3>Sports have always been<br />about what happens next.</h3>
         <p>
           We just made the price visible.<br />
@@ -273,12 +310,21 @@
           The take that finally has a price tag.
         </p>
         <p class="tagline">The gods set the odds. Now you do.</p>
-        <p class="closing-more">More markets are on deck.</p>
         <div class="hero-actions center">
           <a class="btn btn-primary" href="https://bracket.oddsgods.net/"><span class="btn-icon" aria-hidden="true">🏀</span>Build your NCAA bracket &rarr;</a>
           <a class="btn btn-ghost" href="https://wato.oddsgods.net/"><span class="btn-icon" aria-hidden="true">🏈</span>Ask an NFL question &rarr;</a>
         </div>
       </section>
+      <div class="classical-divider section-reveal" aria-hidden="true">
+        <svg viewBox="0 0 1200 12" preserveAspectRatio="none">
+          <defs>
+            <pattern id="meander-2" x="0" y="0" width="24" height="12" patternUnits="userSpaceOnUse">
+              <path d="M0,6 H6 V0 H18 V12 H12 V6 H24" fill="none" stroke="currentColor" stroke-width="1.4" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="12" fill="url(#meander-2)" />
+        </svg>
+      </div>
     </main>
 
     <footer class="og-footer">
