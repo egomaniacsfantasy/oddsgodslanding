@@ -768,8 +768,9 @@ h1 {
 
 .demo-footer-label {
   font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  font-weight: 600;
   text-transform: uppercase;
   color: var(--amber-soft);
   text-align: center;

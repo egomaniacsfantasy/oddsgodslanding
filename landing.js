@@ -26,9 +26,16 @@ const miniReason = document.getElementById("mini-reason");
 const demoWidget = document.getElementById("bracket-demo-widget");
 const demoLabel = document.getElementById("demo-label");
 const demoGame = document.getElementById("demo-game");
-const demoLongwoodRow = document.getElementById("demo-longwood-row");
+const demoUnderdogRow = document.getElementById("demo-underdog-row");
 const demoTable = document.getElementById("demo-table");
 const demoFooter = document.getElementById("demo-footer");
+const demoGameMeta = document.getElementById("demo-game-meta");
+const demoUnderdogSeed = document.getElementById("demo-underdog-seed");
+const demoUnderdogName = document.getElementById("demo-underdog-name");
+const demoUnderdogOdds = document.getElementById("demo-underdog-odds");
+const demoFavoriteSeed = document.getElementById("demo-favorite-seed");
+const demoFavoriteName = document.getElementById("demo-favorite-name");
+const demoFavoriteOdds = document.getElementById("demo-favorite-odds");
 
 const heroPromptExamples = [
   {
@@ -328,17 +335,53 @@ function setupMiniOddsForm() {
 }
 
 function runBracketDemo() {
-  if (!demoWidget || !demoLabel || !demoGame || !demoLongwoodRow || !demoTable || !demoFooter) return;
+  if (
+    !demoWidget ||
+    !demoLabel ||
+    !demoGame ||
+    !demoUnderdogRow ||
+    !demoTable ||
+    !demoFooter ||
+    !demoGameMeta ||
+    !demoUnderdogSeed ||
+    !demoUnderdogName ||
+    !demoUnderdogOdds ||
+    !demoFavoriteSeed ||
+    !demoFavoriteName ||
+    !demoFavoriteOdds
+  ) {
+    return;
+  }
 
-  const baselineRows = [
-    { name: "Houston", rank: 1, pct: 18.4, target: 0.0, delta: null, eliminated: false },
-    { name: "Kansas", rank: 2, pct: 14.2, target: 19.1, delta: "+4.9", eliminated: false },
-    { name: "Duke", rank: 3, pct: 9.7, target: 12.8, delta: "+3.1", eliminated: false },
-    { name: "Tennessee", rank: 4, pct: 7.0, target: 9.4, delta: "+2.4", eliminated: false },
-    { name: "Auburn", rank: 5, pct: 6.3, target: 8.5, delta: "+2.2", eliminated: false },
+  const upsetScenarios = [
+    { region: "East", underdogSeed: 12, underdog: "Liberty", favoriteSeed: 5, favorite: "Oregon" },
+    { region: "East", underdogSeed: 13, underdog: "Akron", favoriteSeed: 4, favorite: "Arizona" },
+    { region: "East", underdogSeed: 14, underdog: "Montana", favoriteSeed: 3, favorite: "Wisconsin" },
+    { region: "East", underdogSeed: 15, underdog: "Robert Morris", favoriteSeed: 2, favorite: "Alabama" },
+    { region: "East", underdogSeed: 16, underdog: "Mount St. Mary's", favoriteSeed: 1, favorite: "Duke" },
+    { region: "West", underdogSeed: 12, underdog: "Colorado State", favoriteSeed: 5, favorite: "Memphis" },
+    { region: "West", underdogSeed: 13, underdog: "Grand Canyon", favoriteSeed: 4, favorite: "Maryland" },
+    { region: "West", underdogSeed: 14, underdog: "UNC Wilmington", favoriteSeed: 3, favorite: "Texas Tech" },
+    { region: "West", underdogSeed: 15, underdog: "Omaha", favoriteSeed: 2, favorite: "St. John's" },
+    { region: "West", underdogSeed: 16, underdog: "Norfolk State", favoriteSeed: 1, favorite: "Florida" },
+    { region: "South", underdogSeed: 12, underdog: "UC San Diego", favoriteSeed: 5, favorite: "Michigan" },
+    { region: "South", underdogSeed: 13, underdog: "Yale", favoriteSeed: 4, favorite: "Texas A&M" },
+    { region: "South", underdogSeed: 14, underdog: "Lipscomb", favoriteSeed: 3, favorite: "Iowa State" },
+    { region: "South", underdogSeed: 15, underdog: "Bryant", favoriteSeed: 2, favorite: "Michigan State" },
+    { region: "South", underdogSeed: 16, underdog: "Alabama State", favoriteSeed: 1, favorite: "Auburn" },
+    { region: "Midwest", underdogSeed: 12, underdog: "McNeese", favoriteSeed: 5, favorite: "Clemson" },
+    { region: "Midwest", underdogSeed: 13, underdog: "High Point", favoriteSeed: 4, favorite: "Purdue" },
+    { region: "Midwest", underdogSeed: 14, underdog: "Troy", favoriteSeed: 3, favorite: "Kentucky" },
+    { region: "Midwest", underdogSeed: 15, underdog: "Wofford", favoriteSeed: 2, favorite: "Tennessee" },
+    { region: "Midwest", underdogSeed: 16, underdog: "SIU Edwardsville", favoriteSeed: 1, favorite: "Houston" },
   ];
 
-  const afterOrder = ["Kansas", "Duke", "Tennessee", "Auburn", "Houston"];
+  const contenderPool = ["Duke", "Florida", "Auburn", "Houston", "Tennessee", "Alabama", "Michigan State", "Kentucky", "St. John's"];
+  const favoriteBaseBySeed = { 1: 18.4, 2: 14.6, 3: 11.3, 4: 9.3, 5: 8.1 };
+  const upsetOddsBySeed = { 12: "+240", 13: "+420", 14: "+900", 15: "+1800", 16: "+8800" };
+  const favoriteOddsBySeed = { 5: "-300", 4: "-550", 3: "-1200", 2: "-2600", 1: "-3300" };
+
+  let scenarioIndex = 0;
   let cycleTimers = [];
   let frameId = 0;
 
@@ -382,30 +425,65 @@ function runBracketDemo() {
       .join("");
   }
 
-  function resetBaseline() {
+  function buildScenarioRows(scenario) {
+    const favoriteBase = favoriteBaseBySeed[scenario.favoriteSeed] || 8.1;
+    const shiftBoost = { 12: 2.2, 13: 2.8, 14: 3.4, 15: 4.2, 16: 4.9 }[scenario.underdogSeed] || 2.2;
+    const contenders = contenderPool.filter((name) => name !== scenario.favorite && name !== scenario.underdog).slice(0, 4);
+    const contenderBases = [16.4, 14.1, 11.7, 9.6];
+    const contenderBumps = [shiftBoost, shiftBoost - 0.9, shiftBoost - 1.6, shiftBoost - 2.1];
+
+    const rows = [
+      {
+        name: scenario.favorite,
+        pct: favoriteBase,
+        target: 0,
+        delta: null,
+        moving: false,
+        eliminated: false,
+      },
+      ...contenders.map((name, idx) => {
+        const base = contenderBases[idx];
+        const bump = Math.max(0.6, contenderBumps[idx]);
+        return {
+          name,
+          pct: base,
+          target: base + bump,
+          delta: `+${bump.toFixed(1)}`,
+          moving: true,
+          eliminated: false,
+        };
+      }),
+    ];
+
+    return rows;
+  }
+
+  function applyScenarioToGameCard(scenario) {
+    demoGameMeta.textContent = `R64  ${scenario.underdog}  ${upsetOddsBySeed[scenario.underdogSeed]}  vs  ${scenario.favorite}  ${favoriteOddsBySeed[scenario.favoriteSeed]}`;
+    demoUnderdogSeed.textContent = String(scenario.underdogSeed);
+    demoUnderdogName.textContent = scenario.underdog;
+    demoUnderdogOdds.textContent = upsetOddsBySeed[scenario.underdogSeed];
+    demoFavoriteSeed.textContent = String(scenario.favoriteSeed);
+    demoFavoriteName.textContent = scenario.favorite;
+    demoFavoriteOdds.textContent = favoriteOddsBySeed[scenario.favoriteSeed];
+  }
+
+  function resetBaseline(rows) {
     demoWidget.classList.remove("fading");
     demoLabel.textContent = "TITLE ODDS · BASELINE";
     demoGame.classList.remove("visible");
-    demoLongwoodRow.classList.remove("beckoning", "locked-upset");
+    demoUnderdogRow.classList.remove("beckoning", "locked-upset");
     demoFooter.classList.remove("visible");
-    const rows = baselineRows.map((row) => ({ ...row, moving: false, eliminated: false }));
-    renderRows(rows, false);
+    renderRows(rows.map((row) => ({ ...row, eliminated: false, moving: false })), false);
   }
 
-  function animateAfterState() {
-    const startMap = Object.fromEntries(baselineRows.map((row) => [row.name, row.pct]));
-    const targetMap = Object.fromEntries(baselineRows.map((row) => [row.name, row.target]));
-    const deltaMap = Object.fromEntries(baselineRows.map((row) => [row.name, row.delta]));
-
-    const rows = afterOrder.map((name, index) => ({
-      name,
-      pct: startMap[name],
-      start: startMap[name],
-      target: targetMap[name],
-      delta: deltaMap[name],
-      moving: name !== "Houston",
+  function animateAfterState(rows) {
+    const favoriteName = rows[0].name;
+    const ordered = [...rows.slice(1), rows[0]].map((row) => ({
+      ...row,
+      start: row.pct,
+      moving: row.name !== favoriteName,
       eliminated: false,
-      rank: index + 1,
     }));
 
     const startTime = performance.now();
@@ -415,8 +493,8 @@ function runBracketDemo() {
       const progress = Math.min(1, (now - startTime) / duration);
       const eased = easeOutCubic(progress);
 
-      rows.forEach((row) => {
-        if (row.name === "Houston") {
+      ordered.forEach((row) => {
+        if (row.name === favoriteName) {
           row.pct = progress < 1 ? row.start * (1 - eased) : 0;
           row.eliminated = progress >= 1;
           return;
@@ -424,19 +502,19 @@ function runBracketDemo() {
         row.pct = row.start + (row.target - row.start) * eased;
       });
 
-      renderRows(rows, progress >= 1);
+      renderRows(ordered, progress >= 1);
 
       if (progress < 1) {
         frameId = window.requestAnimationFrame(tick);
       } else {
-        rows.forEach((row) => {
+        ordered.forEach((row) => {
           row.pct = row.target;
           row.moving = false;
-          if (row.name === "Houston") {
+          if (row.name === favoriteName) {
             row.eliminated = true;
           }
         });
-        renderRows(rows, true);
+        renderRows(ordered, true);
       }
     }
 
@@ -445,37 +523,41 @@ function runBracketDemo() {
 
   function runCycle() {
     clearCycleTimers();
-    resetBaseline();
+    const scenario = upsetScenarios[scenarioIndex % upsetScenarios.length];
+    const scenarioRows = buildScenarioRows(scenario);
+    applyScenarioToGameCard(scenario);
+    resetBaseline(scenarioRows);
+    scenarioIndex += 1;
 
     schedule(() => {
       demoGame.classList.add("visible");
-    }, 1200);
+    }, 2000);
 
     schedule(() => {
-      demoLongwoodRow.classList.add("beckoning");
-    }, 1800);
+      demoUnderdogRow.classList.add("beckoning");
+    }, 3200);
 
     schedule(() => {
-      demoLongwoodRow.classList.remove("beckoning");
-      demoLongwoodRow.classList.add("locked-upset");
-    }, 2200);
+      demoUnderdogRow.classList.remove("beckoning");
+      demoUnderdogRow.classList.add("locked-upset");
+    }, 4600);
 
     schedule(() => {
-      demoLabel.textContent = "TITLE ODDS · AFTER LONGWOOD WIN";
-      animateAfterState();
-    }, 2600);
+      demoLabel.textContent = `TITLE ODDS · AFTER ${scenario.underdog.toUpperCase()} WIN`;
+      animateAfterState(scenarioRows);
+    }, 5600);
 
     schedule(() => {
       demoFooter.classList.add("visible");
-    }, 4800);
+    }, 9000);
 
     schedule(() => {
       demoWidget.classList.add("fading");
-    }, 6200);
+    }, 12000);
   }
 
   runCycle();
-  window.setInterval(runCycle, 7000);
+  window.setInterval(runCycle, 14500);
 }
 
 function setupLightningBackground() {
