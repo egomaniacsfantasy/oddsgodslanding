@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: oddsgods-site
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: BRACKET_APP_URL
+        sync: false
+      - key: WATO_APP_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ODDS_API_KEY
+        sync: false

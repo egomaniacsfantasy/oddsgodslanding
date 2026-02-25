@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OddsGods Bracket Tool</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: "Space Grotesk", sans-serif;
+        background: radial-gradient(700px 420px at 10% 0%, #6a4f1a88, transparent 60%), #130f08;
+        color: #f4e7cf;
+        padding: 24px;
+      }
+
+      .card {
+        width: min(560px, 100%);
+        border: 1px solid #8d7341;
+        border-radius: 16px;
+        background: #1d150bcc;
+        padding: 18px;
+      }
+
+      h1 {
+        margin: 0;
+        font-family: "Instrument Serif", serif;
+        font-weight: 400;
+        font-size: clamp(1.7rem, 4vw, 2.5rem);
+      }
+
+      p {
+        margin: 10px 0 0;
+        color: #dbc7a1;
+      }
+
+      a {
+        color: #f0bf67;
+      }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main class="card">
+      <h1>Opening Bracket Tool...</h1>
+      <p>If it does not redirect, open <a id="fallback-link" href="http://localhost:5173/bracket">localhost:5173/bracket</a>.</p>
+    </main>
+
+    <script>
+      const target = `${window.location.protocol}//${window.location.hostname}:5173/bracket`;
+      const fallbackLink = document.getElementById("fallback-link");
+      if (fallbackLink) {
+        fallbackLink.href = target;
+        fallbackLink.textContent = target.replace(/^https?:\/\//, "");
+      }
+      window.location.replace(target);
+    </script>
+  </body>
+</html>
