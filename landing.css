@@ -1139,6 +1139,10 @@ h1 {
   line-height: 1.4;
 }
 
+.wato-result-query:empty {
+  display: none;
+}
+
 .wato-result-odds-row {
   display: flex;
   align-items: center;

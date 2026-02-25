@@ -391,6 +391,49 @@ function setupWatoDemoWidget() {
   }
 
   let visibleExamples = [];
+  const canonicalOddsByPrompt = new Map(heroPromptExamples.map((entry) => [entry.prompt.toLowerCase(), entry.odds]));
+  const headshotByEntity = new Map([
+    ["patrick mahomes", "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png"],
+    ["josh allen", "https://a.espncdn.com/i/headshots/nfl/players/full/3918298.png"],
+    ["lamar jackson", "https://a.espncdn.com/i/headshots/nfl/players/full/3916387.png"],
+    ["drake maye", "https://a.espncdn.com/i/headshots/nfl/players/full/4430807.png"],
+    ["bijan robinson", "https://a.espncdn.com/i/headshots/nfl/players/full/4429795.png"],
+    ["myles garrett", "https://a.espncdn.com/i/headshots/nfl/players/full/3122130.png"],
+    ["kyler murray", "https://a.espncdn.com/i/headshots/nfl/players/full/3917315.png"],
+    ["a.j. brown", "https://a.espncdn.com/i/headshots/nfl/players/full/4047646.png"],
+    ["george pickens", "https://a.espncdn.com/i/headshots/nfl/players/full/4362107.png"],
+    ["maxx crosby", "https://a.espncdn.com/i/headshots/nfl/players/full/4035676.png"],
+    ["sam darnold", "https://a.espncdn.com/i/headshots/nfl/players/full/3912547.png"],
+    ["sean payton", "https://a.espncdn.com/i/headshots/nfl/players/full/11254.png"],
+    ["justin jefferson", "https://a.espncdn.com/i/headshots/nfl/players/full/4262921.png"],
+    ["aidan hutchinson", "https://a.espncdn.com/i/headshots/nfl/players/full/4426339.png"],
+    ["kenneth walker iii", "https://a.espncdn.com/i/headshots/nfl/players/full/4427366.png"],
+  ]);
+
+  const extractEntityFromPrompt = (prompt) => {
+    const text = String(prompt || "").toLowerCase();
+    const known = Array.from(headshotByEntity.keys()).find((name) => text.includes(name));
+    if (!known) return null;
+    return known
+      .split(" ")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  };
+
+  const parseAmericanOdds = (value) => {
+    const text = String(value ?? "").trim();
+    if (!/^[+-]\d+$/.test(text)) return null;
+    const n = Number.parseInt(text, 10);
+    return Number.isFinite(n) && n !== 0 ? n : null;
+  };
+
+  const impliedFromAmerican = (oddsText) => {
+    const v = parseAmericanOdds(oddsText);
+    if (v === null) return null;
+    if (v > 0) return 100 / (v + 100);
+    const abs = Math.abs(v);
+    return abs / (abs + 100);
+  };
   const pickExamples = () => {
     const copy = [...WATO_EXAMPLES];
     const picked = [];
@@ -418,21 +461,10 @@ function setupWatoDemoWidget() {
     });
   };
 
-  const formatImplied = (value) => {
-    if (value === null || value === undefined) return "";
-    if (typeof value === "number") {
-      if (value <= 1) return `${(value * 100).toFixed(1)}%`;
-      return `${value.toFixed(1)}%`;
-    }
-    const text = String(value).trim();
-    if (!text) return "";
-    if (text.endsWith("%")) return text;
-    const n = Number(text);
-    if (Number.isFinite(n)) {
-      if (n <= 1) return `${(n * 100).toFixed(1)}%`;
-      return `${n.toFixed(1)}%`;
-    }
-    return text;
+  const formatImplied = (oddsText) => {
+    const implied = impliedFromAmerican(oddsText);
+    if (implied === null) return "N/A";
+    return `${(implied * 100).toFixed(1)}%`;
   };
 
   const setLoading = (loading) => {
@@ -459,30 +491,34 @@ function setupWatoDemoWidget() {
         throw new Error(payload.message || "No result");
       }
 
-      const odds = String(payload.odds || payload.price || "N/A");
-      const implied = formatImplied(payload.impliedProbability || payload.implied || "");
-      const entity = payload.entity || payload.playerName || payload.team || payload.subject || "";
-      const entityImage = payload.entityImage || payload.headshot || payload.playerHeadshot || "";
+      const rawOdds = String(payload.odds || payload.price || "").trim();
+      const canonical = canonicalOddsByPrompt.get(prompt.toLowerCase()) || "";
+      const odds = parseAmericanOdds(rawOdds) !== null ? rawOdds : canonical;
+      if (!odds) throw new Error("Missing American odds");
 
-      watoResultQuery.textContent = `"${prompt}"`;
+      const implied = formatImplied(odds);
+      const extractedEntity = extractEntityFromPrompt(prompt);
+      const entity = payload.entity || payload.playerName || extractedEntity || "";
+      const providedEntityImage = payload.entityImage || payload.headshot || payload.playerHeadshot || "";
+      const fallbackEntityImage = entity ? headshotByEntity.get(entity.toLowerCase()) || "" : "";
+      const entityImage = providedEntityImage || fallbackEntityImage;
+
+      watoResultQuery.textContent = "";
       watoResultOdds.textContent = odds;
       watoResultOdds.classList.toggle("positive", odds.startsWith("+"));
       watoResultOdds.classList.toggle("negative", odds.startsWith("-"));
       watoResultImplied.textContent = implied || "N/A";
 
-      if (entity) {
+      if (entity && entityImage) {
         watoResultEntityName.textContent = entity;
-        if (entityImage) {
-          watoResultEntityImage.src = entityImage;
-          watoResultEntityImage.alt = entity;
-          watoResultEntityImage.hidden = false;
-        } else {
-          watoResultEntityImage.hidden = true;
-          watoResultEntityImage.removeAttribute("src");
-          watoResultEntityImage.alt = "";
-        }
+        watoResultEntityImage.src = entityImage;
+        watoResultEntityImage.alt = entity;
+        watoResultEntityImage.hidden = false;
         watoResultEntity.hidden = false;
       } else {
+        watoResultEntityImage.hidden = true;
+        watoResultEntityImage.removeAttribute("src");
+        watoResultEntityImage.alt = "";
         watoResultEntity.hidden = true;
       }
 
