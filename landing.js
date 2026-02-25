@@ -3,7 +3,7 @@ const menuBtn = document.getElementById("menu-btn");
 const navLinks = document.getElementById("nav-links");
 
 const heroHoustonOdds = document.getElementById("hero-houston-odds");
-const heroLongwoodOdds = document.getElementById("hero-longwood-odds");
+const heroSiuOdds = document.getElementById("hero-siu-odds");
 const heroBracketNote = document.getElementById("hero-bracket-note");
 const heroTyped = document.getElementById("hero-typed");
 const heroOddsResult = document.getElementById("hero-odds-result");
@@ -11,7 +11,7 @@ const heroImpliedResult = document.getElementById("hero-implied-result");
 
 const bracketButtons = Array.from(document.querySelectorAll(".team-chip"));
 const chipHouston = document.getElementById("chip-houston");
-const chipLongwood = document.getElementById("chip-longwood");
+const chipSiu = document.getElementById("chip-siu");
 const futuresKansas = document.getElementById("futures-kansas");
 const futuresHouston = document.getElementById("futures-houston");
 const futuresDuke = document.getElementById("futures-duke");
@@ -56,18 +56,18 @@ const miniPlaceholders = [
 
 const heroBracketFrames = [
   {
-    houstonOdds: "-3040",
-    longwoodOdds: "+3040",
-    note: "South region · repricing around one lock",
-  },
-  {
-    houstonOdds: "-3150",
-    longwoodOdds: "+3150",
-    note: "Model pass · futures pressure shifts",
+    houstonOdds: "-2990",
+    siuOdds: "+2990",
+    note: "South region repricing around one lock",
   },
   {
     houstonOdds: "-2990",
-    longwoodOdds: "+2990",
+    siuOdds: "+2990",
+    note: "Model pass futures pressure shifts",
+  },
+  {
+    houstonOdds: "-2990",
+    siuOdds: "+2990",
     note: "Bracket weight settles after rerun",
   },
 ];
@@ -119,12 +119,12 @@ function revealOnScroll() {
 }
 
 function animateHeroBracket() {
-  if (!heroHoustonOdds || !heroLongwoodOdds || !heroBracketNote) return;
+  if (!heroHoustonOdds || !heroSiuOdds || !heroBracketNote) return;
   window.setInterval(() => {
     heroFrameIndex = (heroFrameIndex + 1) % heroBracketFrames.length;
     const frame = heroBracketFrames[heroFrameIndex];
     heroHoustonOdds.textContent = frame.houstonOdds;
-    heroLongwoodOdds.textContent = frame.longwoodOdds;
+    heroSiuOdds.textContent = frame.siuOdds;
     heroBracketNote.textContent = frame.note;
   }, 3400);
 }
@@ -164,8 +164,8 @@ function setupBracketInline() {
   if (!bracketButtons.length) return;
 
   const neutral = {
-    houstonOdds: "-3330",
-    longwoodOdds: "+3330",
+    houstonOdds: "-2990",
+    siuOdds: "+2990",
     kansas: "14.2%",
     houston: "11.8%",
     duke: "9.7%",
@@ -174,16 +174,16 @@ function setupBracketInline() {
   const outcomes = {
     houston: {
       houstonOdds: "-6400",
-      longwoodOdds: "+6400",
+      siuOdds: "+6400",
       kansas: "13.1%",
       houston: "17.2%",
       duke: "9.1%",
       tennessee: "6.8%",
       deltas: { kansas: -1.1, houston: 5.4, duke: -0.6, tennessee: -0.2 },
     },
-    longwood: {
+    siu: {
       houstonOdds: "+2500",
-      longwoodOdds: "-2500",
+      siuOdds: "-2500",
       kansas: "18.3%",
       houston: "3.4%",
       duke: "11.5%",
@@ -194,7 +194,7 @@ function setupBracketInline() {
 
   function applyState(state, deltas) {
     chipHouston.textContent = state.houstonOdds;
-    chipLongwood.textContent = state.longwoodOdds;
+    chipSiu.textContent = state.siuOdds;
     futuresKansas.textContent = state.kansas;
     futuresHouston.textContent = state.houston;
     futuresDuke.textContent = state.duke;
@@ -747,18 +747,18 @@ function setupLightningBackground() {
       boltCtx.lineTo(points[i][0], points[i][1]);
     }
 
-    boltCtx.strokeStyle = `rgba(220, 180, 80, ${alpha * 0.15})`;
+    boltCtx.strokeStyle = `rgba(220, 180, 80, ${alpha * 0.1})`;
     boltCtx.lineWidth = widthPx * 6;
     boltCtx.shadowBlur = 20;
     boltCtx.shadowColor = "rgba(220, 180, 80, 0.3)";
     boltCtx.stroke();
 
-    boltCtx.strokeStyle = `rgba(240, 220, 140, ${alpha * 0.6})`;
+    boltCtx.strokeStyle = `rgba(240, 220, 140, ${alpha * 0.46})`;
     boltCtx.lineWidth = widthPx;
     boltCtx.shadowBlur = 8;
     boltCtx.stroke();
 
-    boltCtx.strokeStyle = `rgba(255, 245, 220, ${alpha * 0.3})`;
+    boltCtx.strokeStyle = `rgba(255, 245, 220, ${alpha * 0.24})`;
     boltCtx.lineWidth = widthPx * 0.4;
     boltCtx.shadowBlur = 0;
     boltCtx.stroke();
@@ -828,7 +828,7 @@ function setupLightningBackground() {
 
   function scheduleNextBolt() {
     if (!running || reducedMotion) return;
-    const nextDelay = 4500 + Math.random() * 6500;
+    const nextDelay = 8000 + Math.random() * 8000;
     boltTimeoutId = window.setTimeout(triggerLightningEvent, nextDelay);
   }
 

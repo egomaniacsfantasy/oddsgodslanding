@@ -64,7 +64,7 @@ body {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: rgba(220, 190, 100, 0.04);
+  background: rgba(220, 190, 100, 0.03);
   animation: lightning-flash 120ms ease-out forwards;
 }
 
@@ -85,7 +85,6 @@ body {
   backdrop-filter: blur(6px);
   border-bottom: 1px solid transparent;
   transition: border-color 220ms ease;
-  z-index: 20;
 }
 
 .og-nav.is-scrolled {
@@ -99,7 +98,21 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 20px;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+}
+
+.brand-logo {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  border-radius: 4px;
 }
 
 .og-wordmark,
@@ -121,7 +134,7 @@ body {
 .og-links {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 26px;
 }
 
 .og-links a {
@@ -160,6 +173,18 @@ main {
   gap: 36px;
   position: relative;
   overflow: hidden;
+}
+
+.hero-copy-mask {
+  position: absolute;
+  left: -6%;
+  top: 10%;
+  width: min(760px, 72vw);
+  height: min(560px, 74vh);
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 35% 48%, rgba(8, 7, 5, 0.72) 0%, rgba(8, 7, 5, 0.52) 44%, rgba(8, 7, 5, 0.16) 76%, transparent 100%);
 }
 
 .hero-ambient-glow {
@@ -201,7 +226,7 @@ main {
   height: 100%;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.34;
+  opacity: 0.2;
 }
 
 .hero-lightning path {
@@ -329,12 +354,32 @@ h1 {
   justify-content: center;
 }
 
-.hero-trust {
-  margin-top: 12px;
-  color: var(--muted);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
+.hero-badges {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  position: relative;
+  z-index: 3;
+}
+
+.hero-badges span {
+  border: 1px solid rgba(240, 230, 208, 0.24);
+  background: rgba(20, 15, 10, 0.72);
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: #d8c9ab;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.hero-more {
+  margin: 10px 0 0;
+  color: #af8d59;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
   position: relative;
   z-index: 3;
 }
@@ -371,25 +416,14 @@ h1 {
 }
 
 .btn-ghost,
-.btn-outline,
-.btn-launch {
+.btn-outline {
   color: var(--text);
   background: transparent;
   border: 1px solid rgba(240, 230, 208, 0.26);
 }
 
-.btn-launch {
-  min-width: 102px;
-  text-align: center;
-}
-
-.og-nav.is-scrolled .btn-launch {
-  border-color: rgba(195, 136, 43, 0.5);
-}
-
 .btn-ghost:hover,
-.btn-outline:hover,
-.btn-launch:hover {
+.btn-outline:hover {
   border-color: var(--amber-soft);
   background: rgba(195, 136, 43, 0.08);
 }
@@ -450,6 +484,24 @@ h1 {
   border-radius: 8px;
   padding: 8px 10px;
   background: var(--surface-soft);
+}
+
+.preview-team-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: calc(100% - 96px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-team-name img {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  border-radius: 999px;
 }
 
 .preview-team strong,
@@ -513,6 +565,16 @@ h1 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+  position: relative;
+}
+
+.tool-cards::before {
+  content: "";
+  position: absolute;
+  inset: -36px -12px;
+  background: radial-gradient(ellipse at 50% 40%, rgba(8, 7, 5, 0.45), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .tool-card,
@@ -526,6 +588,10 @@ h1 {
 .tool-card {
   padding: 32px;
   transition: border-color 300ms ease, box-shadow 300ms ease;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 
 .tool-card:hover {
@@ -583,6 +649,11 @@ h1 {
 .tool-card p {
   color: #ccbfa4;
   line-height: 1.6;
+}
+
+.tool-card .btn {
+  margin-top: auto;
+  align-self: flex-start;
 }
 
 .personas {
@@ -735,6 +806,17 @@ h1 {
   padding: 8px 12px;
   font: inherit;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+.chip img {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  margin-right: 8px;
+  flex: 0 0 20px;
 }
 
 .chip:hover {
@@ -933,6 +1015,13 @@ h1 {
   color: #e5d3ad;
 }
 
+.closing-more {
+  color: #af8d59 !important;
+  font-size: 0.86rem;
+  letter-spacing: 0.03em;
+  margin-top: 8px !important;
+}
+
 .og-footer {
   max-width: 1180px;
   margin: 0 auto;
@@ -1108,6 +1197,12 @@ h1 {
     transform: none;
   }
 
+  .hero-copy-mask {
+    width: 100%;
+    left: -10%;
+    height: 520px;
+  }
+
   .tool-cards,
   .step-grid,
   .persona-grid,
@@ -1157,7 +1252,7 @@ h1 {
   }
 
   .hero-lightning {
-    opacity: 0.22;
+    opacity: 0.14;
   }
 
   .hero-halo-arcs {
@@ -1180,17 +1275,23 @@ h1 {
   .mmxxv {
     font-size: 92px;
   }
-}
 
-/* Decorative mythic layers disabled per request */
-.hero-ambient-glow,
-.hero-classical-figure,
-.hero-lightning,
-.hero-halo-arcs,
-.hero-starfield,
-.classical-divider,
-.roman-marker,
-.closing-classical-figure,
-.closing-lightning {
-  display: none !important;
+  .hero-badges {
+    gap: 6px;
+  }
+
+  .hero-badges span {
+    font-size: 0.7rem;
+    padding: 5px 9px;
+  }
+
+  .inline-matchup {
+    gap: 8px;
+  }
+
+  .chip {
+    width: 100%;
+    justify-content: space-between;
+    text-align: left;
+  }
 }
