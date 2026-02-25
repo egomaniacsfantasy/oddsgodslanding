@@ -189,7 +189,7 @@ main {
   align-items: center;
   gap: 36px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .hero-ambient-glow {
