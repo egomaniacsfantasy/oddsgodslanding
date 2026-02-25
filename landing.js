@@ -55,26 +55,36 @@ const watoResultEntityImage = document.getElementById("wato-result-entity-image"
 const watoResultEntityName = document.getElementById("wato-result-entity-name");
 
 const heroPromptExamples = [
-  {
-    prompt: "Bills win the Super Bowl before the Chiefs do",
-    odds: "+420",
-    implied: "19.2% implied",
-  },
-  {
-    prompt: "Patrick Mahomes wins 5 MVPs",
-    odds: "+330",
-    implied: "23.3% implied",
-  },
-  {
-    prompt: "Eagles make three straight Super Bowls",
-    odds: "+780",
-    implied: "11.4% implied",
-  },
-  {
-    prompt: "A running back wins the Heisman before 2030",
-    odds: "+250",
-    implied: "28.6% implied",
-  },
+  { prompt: "Drake Maye wins NFL MVP before turning 25", odds: "+260" },
+  { prompt: "Josh Allen wins a Super Bowl before he retires", odds: "-210" },
+  { prompt: "Kenneth Walker III wins a second Super Bowl MVP", odds: "+5000" },
+  { prompt: "Bijan Robinson rushes for 2,000 yards in a single season", odds: "+360" },
+  { prompt: "A kicker wins Super Bowl MVP before 2035", odds: "+4500" },
+  { prompt: "Myles Garrett wins back-to-back Defensive Player of the Year awards", odds: "+260" },
+  { prompt: "Kyler Murray is traded before the 2026 season", odds: "-230" },
+  { prompt: "A.J. Brown is traded to the Patriots before the 2027 season", odds: "+175" },
+  { prompt: "An NFL team goes 0-17 before 2035", odds: "+3300" },
+  { prompt: "George Pickens wins a Super Bowl before age 28", odds: "+480" },
+  { prompt: "Maxx Crosby wins a Super Bowl before he retires", odds: "+350" },
+  { prompt: "Sam Darnold wins a second Super Bowl", odds: "+420" },
+  { prompt: "The Dallas Cowboys win a Super Bowl in the next 10 years", odds: "+215" },
+  { prompt: "The Detroit Lions win their first Super Bowl before 2030", odds: "+310" },
+  { prompt: "Lamar Jackson wins a Super Bowl before Josh Allen does", odds: "+115" },
+  { prompt: "A kicker wins Super Bowl MVP before 2033", odds: "+3800" },
+  { prompt: "The Cleveland Browns win a Super Bowl in the next 10 years", odds: "+750" },
+  { prompt: "A running back wins NFL MVP before 2033", odds: "+1400" },
+  { prompt: "Sean Payton wins a Super Bowl with the Broncos", odds: "+580" },
+  { prompt: "The New England Patriots win a Super Bowl with Drake Maye before 2031", odds: "+130" },
+  { prompt: "Josh Allen and Lamar Jackson both retire without a Super Bowl ring", odds: "+480" },
+  { prompt: "An NFL team wins a Super Bowl with a rookie starting QB in the next 20 years", odds: "+1800" },
+  { prompt: "The AFC wins 10 straight Super Bowls at any point", odds: "+1600" },
+  { prompt: "Chiefs three-peat", odds: "+650" },
+  { prompt: "Bills win Super Bowl LX", odds: "+700" },
+  { prompt: "Ravens win the AFC", odds: "+550" },
+  { prompt: "49ers miss the playoffs", odds: "+220" },
+  { prompt: "Patrick Mahomes wins MVP", odds: "+750" },
+  { prompt: "Justin Jefferson leads the NFL in receiving yards", odds: "+650" },
+  { prompt: "Aidan Hutchinson records 15+ sacks", odds: "+650" },
 ];
 
 const miniPlaceholders = [
@@ -549,9 +559,10 @@ function runBracketDemo() {
   const favoriteOddsBySeed = { 5: "-300", 4: "-550", 3: "-1200", 2: "-2600", 1: "-3300" };
 
   let scenarioIndex = 0;
-  let watoIndex = 0;
+  let watoQueue = [];
   let cycleTimers = [];
   let frameId = 0;
+  let oddsScrambleFrameId = 0;
 
   function clearCycleTimers() {
     cycleTimers.forEach((timerId) => window.clearTimeout(timerId));
@@ -559,6 +570,10 @@ function runBracketDemo() {
     if (frameId) {
       window.cancelAnimationFrame(frameId);
       frameId = 0;
+    }
+    if (oddsScrambleFrameId) {
+      window.cancelAnimationFrame(oddsScrambleFrameId);
+      oddsScrambleFrameId = 0;
     }
   }
 
@@ -574,6 +589,69 @@ function runBracketDemo() {
 
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
+  }
+
+  function parseAmericanOdds(text) {
+    const odds = String(text || "").trim();
+    const value = Number.parseInt(odds, 10);
+    if (!Number.isFinite(value) || value === 0) return null;
+    return value;
+  }
+
+  function impliedFromAmerican(oddsText) {
+    const value = parseAmericanOdds(oddsText);
+    if (!value) return null;
+    if (value > 0) return 100 / (value + 100);
+    const abs = Math.abs(value);
+    return abs / (abs + 100);
+  }
+
+  function formatImplied(oddsText) {
+    const implied = impliedFromAmerican(oddsText);
+    if (implied === null) return "N/A implied";
+    return `${(implied * 100).toFixed(1)}% implied`;
+  }
+
+  function nextRandomWatoFrame() {
+    if (!watoQueue.length) {
+      watoQueue = [...heroPromptExamples];
+      for (let i = watoQueue.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [watoQueue[i], watoQueue[j]] = [watoQueue[j], watoQueue[i]];
+      }
+    }
+    return watoQueue.pop();
+  }
+
+  function animateOddsScramble(targetOdds, duration = 900) {
+    const parsedTarget = parseAmericanOdds(targetOdds);
+    if (!parsedTarget) {
+      demoWatoOdds.textContent = targetOdds;
+      return Promise.resolve();
+    }
+
+    const sign = parsedTarget > 0 ? "+" : "-";
+    const targetAbs = Math.abs(parsedTarget);
+    const minAbs = 100;
+    const maxAbs = Math.max(400, Math.round(targetAbs * 1.8));
+    const startTime = performance.now();
+
+    return new Promise((resolve) => {
+      function tick(now) {
+        const progress = Math.min(1, (now - startTime) / duration);
+        if (progress < 1) {
+          const randomAbs = Math.floor(minAbs + Math.random() * (maxAbs - minAbs + 1));
+          demoWatoOdds.textContent = `${sign}${randomAbs}`;
+          oddsScrambleFrameId = window.requestAnimationFrame(tick);
+          return;
+        }
+        demoWatoOdds.textContent = `${sign}${targetAbs}`;
+        oddsScrambleFrameId = 0;
+        resolve();
+      }
+
+      oddsScrambleFrameId = window.requestAnimationFrame(tick);
+    });
   }
 
   function formatPct(value) {
@@ -738,8 +816,8 @@ function runBracketDemo() {
   async function renderWatoFrame(frame) {
     demoWatoQuery.textContent = "";
     await typeText(demoWatoQuery, frame.prompt, 24);
-    demoWatoOdds.textContent = frame.odds;
-    demoWatoImplied.textContent = frame.implied;
+    demoWatoImplied.textContent = formatImplied(frame.odds);
+    await animateOddsScramble(frame.odds, 1000);
     demoWatoOdds.style.color = frame.odds.startsWith("+") ? "#8dd598" : "#d99a8f";
   }
 
@@ -748,13 +826,11 @@ function runBracketDemo() {
     demoLabel.textContent = "WHAT ARE THE ODDS THAT...";
     demoWatoFooter.classList.remove("visible");
 
-    const first = heroPromptExamples[watoIndex % heroPromptExamples.length];
-    watoIndex += 1;
+    const first = nextRandomWatoFrame();
     await renderWatoFrame(first);
     await wait(2800);
 
-    const second = heroPromptExamples[watoIndex % heroPromptExamples.length];
-    watoIndex += 1;
+    const second = nextRandomWatoFrame();
     await renderWatoFrame(second);
     await wait(3000);
 
@@ -762,19 +838,21 @@ function runBracketDemo() {
     await wait(2200);
   }
 
-  async function fadeOutDemo() {
-    demoWidget.classList.add("fading");
-    await wait(600);
-    demoWidget.classList.remove("fading");
-    await wait(240);
-  }
-
   async function loop() {
+    await runBracketPhase();
+
     while (true) {
-      await runBracketPhase();
-      await fadeOutDemo();
-      await runWatoPhase();
-      await fadeOutDemo();
+      demoWidget.classList.add("fading");
+      await wait(420);
+      const watoPhasePromise = runWatoPhase();
+      demoWidget.classList.remove("fading");
+      await watoPhasePromise;
+
+      demoWidget.classList.add("fading");
+      await wait(420);
+      const bracketPhasePromise = runBracketPhase();
+      demoWidget.classList.remove("fading");
+      await bracketPhasePromise;
     }
   }
 
