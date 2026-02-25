@@ -440,12 +440,19 @@ function copyProxyHeaders(incoming) {
 function installExternalToolProxy(localPath, externalBase) {
   const normalizedBase = normalizeExternalBase(externalBase);
   if (!normalizedBase) return;
+  const baseUrl = new URL(`${normalizedBase}/`);
 
   const sourcePath = localPath.endsWith("/") ? localPath.slice(0, -1) : localPath;
   app.use(sourcePath, async (req, res) => {
     try {
       const suffixWithQuery = req.originalUrl.slice(sourcePath.length) || "/";
-      const target = new URL(suffixWithQuery, `${normalizedBase}/`);
+      const suffixUrl = new URL(suffixWithQuery, "http://proxy.local");
+      const relativePath = suffixUrl.pathname.replace(/^\/+/, "");
+      const basePath = baseUrl.pathname.replace(/\/+$/, "");
+      const joinedPath = `${basePath}/${relativePath}`.replace(/\/{2,}/g, "/");
+      const target = new URL(baseUrl.toString());
+      target.pathname = joinedPath;
+      target.search = suffixUrl.search || "";
       const method = req.method.toUpperCase();
       const headers = copyProxyHeaders(req.headers);
       const body = getProxyBody(req);
