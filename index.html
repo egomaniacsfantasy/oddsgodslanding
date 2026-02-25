@@ -73,12 +73,16 @@
             point. Every take deserves a real answer.
           </p>
           <p class="hero-subhead hero-subhead-second">Odds Gods exists to put the number on it.</p>
+          <div class="hero-access-row">
+            <div class="hero-access-badge">FREE</div>
+            <p class="hero-access-text">No signup. No paywall. Join the first wave of early users.</p>
+          </div>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="https://bracket.oddsgods.net/">
+            <a class="btn btn-primary cta-primary" href="https://bracket.oddsgods.net/">
               <img src="/logo-icon.png" class="cta-icon" alt="" aria-hidden="true" />
               Build your NCAA bracket &rarr;
             </a>
-            <a class="btn btn-ghost" href="https://wato.oddsgods.net/">
+            <a class="btn btn-ghost cta-secondary" href="https://wato.oddsgods.net/">
               <img src="/logo-icon.png" class="cta-icon" alt="" aria-hidden="true" />
               Ask an NFL question &rarr;
             </a>
@@ -108,15 +112,15 @@
 
             <div class="demo-table" id="demo-table"></div>
             <p class="demo-footer-label" id="demo-footer">Each pick reprices the field</p>
+            <div class="demo-wato" id="demo-wato" aria-live="polite">
+              <p class="demo-wato-query" id="demo-wato-query"></p>
+              <div class="demo-wato-odds-row">
+                <span class="demo-wato-odds" id="demo-wato-odds">+420</span>
+                <span class="demo-wato-implied" id="demo-wato-implied">19.2% implied</span>
+              </div>
+              <p class="demo-footer-label demo-wato-footer" id="demo-wato-footer">Every take deserves a price</p>
+            </div>
           </article>
-        </div>
-      </section>
-
-      <section class="early-access-section section-reveal">
-        <div class="early-access-bar">
-          <span class="early-access-dot"></span>
-          <span class="early-access-text">Free to use &middot; No signup required &middot; <strong>Join the first wave</strong></span>
-          <span class="early-access-dot"></span>
         </div>
       </section>
 
@@ -142,7 +146,7 @@
         </div>
 
         <div class="tool-cta-block">
-          <a href="https://bracket.oddsgods.net/" class="btn btn-primary tool-cta">
+          <a href="https://bracket.oddsgods.net/" class="btn btn-primary cta-primary tool-cta">
             <img src="/logo-icon.png" class="cta-icon" alt="" aria-hidden="true" />
             Build your NCAA bracket &rarr;
           </a>
@@ -166,48 +170,87 @@
         </div>
       </section>
 
+      <section class="tool-section wato-section section-reveal">
+        <div class="tool-left">
+          <p class="how-kicker">WHAT ARE THE ODDS? <span class="beta-badge">BETA</span></p>
+          <h3>Type the question.<br />Get the number.</h3>
+          <div class="step-grid stagger-container">
+            <div class="step stagger-item">
+              <p class="step-num">01</p>
+              <p class="step-title">TYPE YOUR SCENARIO</p>
+              <p>Any NFL situation. Plain English. No syntax required.</p>
+            </div>
+            <div class="step stagger-item">
+              <p class="step-num">02</p>
+              <p class="step-title">WE RUN THE MATH</p>
+              <p>We anchor to stats and markets. Then we reprice the scenario.</p>
+            </div>
+            <div class="step stagger-item">
+              <p class="step-num">03</p>
+              <p class="step-title">YOU GET THE ANSWER</p>
+              <p>One odds line. Implied probability. The reasoning behind it.</p>
+            </div>
+          </div>
+
+          <div class="tool-cta-block">
+            <a href="https://wato.oddsgods.net/" class="btn btn-primary cta-primary tool-cta">
+              <img src="/logo-icon.png" class="cta-icon" alt="" aria-hidden="true" />
+              Ask an NFL question &rarr;
+            </a>
+            <p class="tool-cta-sub">NFL &middot; Free &middot; No signup</p>
+          </div>
+        </div>
+
+        <div class="tool-right">
+          <div class="wato-demo-widget">
+            <div class="wato-demo-header">
+              <span class="section-label">WHAT ARE THE ODDS THAT...</span>
+              <span class="demo-pill">LIVE</span>
+            </div>
+
+            <div class="wato-demo-input-row">
+              <input
+                class="wato-demo-input"
+                id="wato-demo-input"
+                type="text"
+                maxlength="220"
+                placeholder="Type any NFL scenario..."
+              />
+              <button class="wato-demo-ask-btn cta-primary" id="wato-demo-ask-btn" type="button">Ask &rarr;</button>
+            </div>
+
+            <div class="wato-demo-examples" id="wato-demo-examples"></div>
+
+            <div class="wato-demo-result" id="wato-demo-result" hidden aria-live="polite">
+              <div class="wato-result-query" id="wato-result-query"></div>
+              <div class="wato-result-odds-row">
+                <span class="wato-result-odds" id="wato-result-odds">+420</span>
+                <div class="wato-result-implied">
+                  <span class="wato-implied-label">IMPLIED</span>
+                  <span class="wato-implied-value" id="wato-result-implied">19.2%</span>
+                </div>
+              </div>
+              <div class="wato-result-entity" id="wato-result-entity" hidden>
+                <img class="wato-entity-headshot" id="wato-result-entity-image" alt="" />
+                <span class="wato-entity-chip" id="wato-result-entity-name"></span>
+              </div>
+            </div>
+
+            <div class="wato-demo-result" id="wato-demo-loading" hidden>
+              <div class="skeleton" style="height:16px;width:70%;margin-bottom:16px;"></div>
+              <div class="skeleton" style="height:52px;width:40%;margin-bottom:12px;"></div>
+              <div class="skeleton" style="height:14px;width:30%;"></div>
+            </div>
+
+            <div class="wato-demo-error" id="wato-demo-error" hidden>
+              Couldn&apos;t connect.
+              <a href="https://wato.oddsgods.net/">Try the full tool &rarr;</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="how-single section-reveal">
-        <p class="how-kicker">WHAT ARE THE ODDS? <span class="beta-badge">BETA</span></p>
-        <h3>Type the question.<br />Get the number.</h3>
-        <div class="step-grid stagger-container">
-          <div class="step stagger-item">
-            <p class="step-num">01</p>
-            <p class="step-title">TYPE YOUR SCENARIO</p>
-            <p>Any NFL situation. Plain English. No syntax required.</p>
-          </div>
-          <div class="step stagger-item">
-            <p class="step-num">02</p>
-            <p class="step-title">WE RUN THE MATH</p>
-            <p>We anchor to stats and markets. Then we reprice the scenario.</p>
-          </div>
-          <div class="step stagger-item">
-            <p class="step-num">03</p>
-            <p class="step-title">YOU GET THE ANSWER</p>
-            <p>One odds line. Implied probability. The reasoning behind it.</p>
-          </div>
-        </div>
-
-        <div class="tool-cta-block">
-          <a href="https://wato.oddsgods.net/" class="btn btn-primary tool-cta">
-            <img src="/logo-icon.png" class="cta-icon" alt="" aria-hidden="true" />
-            Ask an NFL question &rarr;
-          </a>
-          <p class="tool-cta-sub">NFL &middot; Free &middot; No signup</p>
-        </div>
-
-        <form class="inline-demo" id="mini-odds-form">
-          <label class="sr-only" for="mini-odds-input">Scenario</label>
-          <div class="mini-input-row">
-            <input id="mini-odds-input" type="text" maxlength="220" placeholder="Lamar Jackson wins back-to-back MVPs" />
-            <button class="btn btn-primary" id="mini-submit" type="submit">Ask &rarr;</button>
-          </div>
-          <div class="mini-output" id="mini-output" aria-live="polite">
-            <p class="mini-status" id="mini-status">Ready.</p>
-            <p class="mini-line" id="mini-line"></p>
-            <p class="mini-reason" id="mini-reason"></p>
-          </div>
-        </form>
-
         <section class="examples" aria-label="Example outcomes">
           <div class="examples-mask">
             <div class="examples-track">
@@ -290,11 +333,11 @@
         </p>
         <p class="tagline">The gods set the odds. Now you do.</p>
         <div class="hero-actions center">
-          <a class="btn btn-primary" href="https://bracket.oddsgods.net/">
+          <a class="btn btn-primary cta-primary" href="https://bracket.oddsgods.net/">
             <img src="/logo-icon.png" class="cta-icon" alt="" aria-hidden="true" />
             Build your NCAA bracket &rarr;
           </a>
-          <a class="btn btn-ghost" href="https://wato.oddsgods.net/">
+          <a class="btn btn-ghost cta-secondary" href="https://wato.oddsgods.net/">
             <img src="/logo-icon.png" class="cta-icon" alt="" aria-hidden="true" />
             Ask an NFL question &rarr;
           </a>

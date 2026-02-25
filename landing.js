@@ -36,6 +36,23 @@ const demoUnderdogOdds = document.getElementById("demo-underdog-odds");
 const demoFavoriteSeed = document.getElementById("demo-favorite-seed");
 const demoFavoriteName = document.getElementById("demo-favorite-name");
 const demoFavoriteOdds = document.getElementById("demo-favorite-odds");
+const demoWato = document.getElementById("demo-wato");
+const demoWatoQuery = document.getElementById("demo-wato-query");
+const demoWatoOdds = document.getElementById("demo-wato-odds");
+const demoWatoImplied = document.getElementById("demo-wato-implied");
+const demoWatoFooter = document.getElementById("demo-wato-footer");
+const watoDemoInput = document.getElementById("wato-demo-input");
+const watoDemoAskBtn = document.getElementById("wato-demo-ask-btn");
+const watoDemoExamples = document.getElementById("wato-demo-examples");
+const watoDemoResult = document.getElementById("wato-demo-result");
+const watoDemoLoading = document.getElementById("wato-demo-loading");
+const watoDemoError = document.getElementById("wato-demo-error");
+const watoResultQuery = document.getElementById("wato-result-query");
+const watoResultOdds = document.getElementById("wato-result-odds");
+const watoResultImplied = document.getElementById("wato-result-implied");
+const watoResultEntity = document.getElementById("wato-result-entity");
+const watoResultEntityImage = document.getElementById("wato-result-entity-image");
+const watoResultEntityName = document.getElementById("wato-result-entity-name");
 
 const heroPromptExamples = [
   {
@@ -65,6 +82,17 @@ const miniPlaceholders = [
   "A team goes 19-0 before 2030",
   "Bills win the Super Bowl before the Chiefs do",
   "A kicker wins Super Bowl MVP",
+];
+
+const WATO_EXAMPLES = [
+  "Chiefs three-peat",
+  "A kicker wins Super Bowl MVP",
+  "Josh Allen rushes for 1,000 yards",
+  "Bills win the Super Bowl before the Chiefs do",
+  "Lamar Jackson wins back-to-back MVPs",
+  "Saquon rushes for 2,000 yards",
+  "A running back wins the Heisman",
+  "Patrick Mahomes wins 5 MVPs",
 ];
 
 const heroBracketFrames = [
@@ -334,6 +362,140 @@ function setupMiniOddsForm() {
   });
 }
 
+function setupWatoDemoWidget() {
+  if (
+    !watoDemoInput ||
+    !watoDemoAskBtn ||
+    !watoDemoExamples ||
+    !watoDemoResult ||
+    !watoDemoLoading ||
+    !watoDemoError ||
+    !watoResultQuery ||
+    !watoResultOdds ||
+    !watoResultImplied ||
+    !watoResultEntity ||
+    !watoResultEntityImage ||
+    !watoResultEntityName
+  ) {
+    return;
+  }
+
+  let visibleExamples = [];
+  const pickExamples = () => {
+    const copy = [...WATO_EXAMPLES];
+    const picked = [];
+    while (copy.length && picked.length < 3) {
+      const idx = Math.floor(Math.random() * copy.length);
+      picked.push(copy[idx]);
+      copy.splice(idx, 1);
+    }
+    return picked;
+  };
+
+  const renderExamples = () => {
+    visibleExamples = pickExamples();
+    watoDemoExamples.innerHTML = visibleExamples
+      .map((example) => `<button class="wato-example-chip" type="button">${example}</button>`)
+      .join("");
+
+    const buttons = watoDemoExamples.querySelectorAll(".wato-example-chip");
+    buttons.forEach((button, idx) => {
+      button.addEventListener("click", () => {
+        const prompt = visibleExamples[idx];
+        watoDemoInput.value = prompt;
+        handleAsk(prompt);
+      });
+    });
+  };
+
+  const formatImplied = (value) => {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "number") {
+      if (value <= 1) return `${(value * 100).toFixed(1)}%`;
+      return `${value.toFixed(1)}%`;
+    }
+    const text = String(value).trim();
+    if (!text) return "";
+    if (text.endsWith("%")) return text;
+    const n = Number(text);
+    if (Number.isFinite(n)) {
+      if (n <= 1) return `${(n * 100).toFixed(1)}%`;
+      return `${n.toFixed(1)}%`;
+    }
+    return text;
+  };
+
+  const setLoading = (loading) => {
+    watoDemoAskBtn.disabled = loading;
+    watoDemoLoading.hidden = !loading;
+  };
+
+  const hideOutputs = () => {
+    watoDemoResult.hidden = true;
+    watoDemoError.hidden = true;
+    watoResultEntity.hidden = true;
+  };
+
+  const handleAsk = async (nextPrompt) => {
+    const prompt = String(nextPrompt ?? watoDemoInput.value ?? "").trim();
+    if (!prompt) return;
+
+    hideOutputs();
+    setLoading(true);
+
+    try {
+      const payload = await fetchMiniOdds(prompt);
+      if (payload.status !== "ok") {
+        throw new Error(payload.message || "No result");
+      }
+
+      const odds = String(payload.odds || payload.price || "N/A");
+      const implied = formatImplied(payload.impliedProbability || payload.implied || "");
+      const entity = payload.entity || payload.playerName || payload.team || payload.subject || "";
+      const entityImage = payload.entityImage || payload.headshot || payload.playerHeadshot || "";
+
+      watoResultQuery.textContent = `"${prompt}"`;
+      watoResultOdds.textContent = odds;
+      watoResultOdds.classList.toggle("positive", odds.startsWith("+"));
+      watoResultOdds.classList.toggle("negative", odds.startsWith("-"));
+      watoResultImplied.textContent = implied || "N/A";
+
+      if (entity) {
+        watoResultEntityName.textContent = entity;
+        if (entityImage) {
+          watoResultEntityImage.src = entityImage;
+          watoResultEntityImage.alt = entity;
+          watoResultEntityImage.hidden = false;
+        } else {
+          watoResultEntityImage.hidden = true;
+          watoResultEntityImage.removeAttribute("src");
+          watoResultEntityImage.alt = "";
+        }
+        watoResultEntity.hidden = false;
+      } else {
+        watoResultEntity.hidden = true;
+      }
+
+      watoDemoResult.hidden = false;
+    } catch (_error) {
+      watoDemoError.hidden = false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  watoDemoAskBtn.addEventListener("click", () => handleAsk());
+  watoDemoInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleAsk();
+    }
+  });
+
+  renderExamples();
+  window.setInterval(renderExamples, 8000);
+}
+
 function runBracketDemo() {
   if (
     !demoWidget ||
@@ -348,7 +510,12 @@ function runBracketDemo() {
     !demoUnderdogOdds ||
     !demoFavoriteSeed ||
     !demoFavoriteName ||
-    !demoFavoriteOdds
+    !demoFavoriteOdds ||
+    !demoWato ||
+    !demoWatoQuery ||
+    !demoWatoOdds ||
+    !demoWatoImplied ||
+    !demoWatoFooter
   ) {
     return;
   }
@@ -382,6 +549,7 @@ function runBracketDemo() {
   const favoriteOddsBySeed = { 5: "-300", 4: "-550", 3: "-1200", 2: "-2600", 1: "-3300" };
 
   let scenarioIndex = 0;
+  let watoIndex = 0;
   let cycleTimers = [];
   let frameId = 0;
 
@@ -394,9 +562,14 @@ function runBracketDemo() {
     }
   }
 
-  function schedule(fn, delay) {
-    const id = window.setTimeout(fn, delay);
-    cycleTimers.push(id);
+  function wait(ms) {
+    return new Promise((resolve) => {
+      const id = window.setTimeout(() => {
+        cycleTimers = cycleTimers.filter((timerId) => timerId !== id);
+        resolve();
+      }, ms);
+      cycleTimers.push(id);
+    });
   }
 
   function easeOutCubic(t) {
@@ -413,9 +586,11 @@ function runBracketDemo() {
         const movingClass = row.moving ? " moving-up" : "";
         const eliminatedClass = row.eliminated ? " eliminated" : "";
         const deltaVisible = showDeltas && row.delta ? " visible" : "";
+        const featuredClass = row.featured ? " featured-scenario" : "";
+        const rankValue = row.featured ? "" : String(idx);
         return `
-          <div class="demo-table-row${eliminatedClass}">
-            <span class="demo-rank">${idx + 1}</span>
+          <div class="demo-table-row${eliminatedClass}${featuredClass}">
+            <span class="demo-rank">${rankValue}</span>
             <span class="demo-name">${row.name}</span>
             <span class="demo-pct${movingClass}">${formatPct(row.pct)}</span>
             <span class="demo-delta${deltaVisible}">${row.delta ? `↑ ${row.delta}` : ""}</span>
@@ -435,10 +610,12 @@ function runBracketDemo() {
     const rows = [
       {
         name: scenario.favorite,
+        seed: scenario.favoriteSeed,
         pct: favoriteBase,
         target: 0,
         delta: null,
         moving: false,
+        featured: true,
         eliminated: false,
       },
       ...contenders.map((name, idx) => {
@@ -446,10 +623,12 @@ function runBracketDemo() {
         const bump = Math.max(0.6, contenderBumps[idx]);
         return {
           name,
+          seed: null,
           pct: base,
           target: base + bump,
           delta: `+${bump.toFixed(1)}`,
           moving: true,
+          featured: false,
           eliminated: false,
         };
       }),
@@ -486,78 +665,119 @@ function runBracketDemo() {
       eliminated: false,
     }));
 
-    const startTime = performance.now();
-    const duration = 600;
+    return new Promise((resolve) => {
+      const startTime = performance.now();
+      const duration = 1200;
 
-    function tick(now) {
-      const progress = Math.min(1, (now - startTime) / duration);
-      const eased = easeOutCubic(progress);
+      function tick(now) {
+        const progress = Math.min(1, (now - startTime) / duration);
+        const eased = easeOutCubic(progress);
 
-      ordered.forEach((row) => {
-        if (row.name === favoriteName) {
-          row.pct = progress < 1 ? row.start * (1 - eased) : 0;
-          row.eliminated = progress >= 1;
-          return;
-        }
-        row.pct = row.start + (row.target - row.start) * eased;
-      });
-
-      renderRows(ordered, progress >= 1);
-
-      if (progress < 1) {
-        frameId = window.requestAnimationFrame(tick);
-      } else {
         ordered.forEach((row) => {
-          row.pct = row.target;
-          row.moving = false;
           if (row.name === favoriteName) {
-            row.eliminated = true;
+            row.pct = progress < 1 ? row.start * (1 - eased) : 0;
+            row.eliminated = progress >= 1;
+            return;
           }
+          row.pct = row.start + (row.target - row.start) * eased;
         });
-        renderRows(ordered, true);
-      }
-    }
 
-    frameId = window.requestAnimationFrame(tick);
+        renderRows(ordered, progress >= 1);
+
+        if (progress < 1) {
+          frameId = window.requestAnimationFrame(tick);
+        } else {
+          ordered.forEach((row) => {
+            row.pct = row.target;
+            row.moving = false;
+            if (row.name === favoriteName) {
+              row.eliminated = true;
+            }
+          });
+          renderRows(ordered, true);
+          resolve();
+        }
+      }
+
+      frameId = window.requestAnimationFrame(tick);
+    });
   }
 
-  function runCycle() {
-    clearCycleTimers();
+  async function runBracketPhase() {
     const scenario = upsetScenarios[scenarioIndex % upsetScenarios.length];
     const scenarioRows = buildScenarioRows(scenario);
     applyScenarioToGameCard(scenario);
+    demoWidget.classList.remove("mode-wato");
+    demoWatoQuery.textContent = "";
+    demoWatoFooter.classList.remove("visible");
     resetBaseline(scenarioRows);
     scenarioIndex += 1;
 
-    schedule(() => {
-      demoGame.classList.add("visible");
-    }, 2000);
+    await wait(2200);
+    demoGame.classList.add("visible");
 
-    schedule(() => {
-      demoUnderdogRow.classList.add("beckoning");
-    }, 3200);
+    await wait(2000);
+    demoUnderdogRow.classList.add("beckoning");
 
-    schedule(() => {
-      demoUnderdogRow.classList.remove("beckoning");
-      demoUnderdogRow.classList.add("locked-upset");
-    }, 4600);
+    await wait(2000);
+    demoUnderdogRow.classList.remove("beckoning");
+    demoUnderdogRow.classList.add("locked-upset");
 
-    schedule(() => {
-      demoLabel.textContent = `TITLE ODDS · AFTER ${scenario.underdog.toUpperCase()} WIN`;
-      animateAfterState(scenarioRows);
-    }, 5600);
+    await wait(1400);
+    demoLabel.textContent = `TITLE ODDS · AFTER ${scenario.underdog.toUpperCase()} WIN`;
+    await animateAfterState(scenarioRows);
 
-    schedule(() => {
-      demoFooter.classList.add("visible");
-    }, 9000);
+    await wait(3000);
+    demoFooter.classList.add("visible");
 
-    schedule(() => {
-      demoWidget.classList.add("fading");
-    }, 12000);
+    await wait(3000);
   }
 
-  runCycle();
-  window.setInterval(runCycle, 14500);
+  async function renderWatoFrame(frame) {
+    demoWatoQuery.textContent = "";
+    await typeText(demoWatoQuery, frame.prompt, 24);
+    demoWatoOdds.textContent = frame.odds;
+    demoWatoImplied.textContent = frame.implied;
+    demoWatoOdds.style.color = frame.odds.startsWith("+") ? "#8dd598" : "#d99a8f";
+  }
+
+  async function runWatoPhase() {
+    demoWidget.classList.add("mode-wato");
+    demoLabel.textContent = "WHAT ARE THE ODDS THAT...";
+    demoWatoFooter.classList.remove("visible");
+
+    const first = heroPromptExamples[watoIndex % heroPromptExamples.length];
+    watoIndex += 1;
+    await renderWatoFrame(first);
+    await wait(2800);
+
+    const second = heroPromptExamples[watoIndex % heroPromptExamples.length];
+    watoIndex += 1;
+    await renderWatoFrame(second);
+    await wait(3000);
+
+    demoWatoFooter.classList.add("visible");
+    await wait(2200);
+  }
+
+  async function fadeOutDemo() {
+    demoWidget.classList.add("fading");
+    await wait(600);
+    demoWidget.classList.remove("fading");
+    await wait(240);
+  }
+
+  async function loop() {
+    while (true) {
+      await runBracketPhase();
+      await fadeOutDemo();
+      await runWatoPhase();
+      await fadeOutDemo();
+    }
+  }
+
+  clearCycleTimers();
+  loop();
 }
 
 function setupLightningBackground() {
@@ -1183,3 +1403,4 @@ runBracketDemo();
 setRotatingPlaceholder();
 loadApiVersion();
 setupMiniOddsForm();
+setupWatoDemoWidget();
