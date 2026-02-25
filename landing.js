@@ -1513,6 +1513,9 @@ function setupLightningBackground() {
 window.addEventListener("scroll", setScrolledNav, { passive: true });
 setScrolledNav();
 setupMobileNav();
+if (document.body) {
+  document.body.classList.add("js-reveal");
+}
 revealOnScroll();
 setupLightningBackground();
 runBracketDemo();
