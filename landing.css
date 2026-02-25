@@ -1008,6 +1008,14 @@ h1 {
   pointer-events: none;
 }
 
+.wato-shell.wato-shell-single {
+  grid-template-columns: 1fr;
+}
+
+.wato-shell.wato-shell-single::after {
+  display: none;
+}
+
 .tool-left,
 .tool-right {
   display: flex;

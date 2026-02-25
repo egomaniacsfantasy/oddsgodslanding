@@ -1519,4 +1519,3 @@ runBracketDemo();
 setRotatingPlaceholder();
 loadApiVersion();
 setupMiniOddsForm();
-setupWatoDemoWidget();
