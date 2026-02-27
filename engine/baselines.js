@@ -157,8 +157,8 @@ export function detectBaselineEvent(prompt) {
         key: `super_bowl_margin_leq_${margin}`,
         seasonProbabilityPct: pct,
         assumptions: [
-          "Super Bowl point-margin distribution baseline.",
-          "Deterministic historical-frequency model for close-game outcomes.",
+          "Modeled using historical Super Bowl margin distribution with smoothing.",
+          "Deterministic historical-frequency baseline for close-game outcomes.",
         ],
       };
     }
@@ -204,16 +204,35 @@ export function detectBaselineEvent(prompt) {
   const hasSeasonContext = /\b(regular season|this nfl season|nfl season|this season|season)\b/.test(p);
   const anyTeamLanguage = /\b(a team|any team|some team)\b/.test(p);
 
+  const anyTeamWinTotal = p.match(/\b(a team|any team|some team)\b.*\b(at least|no fewer than|not less than)\s+(\d{1,2})\s+(regular[-\s]?season\s+)?games?\b/);
+  if (anyTeamWinTotal) {
+    const wins = Number(anyTeamWinTotal[3]);
+    if (Number.isFinite(wins) && wins >= 0 && wins <= 17) {
+      const meanWins = 8.5;
+      const sd = 2.3;
+      const perTeamProb = normalTailAtLeast(meanWins, sd, wins);
+      const anyTeamProb = 1 - Math.pow(1 - perTeamProb, 32);
+      return {
+        key: `nfl_any_team_win_total_at_least_${wins}`,
+        seasonProbabilityPct: clamp(anyTeamProb * 100, 0.05, 95),
+        assumptions: [
+          `Estimated chance at least one NFL team reaches ${wins}+ wins in a 17-game season.`,
+          "Regular-season win totals modeled with a normal win distribution.",
+        ],
+      };
+    }
+  }
+
   if (/\b17-0\b/.test(p) && (hasNflSeasonContext || hasSeasonContext || anyTeamLanguage)) {
-    const oneTeamPct = 0.3;
+    const oneTeamPct = 0.03;
     const seasonProbabilityPct = anyTeamLanguage
-      ? clamp((1 - Math.pow(1 - oneTeamPct / 100, 32)) * 100, 0.05, 5)
+      ? clamp((1 - Math.pow(1 - oneTeamPct / 100, 32)) * 100, 0.02, 1.0)
       : oneTeamPct;
     return {
       key: anyTeamLanguage ? "nfl_any_team_17_0_regular" : "nfl_team_17_0_regular",
       seasonProbabilityPct,
       assumptions: [
-        "NFL parity and schedule strength distribution make 17-0 extremely rare.",
+        "17-0 regular seasons are historically extremely rare in a 17-game slate.",
         "Baseline event model used with time-horizon adjustment.",
       ],
     };
@@ -267,7 +286,7 @@ export function buildBaselineEstimate(prompt, intent, asOfDate) {
     assumptions: event.assumptions,
     playerName: null,
     headshotUrl: null,
-    summaryLabel: String(prompt || "").slice(0, 42),
+    summaryLabel: String(prompt || "").trim(),
     liveChecked: false,
     asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
     sourceType: "historical_model",
@@ -854,11 +873,12 @@ export function buildPlayerSeasonStatEstimate(prompt, intent, profile, asOfDate,
     }
   }
 
+  const confidence = Number(modelInput.sampleSeasons || 0) === 0 ? "Low" : "High";
   return {
     status: "ok",
     odds: toAmericanOdds(probabilityPct),
     impliedProbability: `${probabilityPct.toFixed(1)}%`,
-    confidence: "High",
+    confidence,
     assumptions: [
       "Used a deterministic season-volume model with a calibrated negative-binomial tail (not LLM guessing).",
       modelInput.modelType === "player_history_blended"

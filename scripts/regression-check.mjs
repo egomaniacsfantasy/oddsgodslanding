@@ -29,7 +29,7 @@ const tests = [
   {
     name: "Deterministic stat threshold should not need data",
     prompt: "Josh Allen rushes for 1,000 yards this season",
-    assert: (r) => isValidOdds(r) && isValidImplied(r),
+    assert: (r) => isValidOdds(r) && isValidImplied(r) && String(r.confidence || "").toLowerCase() === "low",
   },
   {
     name: "WATO-51: Chiefs win at least 14 regular-season games",
@@ -107,6 +107,16 @@ const tests = [
     assert: (r) => isRealMarket(r),
   },
   {
+    name: "WATO-89: Any team goes 0-17",
+    prompt: "A team goes 0-17",
+    assert: (r) => isRealMarket(r),
+  },
+  {
+    name: "WATO-90: Any team wins 16+ games",
+    prompt: "A team wins at least 16 regular-season games next season",
+    assert: (r) => isRealMarket(r),
+  },
+  {
     name: "Super Bowl margin <= 3",
     prompt: "The Super Bowl is decided by 3 points or fewer next season",
     assert: (r) => isRealMarket(r),
@@ -119,7 +129,7 @@ const tests = [
   {
     name: "17-0 any team",
     prompt: "A team goes 17-0",
-    assert: (r) => isRealMarket(r),
+    assert: (r) => isRealMarket(r) && parsePct(r.impliedProbability) <= 1.0,
   },
   {
     name: "Three-peat idiom",
@@ -132,6 +142,11 @@ const tests = [
     assert: (r) => isRealMarket(r),
   },
   {
+    name: "WATO-86: Chiefs do not win the Super Bowl next season",
+    prompt: "Chiefs do not win the Super Bowl next season",
+    assert: (r) => isRealMarket(r),
+  },
+  {
     name: "Composite contradiction returns inconsistent sentinel",
     prompt: "Chiefs win the Super Bowl and miss the playoffs",
     assert: (r) => isSentinel(r) && /inconsistent/i.test(r.rationale || ""),
@@ -140,6 +155,11 @@ const tests = [
     name: "Composite non-contradictory AND returns unsupported_composite sentinel",
     prompt: "Patriots make the playoffs next season AND win a playoff game",
     assert: (r) => isSentinel(r) && r.sourceType === "unsupported_composite",
+  },
+  {
+    name: "Wildcard actor unsupported (ANY_ROOKIE_QB)",
+    prompt: "A rookie QB makes the playoffs",
+    assert: (r) => isSentinel(r) && r.sourceType === "unsupported",
   },
   {
     name: "Output contract (odds + implied + rationale)",

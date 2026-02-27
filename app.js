@@ -88,6 +88,8 @@ let primaryPlayerInfo = null;
 let secondaryPlayerInfo = null;
 let latestShareData = null;
 let allowFeedbackForCurrentResult = false;
+let activeRequestController = null;
+let requestSequence = 0;
 let profileHideTimer = null;
 let flipTipSeen = false;
 
@@ -137,11 +139,15 @@ function isNflPrompt(prompt) {
 }
 
 function normalizePrompt(prompt) {
-  return prompt
-    .trim()
-    .replace(/\s+/g, " ")
+  return String(prompt || "")
     .replace(/[“”]/g, '"')
-    .replace(/[‘’]/g, "'");
+    .replace(/[‘’]/g, "'")
+    .replace(/[–—]/g, "-")
+    .replace(/\u2026/g, "...")
+    .replace(/([!?.,;:])\1+/g, "$1")
+    .replace(/-{2,}/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function setBusy(isBusy) {
@@ -380,7 +386,7 @@ async function submitFeedback(vote) {
 
 function parseAmericanOdds(oddsText) {
   const text = String(oddsText || "").trim();
-  if (!text || text.toUpperCase() === "NO CHANCE") return null;
+  if (!text) return null;
   const n = Number(text.replace("+", ""));
   return Number.isFinite(n) ? n : null;
 }
@@ -388,24 +394,7 @@ function parseAmericanOdds(oddsText) {
 function renderOddsDisplay(oddsText) {
   const n = parseAmericanOdds(oddsText);
   oddsOutput.classList.remove("positive", "negative", "even");
-  oddsOutput.classList.remove("live-shimmer", "heartbeat-glow");
-  oddsOutput.style.animation = "none";
-  void oddsOutput.offsetWidth;
-  oddsOutput.style.animation = "";
-  if (n !== null && n <= -10000) {
-    oddsOutput.classList.add("lock-mode");
-    oddsOutput.classList.add("live-shimmer", "heartbeat-glow");
-    oddsOutput.innerHTML = `IT'S A LOCK!<span class="odds-subline">(WELL, BASICALLY, AS LONG AS HE'S HEALTHY.)</span>`;
-    return "lock";
-  }
-  if (n !== null && n >= 10000) {
-    oddsOutput.classList.add("lock-mode");
-    oddsOutput.classList.add("live-shimmer", "heartbeat-glow");
-    oddsOutput.innerHTML = `NO SHOT.<span class="odds-subline">(LIKE, REALLY NO SHOT.)</span>`;
-    return "no-shot";
-  }
   oddsOutput.classList.remove("lock-mode");
-  oddsOutput.classList.add("live-shimmer", "heartbeat-glow");
   oddsOutput.textContent = oddsText;
   if (n !== null) {
     if (n > 0) oddsOutput.classList.add("positive");
@@ -702,14 +691,22 @@ function showResult(result, prompt) {
   }
 
   clearRationale();
-  if (Array.isArray(result.assumptions) && result.assumptions.length > 0 && rationalePanel && rationaleList) {
-    result.assumptions.slice(0, 3).forEach((item) => {
-      const li = document.createElement("li");
-      li.textContent = String(item || "");
-      rationaleList.appendChild(li);
-    });
-    rationalePanel.open = false;
-    rationalePanel.classList.remove("hidden");
+  const rationaleText = String(result.rationale || "").trim();
+  if (rationalePanel && rationaleList) {
+    const items = rationaleText
+      ? rationaleText.split(/(?<=\.)\s+/).filter(Boolean).slice(0, 3)
+      : Array.isArray(result.assumptions)
+        ? result.assumptions.slice(0, 3)
+        : [];
+    if (items.length > 0) {
+      items.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = String(item || "");
+        rationaleList.appendChild(li);
+      });
+      rationalePanel.open = false;
+      rationalePanel.classList.remove("hidden");
+    }
   }
 
   const renderedStrip = renderEntityStrip(result);
@@ -811,8 +808,12 @@ function encodePromptInUrl(prompt) {
 }
 
 async function fetchOdds(prompt) {
+  if (activeRequestController) {
+    activeRequestController.abort();
+  }
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 22000);
+  activeRequestController = controller;
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
   let response;
   try {
     response = await fetch("/api/odds", {
@@ -827,6 +828,9 @@ async function fetchOdds(prompt) {
     });
   } finally {
     clearTimeout(timeoutId);
+    if (activeRequestController === controller) {
+      activeRequestController = null;
+    }
   }
 
   let payload;
@@ -875,39 +879,56 @@ async function onSubmit(event) {
   statusLine.textContent = "";
   allowFeedbackForCurrentResult = Boolean(event?.isTrusted);
 
-  const prompt = normalizePrompt(scenarioInput.value);
+  const rawPrompt = String(scenarioInput.value || "");
+  const prompt = normalizePrompt(rawPrompt);
   if (!prompt) {
     statusLine.textContent = "Enter a sports hypothetical to generate an estimate.";
     return;
   }
 
   setBusy(true);
+  const seq = ++requestSequence;
 
   try {
-    const payload = await fetchOdds(prompt);
+    const payload = await fetchOdds(rawPrompt);
+    if (seq !== requestSequence) return;
 
-    if (payload.status === "refused" || payload.status === "snark") {
+    if ((payload.status === "refused" || payload.status === "snark") && !payload.odds) {
       showRefusal(payload.message, {
         title: payload.title,
         hint: payload.hint,
       });
       if (allowFeedbackForCurrentResult) {
-        maybeShowFeedback(prompt, payload);
+        maybeShowFeedback(rawPrompt, payload);
       }
-      encodePromptInUrl(prompt);
+      encodePromptInUrl(rawPrompt);
       refreshExampleChips();
       return;
     }
 
-    showResult(payload, prompt);
-    encodePromptInUrl(prompt);
+    showResult(payload, rawPrompt);
+    encodePromptInUrl(rawPrompt);
     statusLine.textContent = "Estimate generated. Try another scenario.";
     refreshExampleChips();
   } catch (error) {
     if (error?.name === "AbortError") {
-      showSystemError("Request timed out. Try a shorter prompt.");
+      const fallback = {
+        status: "ok",
+        odds: "+100000",
+        impliedProbability: "0.1%",
+        assumptions: ["Request timed out before a deterministic estimate could be computed."],
+        summaryLabel: normalizeSummaryText(rawPrompt),
+      };
+      showResult(fallback, rawPrompt);
     } else {
-      showSystemError("Estimator is unavailable right now. Try again in a moment.");
+      const fallback = {
+        status: "ok",
+        odds: "+100000",
+        impliedProbability: "0.1%",
+        assumptions: ["Estimator is unavailable right now. Try again in a moment."],
+        summaryLabel: normalizeSummaryText(rawPrompt),
+      };
+      showResult(fallback, rawPrompt);
     }
     console.error(error);
   } finally {

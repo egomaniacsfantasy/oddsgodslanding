@@ -1163,7 +1163,7 @@ function detectWildcardActor(prompt) {
   if (/\b(a|any)\s+team\b/.test(lower)) {
     if (/\b\d{1,2}\s*-\s*\d{1,2}\b/.test(lower)) return null;
     if (/\b(17-0|0-17)\b/.test(lower)) return null;
-    if (/\b(at least|exactly|no more than|not more than|finish with)\s+\d{1,2}\s+(regular season\s+)?wins?\b/.test(lower)) {
+    if (/\b(at least|exactly|no more than|not more than|finish with)\s+\d{1,2}\s+(regular[-\s]?season\s+)?(wins?|games?)\b/.test(lower)) {
       return null;
     }
   }
@@ -5036,6 +5036,68 @@ function parseNegativeMultiYearTeamTitleIntent(prompt) {
   return { years, market, team };
 }
 
+function parseNegativeSingleSeasonTeamTitleIntent(prompt) {
+  const lower = normalizePrompt(numberWordsToDigits(prompt));
+  const negative = /\b(don't|dont|do not|doesn't|doesnt|does not|won't|wont|will not|never)\b/.test(lower);
+  if (!negative) return null;
+  if (parseMultiYearWindow(prompt)) return null;
+
+  let market = "";
+  const divisionMarket = parseNflDivisionMarket(lower);
+  if (divisionMarket && /\b(division|winner|title)\b/.test(lower)) market = divisionMarket;
+  else if (/\bsuper bowl\b|\bsb\b/.test(lower)) market = "super_bowl_winner";
+  else if (/\bafc\b/.test(lower) && /\b(champ|championship|winner|title)\b/.test(lower)) market = "afc_winner";
+  else if (/\bnfc\b/.test(lower) && /\b(champ|championship|winner|title)\b/.test(lower)) market = "nfc_winner";
+  if (!market) return null;
+
+  const teamTokens = extractKnownTeamTokens(prompt, 1);
+  if (!teamTokens.length) return null;
+  const team = teamTokens[0];
+  if (!team || !isLikelyKnownTeamToken(team)) return null;
+  return { market, team };
+}
+
+async function buildNegativeSingleSeasonTeamTitleEstimate(prompt, asOfDate) {
+  const intent = parseNegativeSingleSeasonTeamTitleIntent(prompt);
+  if (!intent) return null;
+  const { market, team } = intent;
+  const ref = await getSportsbookReferenceByTeamAndMarket(team, market);
+  let seasonPct = ref ? Number(String(ref.impliedProbability || "").replace("%", "")) : null;
+  if (!Number.isFinite(seasonPct) || seasonPct <= 0) {
+    seasonPct = defaultSeasonPctForTeamMarket(team, market);
+  }
+  seasonPct = clamp(seasonPct, 0.1, 80);
+  const notPct = clamp(100 - seasonPct, 0.1, 99.9);
+  const teamLabel = titleCaseWords(team);
+  return {
+    status: "ok",
+    odds: toAmericanOdds(notPct),
+    impliedProbability: `${notPct.toFixed(1)}%`,
+    confidence: ref ? "High" : "Medium",
+    assumptions: [
+      "Single-season complement computed from the team market probability.",
+      "Complement uses deterministic season priors with a no-title interpretation.",
+    ],
+    playerName: null,
+    headshotUrl: null,
+    summaryLabel: `${teamLabel} do not win ${teamMarketLabel(market)} this season`,
+    liveChecked: Boolean(ref),
+    asOfDate: ref?.asOfDate || asOfDate || new Date().toISOString().slice(0, 10),
+    sourceType: ref ? "hybrid_anchored" : "historical_model",
+    sourceBook: ref?.bookmaker || undefined,
+    sourceLabel: ref
+      ? `Single-season complement anchored to ${ref.bookmaker}`
+      : "Single-season complement baseline",
+    sourceMarket: market,
+    trace: {
+      baselineEventKey: "single_season_no_title",
+      seasonPct,
+      market,
+      anchored: Boolean(ref),
+    },
+  };
+}
+
 async function buildNegativeMultiYearTeamTitleEstimate(prompt, asOfDate) {
   const intent = parseNegativeMultiYearTeamTitleIntent(prompt);
   if (!intent) return null;
@@ -7126,7 +7188,7 @@ function buildNerdAssumptions(result, prompt = "") {
     out.push("Think of it like a season-by-season race: roster ceiling, weekly consistency, and injury variance decide who gets there first.");
   }
 
-  if (key === "nfl_mvp_union_players" || key === "multi_entity_or_union" || /\bor\b/i.test(String(prompt || ""))) {
+  if (key === "nfl_mvp_union_players" || key === "multi_entity_or_union") {
     out.push(`OR-side outcomes are combined as a union event (1 - product of misses), then calibrated.`);
   }
 
@@ -7406,6 +7468,20 @@ app.use("/api/odds", (req, res, next) => {
     if (/\b(my friend|my buddy|my cousin|my brother|my sister|my dad|my mom|my uncle|my aunt)\b/i.test(promptForParsing)) {
       metrics.snarks += 1;
       return res.json(buildOffTopicSnarkResponse(promptForParsing));
+    }
+
+    const quickBaseline = buildBaselineEstimate(promptForParsing, intent, new Date().toISOString().slice(0, 10));
+    if (quickBaseline?.trace?.baselineEventKey?.startsWith("nfl_any_team_win_total_at_least_")) {
+      metrics.baselineServed += 1;
+      let value = applyConsistencyAndTrack({ prompt: promptForParsing, intent, result: quickBaseline });
+      value = decorateForScenarioComplexity(value, conditionalIntent, jointEventIntent);
+      if (FEATURE_ENABLE_TRACE) {
+        value.trace = { ...(value.trace || {}), intent, canonicalPromptKey: semanticKey, apiVersion: API_PUBLIC_VERSION };
+      }
+      oddsCache.set(normalizedPrompt, { ts: Date.now(), value });
+      semanticOddsCache.set(normalizedPrompt, { ts: Date.now(), value });
+      await storeStableIfLowVolatility(normalizedPrompt, promptForParsing, value);
+      return res.json(value);
     }
 
     const impossibleReason = hardImpossibleReason(promptForParsing);
@@ -7833,6 +7909,24 @@ app.use("/api/odds", (req, res, next) => {
     if (multiYearNoTitle) {
       metrics.baselineServed += 1;
       let stable = await enrichEntityMedia(promptForParsing, multiYearNoTitle, "", extractTeamName(promptForParsing) || "");
+      stable = applyConsistencyAndTrack({ prompt: promptForParsing, intent, result: stable });
+      stable = decorateForScenarioComplexity(stable, conditionalIntent, jointEventIntent);
+      if (FEATURE_ENABLE_TRACE) {
+        stable.trace = { ...(stable.trace || {}), intent, canonicalPromptKey: semanticKey, apiVersion: API_PUBLIC_VERSION };
+      }
+      oddsCache.set(normalizedPrompt, { ts: Date.now(), value: stable });
+      semanticOddsCache.set(normalizedPrompt, { ts: Date.now(), value: stable });
+      await storeStableIfLowVolatility(normalizedPrompt, promptForParsing, stable);
+      return res.json(stable);
+    }
+
+    const singleSeasonNoTitle = await buildNegativeSingleSeasonTeamTitleEstimate(
+      promptForParsing,
+      new Date().toISOString().slice(0, 10)
+    );
+    if (singleSeasonNoTitle) {
+      metrics.baselineServed += 1;
+      let stable = await enrichEntityMedia(promptForParsing, singleSeasonNoTitle, "", extractTeamName(promptForParsing) || "");
       stable = applyConsistencyAndTrack({ prompt: promptForParsing, intent, result: stable });
       stable = decorateForScenarioComplexity(stable, conditionalIntent, jointEventIntent);
       if (FEATURE_ENABLE_TRACE) {
