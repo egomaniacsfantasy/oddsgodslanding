@@ -524,6 +524,15 @@ installExternalToolProxy("/bracket-lab", BRACKET_APP_URL);
 installExternalToolProxy("/what-are-the-odds", WATO_APP_URL);
 installExternalToolProxy("/odds", WATO_APP_URL);
 
+app.get("/", (req, res, next) => {
+  const host = String(req.get("host") || "").toLowerCase();
+  if (host.includes("wato.oddsgods.net") || host.includes("egomaniacswidget.onrender.com")) {
+    res.redirect(302, "/what-are-the-odds");
+    return;
+  }
+  next();
+});
+
 app.use(express.static("."));
 
 function isUnsafeImageHost(hostname) {
