@@ -6,7 +6,7 @@
     <title>Odds Gods</title>
     <meta
       name="description"
-      content="Odds Gods is a sports analytics brand: build your NCAA bracket and ask NFL scenarios to price outcomes."
+      content="Odds Gods is a sports analytics brand. Build your NCAA bracket and stress-test tournament paths."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -31,7 +31,6 @@
         <button class="og-menu-btn" id="menu-btn" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
         <nav class="og-links" id="nav-links">
           <a href="https://bracket.oddsgods.net/">The Bracket Lab <span class="beta-badge">BETA</span></a>
-          <a href="https://wato.oddsgods.net/">What Are the Odds? <span class="beta-badge">BETA</span></a>
         </nav>
       </div>
     </header>
@@ -82,10 +81,6 @@
               <span class="cta-icon" aria-hidden="true">🏀</span>
               Build your NCAA bracket &rarr;
             </a>
-            <a class="btn btn-ghost cta-secondary" href="https://wato.oddsgods.net/">
-              <span class="cta-icon" aria-hidden="true">🏈</span>
-              Ask an NFL question &rarr;
-            </a>
           </div>
         </div>
 
@@ -112,14 +107,6 @@
 
             <div class="demo-table" id="demo-table"></div>
             <p class="demo-footer-label" id="demo-footer">Each pick reprices the field</p>
-            <div class="demo-wato" id="demo-wato" aria-live="polite">
-              <p class="demo-wato-query" id="demo-wato-query"></p>
-              <div class="demo-wato-odds-row">
-                <span class="demo-wato-odds" id="demo-wato-odds">+420</span>
-                <span class="demo-wato-implied" id="demo-wato-implied">19.2% implied</span>
-              </div>
-              <p class="demo-footer-label demo-wato-footer" id="demo-wato-footer">Every take deserves a price</p>
-            </div>
           </article>
         </div>
       </section>
@@ -164,43 +151,9 @@
           </p>
           <div class="manifesto-rule"></div>
           <p class="manifesto-coming">
-            The Bracket Lab <span class="beta-badge">BETA</span> and What Are the Odds? <span class="beta-badge">BETA</span> are the first two.
+            The Bracket Lab <span class="beta-badge">BETA</span> is live.
             <span class="manifesto-more">More coming.</span>
           </p>
-        </div>
-      </section>
-
-      <section class="tool-section wato-section section-reveal">
-        <div class="wato-shell wato-shell-single">
-          <div class="tool-left">
-            <p class="how-kicker">WHAT ARE THE ODDS? <span class="beta-badge">BETA</span></p>
-            <h3>Type the question.<br />Get the number.</h3>
-            <div class="step-grid stagger-container">
-              <div class="step stagger-item">
-                <p class="step-num">01</p>
-                <p class="step-title">TYPE YOUR SCENARIO</p>
-                <p>Any NFL situation. Plain English. No syntax required.</p>
-              </div>
-              <div class="step stagger-item">
-                <p class="step-num">02</p>
-                <p class="step-title">WE RUN THE MATH</p>
-                <p>We anchor to stats and markets. Then we reprice the scenario.</p>
-              </div>
-              <div class="step stagger-item">
-                <p class="step-num">03</p>
-                <p class="step-title">YOU GET THE ANSWER</p>
-                <p>One odds line. Implied probability. The reasoning behind it.</p>
-              </div>
-            </div>
-
-            <div class="tool-cta-block">
-              <a href="https://wato.oddsgods.net/" class="btn btn-primary cta-primary tool-cta">
-                <span class="cta-icon" aria-hidden="true">🏈</span>
-                Ask an NFL question &rarr;
-              </a>
-              <p class="tool-cta-sub">NFL &middot; Free &middot; No signup</p>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -211,20 +164,9 @@
               <article class="example-card example-bracket"><p>IF DUKE LOSES R1</p><p>Kansas title odds</p><strong>14.2% &rarr; 19.7% &uarr;</strong></article>
               <article class="example-card example-bracket"><p>IF AUBURN WINS THE SOUTH</p><p>Auburn championship</p><strong>8.1% &rarr; 31.4% &uarr;</strong></article>
               <article class="example-card example-bracket"><p>IF ALL 1-SEEDS SURVIVE R1</p><p>Houston title odds</p><strong>19.8% &rarr; 24.1% &uarr;</strong></article>
-              <article class="example-card example-odds"><p>Chiefs three-peat</p><strong>-115</strong><p>53.5% implied</p></article>
-              <article class="example-card example-odds"><p>Saquon rushes for 2,000 yards</p><strong>+380</strong><p>20.8% implied</p></article>
-              <article class="example-card example-odds"><p>A kicker wins Super Bowl MVP before 2035</p><strong>+4500</strong><p>2.2% implied</p></article>
-              <article class="example-card example-odds"><p>Bills win the Super Bowl before the Chiefs do</p><strong>+420</strong><p>19.2% implied</p></article>
-              <article class="example-card example-odds"><p>Josh Allen wins 3 MVPs</p><strong>+290</strong><p>25.6% implied</p></article>
-
               <article class="example-card example-bracket" aria-hidden="true"><p>IF DUKE LOSES R1</p><p>Kansas title odds</p><strong>14.2% &rarr; 19.7% &uarr;</strong></article>
               <article class="example-card example-bracket" aria-hidden="true"><p>IF AUBURN WINS THE SOUTH</p><p>Auburn championship</p><strong>8.1% &rarr; 31.4% &uarr;</strong></article>
               <article class="example-card example-bracket" aria-hidden="true"><p>IF ALL 1-SEEDS SURVIVE R1</p><p>Houston title odds</p><strong>19.8% &rarr; 24.1% &uarr;</strong></article>
-              <article class="example-card example-odds" aria-hidden="true"><p>Chiefs three-peat</p><strong>-115</strong><p>53.5% implied</p></article>
-              <article class="example-card example-odds" aria-hidden="true"><p>Saquon rushes for 2,000 yards</p><strong>+380</strong><p>20.8% implied</p></article>
-              <article class="example-card example-odds" aria-hidden="true"><p>A kicker wins Super Bowl MVP before 2035</p><strong>+4500</strong><p>2.2% implied</p></article>
-              <article class="example-card example-odds" aria-hidden="true"><p>Bills win the Super Bowl before the Chiefs do</p><strong>+420</strong><p>19.2% implied</p></article>
-              <article class="example-card example-odds" aria-hidden="true"><p>Josh Allen wins 3 MVPs</p><strong>+290</strong><p>25.6% implied</p></article>
             </div>
           </div>
         </section>
@@ -283,17 +225,13 @@
         </p>
         <p>
           The bracket that beats your office pool.<br />
-          The take that finally has a price tag.
+          The path that actually holds up.
         </p>
         <p class="tagline">The gods set the odds. Now you do.</p>
         <div class="hero-actions center">
           <a class="btn btn-primary cta-primary" href="https://bracket.oddsgods.net/">
             <span class="cta-icon" aria-hidden="true">🏀</span>
             Build your NCAA bracket &rarr;
-          </a>
-          <a class="btn btn-ghost cta-secondary" href="https://wato.oddsgods.net/">
-            <span class="cta-icon" aria-hidden="true">🏈</span>
-            Ask an NFL question &rarr;
           </a>
         </div>
       </section>
@@ -306,8 +244,6 @@
         <p class="footer-wordmark"><span>ODDS</span> <strong>GODS</strong></p>
         <p class="footer-tool-links">
           <a href="https://bracket.oddsgods.net/">The Bracket Lab <span class="beta-badge">BETA</span></a>
-          <span>&middot;</span>
-          <a href="https://wato.oddsgods.net/">What Are the Odds? <span class="beta-badge">BETA</span></a>
         </p>
         <p class="footer-coming">More tools coming. These are the first two.</p>
       </div>

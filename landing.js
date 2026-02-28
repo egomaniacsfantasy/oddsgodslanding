@@ -556,12 +556,7 @@ function runBracketDemo() {
     !demoUnderdogOdds ||
     !demoFavoriteSeed ||
     !demoFavoriteName ||
-    !demoFavoriteOdds ||
-    !demoWato ||
-    !demoWatoQuery ||
-    !demoWatoOdds ||
-    !demoWatoImplied ||
-    !demoWatoFooter
+    !demoFavoriteOdds
   ) {
     return;
   }
@@ -595,10 +590,8 @@ function runBracketDemo() {
   const favoriteOddsBySeed = { 5: "-300", 4: "-550", 3: "-1200", 2: "-2600", 1: "-3300" };
 
   let scenarioIndex = 0;
-  let watoQueue = [];
   let cycleTimers = [];
   let frameId = 0;
-  let oddsScrambleFrameId = 0;
 
   function clearCycleTimers() {
     cycleTimers.forEach((timerId) => window.clearTimeout(timerId));
@@ -606,10 +599,6 @@ function runBracketDemo() {
     if (frameId) {
       window.cancelAnimationFrame(frameId);
       frameId = 0;
-    }
-    if (oddsScrambleFrameId) {
-      window.cancelAnimationFrame(oddsScrambleFrameId);
-      oddsScrambleFrameId = 0;
     }
   }
 
@@ -625,69 +614,6 @@ function runBracketDemo() {
 
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
-  }
-
-  function parseAmericanOdds(text) {
-    const odds = String(text || "").trim();
-    const value = Number.parseInt(odds, 10);
-    if (!Number.isFinite(value) || value === 0) return null;
-    return value;
-  }
-
-  function impliedFromAmerican(oddsText) {
-    const value = parseAmericanOdds(oddsText);
-    if (!value) return null;
-    if (value > 0) return 100 / (value + 100);
-    const abs = Math.abs(value);
-    return abs / (abs + 100);
-  }
-
-  function formatImplied(oddsText) {
-    const implied = impliedFromAmerican(oddsText);
-    if (implied === null) return "N/A implied";
-    return `${(implied * 100).toFixed(1)}% implied`;
-  }
-
-  function nextRandomWatoFrame() {
-    if (!watoQueue.length) {
-      watoQueue = [...heroPromptExamples];
-      for (let i = watoQueue.length - 1; i > 0; i -= 1) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [watoQueue[i], watoQueue[j]] = [watoQueue[j], watoQueue[i]];
-      }
-    }
-    return watoQueue.pop();
-  }
-
-  function animateOddsScramble(targetOdds, duration = 900) {
-    const parsedTarget = parseAmericanOdds(targetOdds);
-    if (!parsedTarget) {
-      demoWatoOdds.textContent = targetOdds;
-      return Promise.resolve();
-    }
-
-    const sign = parsedTarget > 0 ? "+" : "-";
-    const targetAbs = Math.abs(parsedTarget);
-    const minAbs = 100;
-    const maxAbs = Math.max(400, Math.round(targetAbs * 1.8));
-    const startTime = performance.now();
-
-    return new Promise((resolve) => {
-      function tick(now) {
-        const progress = Math.min(1, (now - startTime) / duration);
-        if (progress < 1) {
-          const randomAbs = Math.floor(minAbs + Math.random() * (maxAbs - minAbs + 1));
-          demoWatoOdds.textContent = `${sign}${randomAbs}`;
-          oddsScrambleFrameId = window.requestAnimationFrame(tick);
-          return;
-        }
-        demoWatoOdds.textContent = `${sign}${targetAbs}`;
-        oddsScrambleFrameId = 0;
-        resolve();
-      }
-
-      oddsScrambleFrameId = window.requestAnimationFrame(tick);
-    });
   }
 
   function formatPct(value) {
@@ -823,9 +749,6 @@ function runBracketDemo() {
     const scenario = upsetScenarios[scenarioIndex % upsetScenarios.length];
     const scenarioRows = buildScenarioRows(scenario);
     applyScenarioToGameCard(scenario);
-    demoWidget.classList.remove("mode-wato");
-    demoWatoQuery.textContent = "";
-    demoWatoFooter.classList.remove("visible");
     resetBaseline(scenarioRows);
     scenarioIndex += 1;
 
@@ -849,46 +772,14 @@ function runBracketDemo() {
     await wait(3000);
   }
 
-  async function renderWatoFrame(frame) {
-    demoWatoQuery.textContent = "";
-    await typeText(demoWatoQuery, frame.prompt, 24);
-    demoWatoImplied.textContent = formatImplied(frame.odds);
-    await animateOddsScramble(frame.odds, 1000);
-    demoWatoOdds.style.color = frame.odds.startsWith("+") ? "#8dd598" : "#d99a8f";
-  }
-
-  async function runWatoPhase() {
-    demoWidget.classList.add("mode-wato");
-    demoLabel.textContent = "WHAT ARE THE ODDS THAT...";
-    demoWatoFooter.classList.remove("visible");
-
-    const first = nextRandomWatoFrame();
-    await renderWatoFrame(first);
-    await wait(2800);
-
-    const second = nextRandomWatoFrame();
-    await renderWatoFrame(second);
-    await wait(3000);
-
-    demoWatoFooter.classList.add("visible");
-    await wait(2200);
-  }
-
   async function loop() {
     await runBracketPhase();
 
     while (true) {
       demoWidget.classList.add("fading");
       await wait(420);
-      const watoPhasePromise = runWatoPhase();
       demoWidget.classList.remove("fading");
-      await watoPhasePromise;
-
-      demoWidget.classList.add("fading");
-      await wait(420);
-      const bracketPhasePromise = runBracketPhase();
-      demoWidget.classList.remove("fading");
-      await bracketPhasePromise;
+      await runBracketPhase();
     }
   }
 
