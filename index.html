@@ -15,6 +15,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./landing.css" />
+    <link rel="stylesheet" href="./blog.css" />
   </head>
   <body>
     <canvas id="lightning-ambient" aria-hidden="true"></canvas>
@@ -31,6 +32,7 @@
         <button class="og-menu-btn" id="menu-btn" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
         <nav class="og-links" id="nav-links">
           <a href="https://bracket.oddsgods.net/">The Bracket Lab <span class="beta-badge">BETA</span></a>
+          <a href="/blog">Blog</a>
         </nav>
       </div>
     </header>
@@ -244,6 +246,7 @@
         <p class="footer-wordmark"><span>ODDS</span> <strong>GODS</strong></p>
         <p class="footer-tool-links">
           <a href="https://bracket.oddsgods.net/">The Bracket Lab <span class="beta-badge">BETA</span></a>
+          <a href="/blog">Blog</a>
         </p>
         <p class="footer-coming">More tools coming. These are the first two.</p>
       </div>
@@ -257,6 +260,8 @@
       </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./blog.js"></script>
     <script src="./landing.js"></script>
   </body>
 </html>

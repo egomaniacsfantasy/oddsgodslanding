@@ -1401,15 +1401,20 @@ function setupLightningBackground() {
   startAnimations();
 }
 
-window.addEventListener("scroll", setScrolledNav, { passive: true });
-setScrolledNav();
-setupMobileNav();
-if (document.body) {
-  document.body.classList.add("js-reveal");
+function initLandingPage() {
+  if (window.__OG_BLOG_ACTIVE) return;
+  window.addEventListener("scroll", setScrolledNav, { passive: true });
+  setScrolledNav();
+  setupMobileNav();
+  if (document.body) {
+    document.body.classList.add("js-reveal");
+  }
+  revealOnScroll();
+  setupLightningBackground();
+  runBracketDemo();
+  setRotatingPlaceholder();
+  loadApiVersion();
+  setupMiniOddsForm();
 }
-revealOnScroll();
-setupLightningBackground();
-runBracketDemo();
-setRotatingPlaceholder();
-loadApiVersion();
-setupMiniOddsForm();
+
+initLandingPage();

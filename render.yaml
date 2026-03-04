@@ -27,6 +27,19 @@ services:
     env: static
     rootDir: .
     staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /blog
+        destination: /index.html
+      - type: rewrite
+        source: /blog/*
+        destination: /index.html
+      - type: rewrite
+        source: /admin/blog
+        destination: /index.html
+      - type: rewrite
+        source: /admin/blog/*
+        destination: /index.html
     headers:
       - path: /*
         name: Cache-Control
