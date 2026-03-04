@@ -1,3 +1,12 @@
+const pathname = window.location.pathname || "/";
+const isBlogRoute =
+  pathname === "/blog" ||
+  pathname === "/blog/" ||
+  pathname.startsWith("/blog/") ||
+  pathname === "/admin/blog" ||
+  pathname === "/admin/blog/" ||
+  pathname.startsWith("/admin/blog/");
+
 const nav = document.getElementById("site-nav");
 const menuBtn = document.getElementById("menu-btn");
 const navLinks = document.getElementById("nav-links");
@@ -1402,7 +1411,8 @@ function setupLightningBackground() {
 }
 
 function initLandingPage() {
-  if (window.__OG_BLOG_ACTIVE) return;
+  // Blog routes are handled by blog.js and must short-circuit landing rendering.
+  if (isBlogRoute || window.__OG_BLOG_ACTIVE) return;
   window.addEventListener("scroll", setScrolledNav, { passive: true });
   setScrolledNav();
   setupMobileNav();
