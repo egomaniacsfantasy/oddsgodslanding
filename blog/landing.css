@@ -150,6 +150,92 @@ body {
   color: var(--text);
 }
 
+.og-dropdown {
+  position: relative;
+}
+
+.og-dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.94rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.og-dropdown-toggle:hover,
+.og-dropdown:focus-within .og-dropdown-toggle {
+  color: var(--text);
+}
+
+.og-dropdown-caret {
+  font-size: 0.78rem;
+  opacity: 0.72;
+  transition: transform 160ms ease;
+}
+
+.og-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  min-width: 240px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(10, 11, 13, 0.96);
+  box-shadow: 0 22px 42px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.og-dropdown-menu::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  height: 16px;
+}
+
+.og-dropdown:hover .og-dropdown-menu,
+.og-dropdown:focus-within .og-dropdown-menu {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.og-dropdown:hover .og-dropdown-caret,
+.og-dropdown:focus-within .og-dropdown-caret {
+  transform: rotate(180deg);
+}
+
+.og-dropdown-menu a {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.og-dropdown-menu a:hover {
+  background: rgba(200, 144, 63, 0.12);
+  color: var(--text);
+}
+
 .beta-badge {
   font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
   font-size: 8px;
@@ -2052,6 +2138,35 @@ body.js-reveal .section-reveal.in-view .stagger-item:nth-child(4) {
 
   .og-links.open {
     display: flex;
+  }
+
+  .og-dropdown {
+    width: 100%;
+  }
+
+  .og-dropdown-toggle {
+    display: none;
+  }
+
+  .og-dropdown-menu {
+    position: static;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    gap: 14px;
+  }
+
+  .og-dropdown-menu a {
+    min-height: 0;
+    padding: 0;
+    border-radius: 0;
   }
 
   .mini-input-row {

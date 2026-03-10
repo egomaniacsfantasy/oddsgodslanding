@@ -197,6 +197,15 @@ body {
   transition: opacity 160ms ease, transform 160ms ease;
 }
 
+.og-dropdown-menu::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  height: 16px;
+}
+
 .og-dropdown:hover .og-dropdown-menu,
 .og-dropdown:focus-within .og-dropdown-menu {
   opacity: 1;
