@@ -571,32 +571,58 @@ function runBracketDemo() {
   }
 
   const upsetScenarios = [
-    { region: "East", underdogSeed: 12, underdog: "Liberty", favoriteSeed: 5, favorite: "Oregon" },
-    { region: "East", underdogSeed: 13, underdog: "Akron", favoriteSeed: 4, favorite: "Arizona" },
-    { region: "East", underdogSeed: 14, underdog: "Montana", favoriteSeed: 3, favorite: "Wisconsin" },
-    { region: "East", underdogSeed: 15, underdog: "Robert Morris", favoriteSeed: 2, favorite: "Alabama" },
-    { region: "East", underdogSeed: 16, underdog: "Mount St. Mary's", favoriteSeed: 1, favorite: "Duke" },
-    { region: "West", underdogSeed: 12, underdog: "Colorado State", favoriteSeed: 5, favorite: "Memphis" },
-    { region: "West", underdogSeed: 13, underdog: "Grand Canyon", favoriteSeed: 4, favorite: "Maryland" },
-    { region: "West", underdogSeed: 14, underdog: "UNC Wilmington", favoriteSeed: 3, favorite: "Texas Tech" },
-    { region: "West", underdogSeed: 15, underdog: "Omaha", favoriteSeed: 2, favorite: "St. John's" },
-    { region: "West", underdogSeed: 16, underdog: "Norfolk State", favoriteSeed: 1, favorite: "Florida" },
-    { region: "South", underdogSeed: 12, underdog: "UC San Diego", favoriteSeed: 5, favorite: "Michigan" },
-    { region: "South", underdogSeed: 13, underdog: "Yale", favoriteSeed: 4, favorite: "Texas A&M" },
-    { region: "South", underdogSeed: 14, underdog: "Lipscomb", favoriteSeed: 3, favorite: "Iowa State" },
-    { region: "South", underdogSeed: 15, underdog: "Bryant", favoriteSeed: 2, favorite: "Michigan State" },
-    { region: "South", underdogSeed: 16, underdog: "Alabama State", favoriteSeed: 1, favorite: "Auburn" },
-    { region: "Midwest", underdogSeed: 12, underdog: "McNeese", favoriteSeed: 5, favorite: "Clemson" },
-    { region: "Midwest", underdogSeed: 13, underdog: "High Point", favoriteSeed: 4, favorite: "Purdue" },
-    { region: "Midwest", underdogSeed: 14, underdog: "Troy", favoriteSeed: 3, favorite: "Kentucky" },
-    { region: "Midwest", underdogSeed: 15, underdog: "Wofford", favoriteSeed: 2, favorite: "Tennessee" },
-    { region: "Midwest", underdogSeed: 16, underdog: "SIU Edwardsville", favoriteSeed: 1, favorite: "Houston" },
+    {
+      region: "West",
+      underdogSeed: 16,
+      underdog: "Tennessee St",
+      underdogOdds: "+1600",
+      favoriteSeed: 1,
+      favorite: "Arizona",
+      favoriteOdds: "-1600",
+      rows: [
+        { name: "Arizona", pct: 15.4, target: 0, delta: null, moving: false, featured: true, eliminated: false },
+        { name: "Duke", pct: 18.8, target: 19.9, delta: "+1.1", moving: true, featured: false, eliminated: false },
+        { name: "Michigan", pct: 13.1, target: 16.0, delta: "+2.9", moving: true, featured: false, eliminated: false },
+        { name: "Florida", pct: 8.4, target: 9.7, delta: "+1.3", moving: true, featured: false, eliminated: false },
+        { name: "Illinois", pct: 6.4, target: 8.9, delta: "+2.5", moving: true, featured: false, eliminated: false },
+        { name: "Houston", pct: 6.7, target: 8.4, delta: "+1.7", moving: true, featured: false, eliminated: false },
+      ],
+    },
+    {
+      region: "East",
+      underdogSeed: 16,
+      underdog: "Cent Arkansas",
+      underdogOdds: "+9200",
+      favoriteSeed: 1,
+      favorite: "Duke",
+      favoriteOdds: "-9200",
+      rows: [
+        { name: "Duke", pct: 18.8, target: 0, delta: null, moving: false, featured: true, eliminated: false },
+        { name: "Arizona", pct: 15.4, target: 16.5, delta: "+1.1", moving: true, featured: false, eliminated: false },
+        { name: "Michigan", pct: 13.1, target: 14.0, delta: "+0.9", moving: true, featured: false, eliminated: false },
+        { name: "Florida", pct: 8.4, target: 10.6, delta: "+2.2", moving: true, featured: false, eliminated: false },
+        { name: "Houston", pct: 6.7, target: 7.8, delta: "+1.0", moving: true, featured: false, eliminated: false },
+        { name: "Illinois", pct: 6.4, target: 7.1, delta: "+0.6", moving: true, featured: false, eliminated: false },
+      ],
+    },
+    {
+      region: "South",
+      underdogSeed: 14,
+      underdog: "Troy",
+      underdogOdds: "+709",
+      favoriteSeed: 3,
+      favorite: "Purdue",
+      favoriteOdds: "-709",
+      rows: [
+        { name: "Purdue", pct: 4.6, target: 0, delta: null, moving: false, featured: true, eliminated: false },
+        { name: "Duke", pct: 18.8, target: 19.2, delta: "+0.4", moving: true, featured: false, eliminated: false },
+        { name: "Arizona", pct: 15.4, target: 15.7, delta: "+0.3", moving: true, featured: false, eliminated: false },
+        { name: "Michigan", pct: 13.1, target: 13.5, delta: "+0.4", moving: true, featured: false, eliminated: false },
+        { name: "Florida", pct: 8.4, target: 11.1, delta: "+2.7", moving: true, featured: false, eliminated: false },
+        { name: "Houston", pct: 6.7, target: 6.8, delta: "+0.1", moving: true, featured: false, eliminated: false },
+      ],
+    },
   ];
-
-  const contenderPool = ["Duke", "Florida", "Auburn", "Houston", "Tennessee", "Alabama", "Michigan State", "Kentucky", "St. John's"];
-  const favoriteBaseBySeed = { 1: 18.4, 2: 14.6, 3: 11.3, 4: 9.3, 5: 8.1 };
-  const upsetOddsBySeed = { 12: "+240", 13: "+420", 14: "+900", 15: "+1800", 16: "+8800" };
-  const favoriteOddsBySeed = { 5: "-300", 4: "-550", 3: "-1200", 2: "-2600", 1: "-3300" };
 
   let scenarioIndex = 0;
   let cycleTimers = [];
@@ -652,50 +678,17 @@ function runBracketDemo() {
   }
 
   function buildScenarioRows(scenario) {
-    const favoriteBase = favoriteBaseBySeed[scenario.favoriteSeed] || 8.1;
-    const shiftBoost = { 12: 2.2, 13: 2.8, 14: 3.4, 15: 4.2, 16: 4.9 }[scenario.underdogSeed] || 2.2;
-    const contenders = contenderPool.filter((name) => name !== scenario.favorite && name !== scenario.underdog).slice(0, 4);
-    const contenderBases = [16.4, 14.1, 11.7, 9.6];
-    const contenderBumps = [shiftBoost, shiftBoost - 0.9, shiftBoost - 1.6, shiftBoost - 2.1];
-
-    const rows = [
-      {
-        name: scenario.favorite,
-        seed: scenario.favoriteSeed,
-        pct: favoriteBase,
-        target: 0,
-        delta: null,
-        moving: false,
-        featured: true,
-        eliminated: false,
-      },
-      ...contenders.map((name, idx) => {
-        const base = contenderBases[idx];
-        const bump = Math.max(0.6, contenderBumps[idx]);
-        return {
-          name,
-          seed: null,
-          pct: base,
-          target: base + bump,
-          delta: `+${bump.toFixed(1)}`,
-          moving: true,
-          featured: false,
-          eliminated: false,
-        };
-      }),
-    ];
-
-    return rows;
+    return scenario.rows.map((row) => ({ ...row }));
   }
 
   function applyScenarioToGameCard(scenario) {
-    demoGameMeta.textContent = `R64  ${scenario.underdog}  ${upsetOddsBySeed[scenario.underdogSeed]}  vs  ${scenario.favorite}  ${favoriteOddsBySeed[scenario.favoriteSeed]}`;
+    demoGameMeta.textContent = `R64  ${scenario.underdog}  ${scenario.underdogOdds}  vs  ${scenario.favorite}  ${scenario.favoriteOdds}`;
     demoUnderdogSeed.textContent = String(scenario.underdogSeed);
     demoUnderdogName.textContent = scenario.underdog;
-    demoUnderdogOdds.textContent = upsetOddsBySeed[scenario.underdogSeed];
+    demoUnderdogOdds.textContent = scenario.underdogOdds;
     demoFavoriteSeed.textContent = String(scenario.favoriteSeed);
     demoFavoriteName.textContent = scenario.favorite;
-    demoFavoriteOdds.textContent = favoriteOddsBySeed[scenario.favoriteSeed];
+    demoFavoriteOdds.textContent = scenario.favoriteOdds;
   }
 
   function resetBaseline(rows) {

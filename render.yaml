@@ -5,6 +5,8 @@ services:
     region: ohio
     plan: starter
     rootDir: .
+    branch: main
+    autoDeployTrigger: commit
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /health
@@ -26,6 +28,8 @@ services:
     name: odds-gods-landing
     env: static
     rootDir: .
+    branch: main
+    autoDeployTrigger: commit
     staticPublishPath: .
     routes:
       - type: rewrite
@@ -51,7 +55,9 @@ services:
   - type: web
     name: odds-gods-bracket
     env: static
-    rootDir: EgomaniacsBracketOdds
+    repo: https://github.com/egomaniacsfantasy/EgomaniacsBracket.git
+    branch: main
+    autoDeployTrigger: commit
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     headers:

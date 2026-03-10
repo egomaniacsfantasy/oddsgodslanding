@@ -31,9 +31,17 @@
         </a>
         <button class="og-menu-btn" id="menu-btn" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
         <nav class="og-links" id="nav-links">
-          <a href="https://bracket.oddsgods.net">The Bracket Lab</a>
+          <div class="og-dropdown">
+            <button class="og-dropdown-toggle" type="button" aria-haspopup="menu">
+              College Basketball <span class="og-dropdown-caret" aria-hidden="true">▾</span>
+            </button>
+            <div class="og-dropdown-menu" role="menu" aria-label="College basketball tools">
+              <a href="https://bracket.oddsgods.net" role="menuitem">The Bracket Lab</a>
+              <a href="https://bracket.oddsgods.net/rankings" role="menuitem">Power Rankings</a>
+              <a href="https://bracket.oddsgods.net/predictor" role="menuitem">Matchup Predictor</a>
+            </div>
+          </div>
           <a href="https://blog.oddsgods.net">Blog</a>
-          <a href="https://blog.oddsgods.net/predicting-college-basketball-methodology">Methodology</a>
         </nav>
       </div>
     </header>
@@ -95,16 +103,16 @@
             </div>
 
             <div class="demo-game-card" id="demo-game">
-              <p class="demo-game-meta" id="demo-game-meta">R64  Longwood  +8800  vs  Houston  -3300</p>
+              <p class="demo-game-meta" id="demo-game-meta">R64  Tennessee St  +1600  vs  Arizona  -1600</p>
               <div class="demo-team-row" id="demo-underdog-row">
                 <span class="demo-seed" id="demo-underdog-seed">16</span>
-                <span class="demo-team-name" id="demo-underdog-name">Longwood</span>
-                <span class="demo-odds-value" id="demo-underdog-odds">+8800</span>
+                <span class="demo-team-name" id="demo-underdog-name">Tennessee St</span>
+                <span class="demo-odds-value" id="demo-underdog-odds">+1600</span>
               </div>
               <div class="demo-team-row demo-favorite">
                 <span class="demo-seed" id="demo-favorite-seed">1</span>
-                <span class="demo-team-name" id="demo-favorite-name">Houston</span>
-                <span class="demo-odds-value" id="demo-favorite-odds">-3300</span>
+                <span class="demo-team-name" id="demo-favorite-name">Arizona</span>
+                <span class="demo-odds-value" id="demo-favorite-odds">-1600</span>
               </div>
             </div>
 
@@ -144,19 +152,30 @@
         </div>
       </section>
 
-      <section class="manifesto-section section-reveal">
-        <img src="/logo-icon.png?v=20260225" class="manifesto-watermark" aria-hidden="true" alt="" />
-        <div class="manifesto-inner">
-          <p class="manifesto-eyebrow">WHY THIS EXISTS</p>
-          <h2 class="manifesto-headline">We think in odds.<br />So do you.<br />You just didn&apos;t have the tools.</h2>
-          <p class="manifesto-sub">
-            Not picks. Not predictions. The honest math behind every scenario you&apos;ve argued about at halftime.
+      <section class="tool-showcase tool-showcase--rankings section-reveal">
+        <div class="tool-showcase-copy">
+          <p class="tool-showcase-eyebrow">POWER RANKINGS</p>
+          <h2 class="tool-showcase-headline">Rankings that price the matchup, not the résumé.</h2>
+          <p class="tool-showcase-sub">
+            A Markov-style ladder built from head-to-head win probabilities across the entire D1 map. Every spot is earned by how hard you are to beat on a neutral floor.
           </p>
-          <div class="manifesto-rule"></div>
-          <p class="manifesto-coming">
-            The Bracket Lab <span class="beta-badge">BETA</span> is live.
-            <span class="manifesto-more">More coming.</span>
-          </p>
+          <a class="tool-showcase-link" href="https://bracket.oddsgods.net/rankings">View Power Rankings &rarr;</a>
+        </div>
+        <div class="tool-showcase-preview">
+          <article class="tool-rank-card">
+            <div class="tool-rank-card-head">
+              <span>Top 5 right now</span>
+              <span>Neutral-floor model</span>
+            </div>
+            <ol class="tool-rank-list">
+              <li><span>#1 Duke</span><strong>ACC</strong></li>
+              <li><span>#2 Arizona</span><strong>Big 12</strong></li>
+              <li><span>#3 Michigan</span><strong>Big Ten</strong></li>
+              <li><span>#4 Florida</span><strong>SEC</strong></li>
+              <li><span>#5 Houston</span><strong>Big 12</strong></li>
+            </ol>
+            <p class="tool-rank-note">Built from expected head-to-head results, not poll inertia.</p>
+          </article>
         </div>
       </section>
 
@@ -164,12 +183,12 @@
         <section class="examples" aria-label="Example outcomes">
           <div class="examples-mask">
             <div class="examples-track">
-              <article class="example-card example-bracket"><p>IF DUKE LOSES R1</p><p>Kansas title odds</p><strong>14.2% &rarr; 19.7% &uarr;</strong></article>
-              <article class="example-card example-bracket"><p>IF AUBURN WINS THE SOUTH</p><p>Auburn championship</p><strong>8.1% &rarr; 31.4% &uarr;</strong></article>
-              <article class="example-card example-bracket"><p>IF ALL 1-SEEDS SURVIVE R1</p><p>Houston title odds</p><strong>19.8% &rarr; 24.1% &uarr;</strong></article>
-              <article class="example-card example-bracket" aria-hidden="true"><p>IF DUKE LOSES R1</p><p>Kansas title odds</p><strong>14.2% &rarr; 19.7% &uarr;</strong></article>
-              <article class="example-card example-bracket" aria-hidden="true"><p>IF AUBURN WINS THE SOUTH</p><p>Auburn championship</p><strong>8.1% &rarr; 31.4% &uarr;</strong></article>
-              <article class="example-card example-bracket" aria-hidden="true"><p>IF ALL 1-SEEDS SURVIVE R1</p><p>Houston title odds</p><strong>19.8% &rarr; 24.1% &uarr;</strong></article>
+              <article class="example-card example-bracket"><p>IF TENNESSEE ST SHOCKS ARIZONA</p><p>Michigan title odds</p><strong>13.1% &rarr; 16.0% &uarr;</strong></article>
+              <article class="example-card example-bracket"><p>IF FLORIDA WINS THE SOUTH</p><p>Florida title odds</p><strong>8.4% &rarr; 27.6% &uarr;</strong></article>
+              <article class="example-card example-bracket"><p>IF ALL 1-SEEDS WIN R64</p><p>Arizona title odds</p><strong>15.4% &rarr; 17.1% &uarr;</strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF TENNESSEE ST SHOCKS ARIZONA</p><p>Michigan title odds</p><strong>13.1% &rarr; 16.0% &uarr;</strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF FLORIDA WINS THE SOUTH</p><p>Florida title odds</p><strong>8.4% &rarr; 27.6% &uarr;</strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF ALL 1-SEEDS WIN R64</p><p>Arizona title odds</p><strong>15.4% &rarr; 17.1% &uarr;</strong></article>
             </div>
           </div>
         </section>
@@ -210,32 +229,39 @@
         </div>
       </section>
 
-      <section class="closing section-reveal">
-        <svg class="closing-lightning" viewBox="0 0 700 380" aria-hidden="true">
-          <path d="M132 64 L98 136 L136 136 L104 206" />
-          <path d="M590 86 L552 168 L594 168 L560 242" />
-        </svg>
-        <svg class="closing-classical-figure" viewBox="0 0 500 520" aria-hidden="true">
-          <path d="M250 44c48 0 86 37 86 84 0 22-9 42-24 56 20 18 31 44 31 72 0 55-43 100-93 100s-93-45-93-100c0-28 11-54 31-72-15-14-24-34-24-56 0-47 38-84 86-84z" />
-          <path d="M188 150c18-10 40-14 62-14s44 4 62 14M177 232c24-8 49-11 73-11s49 3 73 11M170 312c26-7 53-10 80-10s54 3 80 10" />
-          <path d="M228 182c7-18 20-28 36-28s29 10 36 28c7 18 3 41-12 57-7 8-15 14-24 18-9-4-17-10-24-18-15-16-19-39-12-57z" />
-          <path d="M214 368h72M198 390h104M182 416h136" />
-        </svg>
-        <h2 class="closing-headline">Sports have always been about what happens next.</h2>
-        <p>
-          We just made the price visible.<br />
-          Not picks. Not predictions. Probabilities, the honest math behind every scenario you&apos;ve argued about at halftime.
-        </p>
-        <p>
-          The bracket that beats your office pool.<br />
-          The path that actually holds up.
-        </p>
-        <p class="tagline">The gods set the odds. Now you do.</p>
-        <div class="hero-actions center">
-          <a class="btn btn-primary cta-primary" href="https://bracket.oddsgods.net/">
-            <span class="cta-icon" aria-hidden="true">🏀</span>
-            Build your NCAA bracket &rarr;
-          </a>
+      <section class="tool-showcase tool-showcase--predictor section-reveal">
+        <div class="tool-showcase-copy">
+          <p class="tool-showcase-eyebrow">MATCHUP PREDICTOR</p>
+          <h2 class="tool-showcase-headline">Settle the bar argument before tip.</h2>
+          <p class="tool-showcase-sub">
+            Pick any two D1 teams. Get the probability, the odds, and the stat profile that pushes the number where it lands.
+          </p>
+          <a class="tool-showcase-link" href="https://bracket.oddsgods.net/predictor">Try the Matchup Predictor &rarr;</a>
+        </div>
+        <div class="tool-showcase-preview">
+          <article class="tool-matchup-card">
+            <div class="tool-matchup-head">
+              <span>Neutral Court</span>
+              <span>Live model snapshot</span>
+            </div>
+            <div class="tool-matchup-main">
+              <div class="tool-matchup-team">
+                <span class="tool-matchup-badge">1 seed</span>
+                <strong>Duke</strong>
+                <span class="tool-matchup-odds">-154</span>
+                <small>60.6%</small>
+              </div>
+              <span class="tool-matchup-vs">VS</span>
+              <div class="tool-matchup-team">
+                <span class="tool-matchup-badge">2 seed</span>
+                <strong>Florida</strong>
+                <span class="tool-matchup-odds">+154</span>
+                <small>39.4%</small>
+              </div>
+            </div>
+            <div class="tool-matchup-bar"><span style="width: 60.6%"></span></div>
+            <p class="tool-matchup-note">Current-season Elo, efficiency, rankings, and form all in one card.</p>
+          </article>
         </div>
       </section>
 
@@ -246,16 +272,14 @@
         <img src="/logo-icon.png?v=20260225" class="footer-logo-icon" alt="Odds Gods" />
         <p class="footer-wordmark"><span>ODDS</span> <strong>GODS</strong></p>
         <p class="footer-tool-links">
-          <a href="https://bracket.oddsgods.net/">The Bracket Lab <span class="beta-badge">BETA</span></a>
+          <a href="https://bracket.oddsgods.net/">The Bracket Lab</a>
+          <a href="https://bracket.oddsgods.net/rankings">Power Rankings</a>
+          <a href="https://bracket.oddsgods.net/predictor">Matchup Predictor</a>
           <a href="https://blog.oddsgods.net">Blog</a>
         </p>
-        <p class="footer-coming">More tools coming. These are the first two.</p>
+        <p class="footer-coming">More tools coming soon.</p>
       </div>
-      <div>
-        <p>&copy; 2025 Odds Gods</p>
-        <p>For entertainment purposes only.</p>
-        <p>Not financial or betting advice.</p>
-      </div>
+      <div class="footer-meta">&copy; 2026 Odds Gods &middot; For entertainment purposes only.</div>
       <div class="footer-links">
         <a href="https://x.com" target="_blank" rel="noreferrer">X / Twitter</a>
       </div>

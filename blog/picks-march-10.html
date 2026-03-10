@@ -28,8 +28,16 @@
       </a>
       <button class="og-menu-btn" id="menu-btn" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
       <nav class="og-links" id="nav-links">
-        <a href="https://bracket.oddsgods.net/">The Bracket Lab <span class="beta-badge">BETA</span></a>
-        <a href="https://bracket.oddsgods.net/rankings">Power Rankings</a>
+        <div class="og-dropdown">
+          <button class="og-dropdown-toggle" type="button" aria-haspopup="menu">
+            College Basketball <span class="og-dropdown-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="og-dropdown-menu" role="menu" aria-label="College basketball tools">
+            <a href="https://bracket.oddsgods.net/" role="menuitem">The Bracket Lab</a>
+            <a href="https://bracket.oddsgods.net/rankings" role="menuitem">Power Rankings</a>
+            <a href="https://bracket.oddsgods.net/predictor" role="menuitem">Matchup Predictor</a>
+          </div>
+        </div>
         <a href="https://blog.oddsgods.net" style="color: var(--text);">Blog</a>
       </nav>
     </div>
@@ -140,6 +148,7 @@
     <div class="footer-links">
       <a href="https://bracket.oddsgods.net">Bracket Lab</a>
       <a href="https://bracket.oddsgods.net/rankings">Power Rankings</a>
+      <a href="https://bracket.oddsgods.net/predictor">Matchup Predictor</a>
     </div>
   </footer>
 </body>

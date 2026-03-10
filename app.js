@@ -57,6 +57,13 @@ const SHARE_IMAGE_PROXY_HOSTS = new Set([
   "www.thesportsdb.com",
   "cdn.nba.com",
 ]);
+const SNARK_SOURCE_TYPES = new Set([
+  "invalid_entity",
+  "wrong_league",
+  "needs_clarification",
+  "ineligible_entity",
+  "unsupported_market",
+]);
 
 const DEFAULT_EXAMPLE_POOL = [
   "Josh Allen throws 30 touchdowns this season",
@@ -391,15 +398,25 @@ function parseAmericanOdds(oddsText) {
   return Number.isFinite(n) ? n : null;
 }
 
-function renderOddsDisplay(oddsText) {
+function isSnarkResult(result) {
+  return SNARK_SOURCE_TYPES.has(String(result?.sourceType || "").trim());
+}
+
+function renderOddsDisplay(oddsText, result) {
   const n = parseAmericanOdds(oddsText);
   oddsOutput.classList.remove("positive", "negative", "even");
   oddsOutput.classList.remove("lock-mode");
   oddsOutput.textContent = oddsText;
-  if (n !== null) {
-    if (n > 0) oddsOutput.classList.add("positive");
-    else if (n < 0) oddsOutput.classList.add("negative");
-    else oddsOutput.classList.add("even");
+  if (n === null || isSnarkResult(result)) return "normal";
+  if (n >= 10000) {
+    oddsOutput.textContent = "NO CHANCE";
+    oddsOutput.classList.add("lock-mode");
+    return "no-shot";
+  }
+  if (n <= -10000) {
+    oddsOutput.textContent = "LOCK";
+    oddsOutput.classList.add("lock-mode");
+    return "lock";
   }
   return "normal";
 }
@@ -660,6 +677,28 @@ function applyPromptSummarySizing(text) {
 }
 
 function showResult(result, prompt) {
+  if (isSnarkResult(result)) {
+    const sourceType = String(result?.sourceType || "").trim();
+    const titleMap = {
+      wrong_league: "Wrong league.",
+      invalid_entity: "Nice try.",
+      needs_clarification: "Need clarification.",
+      ineligible_entity: "Not eligible.",
+      unsupported_market: "Not supported yet.",
+    };
+    const hintMap = {
+      wrong_league: "Try an NFL team or player instead.",
+      invalid_entity: "Try an actual NFL team or player.",
+      needs_clarification: "Try one of the suggested rewrites.",
+      ineligible_entity: "Try an active NFL player instead.",
+      unsupported_market: "Try an NFL stat, team outcome, or award.",
+    };
+    showRefusal(String(result.rationale || "").trim(), {
+      title: titleMap[sourceType] || "Nice try.",
+      hint: hintMap[sourceType] || "Try an NFL player or team scenario.",
+    });
+    return;
+  }
   refusalCard.classList.add("hidden");
   resultCard.classList.remove("hidden");
   hideHeadshotProfile();
@@ -667,7 +706,7 @@ function showResult(result, prompt) {
   void resultCard.offsetWidth;
   resultCard.classList.add("result-pop");
 
-  const oddsMode = renderOddsDisplay(result.odds);
+  const oddsMode = renderOddsDisplay(result.odds, result);
   applyResultCardState(oddsMode);
   probabilityOutput.textContent = result.impliedProbability;
   if (queryEcho) queryEcho.textContent = normalizePrompt(prompt);
@@ -1476,7 +1515,7 @@ async function generateShareCard({ query, oddsStr, impliedStr, entityImageUrl, l
   ctx.font = '700 34px "Space Grotesk",monospace';
   ctx.fillStyle = "rgba(184,125,24,0.85)";
   ctx.textAlign = "center";
-  ctx.fillText("Try it yourself at OddsGods.net", 600, barY);
+  ctx.fillText("Try it yourself at Odds Gods.net", 600, barY);
   ctx.font = '400 15px "Space Grotesk",monospace';
   ctx.fillStyle = "rgba(240,230,208,0.22)";
   ctx.textAlign = "center";

@@ -96,7 +96,8 @@ function parseTeamRecordEvent(prompt) {
   if (!hasRecordIntent && !hasNflSeasonContext) return null;
 
   const anyTeamLanguage = /\b(a team|any team|some team)\b/.test(p);
-  return { wins, losses, anyTeamLanguage };
+  const teamWord = /\bteam\b/.test(p);
+  return { wins, losses, anyTeamLanguage: anyTeamLanguage || teamWord };
 }
 
 function logGamma(z) {
@@ -259,7 +260,7 @@ export function detectBaselineEvent(prompt) {
   }
 
   if (/\b17-0\b/.test(p) && (hasNflSeasonContext || hasSeasonContext || anyTeamLanguage)) {
-    const oneTeamPct = 0.03;
+    const oneTeamPct = 0.06;
     const seasonProbabilityPct = anyTeamLanguage
       ? clamp((1 - Math.pow(1 - oneTeamPct / 100, 32)) * 100, 0.02, 1.0)
       : oneTeamPct;
@@ -313,9 +314,9 @@ export function detectBaselineEvent(prompt) {
   }
 
   if (/\b0-17\b/.test(p) && (hasNflSeasonContext || hasSeasonContext || anyTeamLanguage)) {
-    const oneTeamPct = 1.1;
+    const oneTeamPct = 0.12;
     const seasonProbabilityPct = anyTeamLanguage
-      ? clamp((1 - Math.pow(1 - oneTeamPct / 100, 32)) * 100, 0.1, 15)
+      ? clamp((1 - Math.pow(1 - oneTeamPct / 100, 32)) * 100, 0.2, 4)
       : oneTeamPct;
     return {
       key: anyTeamLanguage ? "nfl_any_team_0_17_regular" : "nfl_team_0_17_regular",
@@ -425,6 +426,7 @@ export function parseSeasonStatIntent(prompt) {
     p
   );
   if (careerLike && !seasonLike) return null;
+  const exact = /\bexactly\b/.test(p);
   const normalized = p
     .replace(/,/g, "")
     .replace(/\brushers?\s+for\b/g, "rushes for")
@@ -443,18 +445,18 @@ export function parseSeasonStatIntent(prompt) {
     const threshold = Number(passing[1]);
     const metricWord = passing[2] || "";
     if (!Number.isFinite(threshold) || threshold < 1) return null;
-    if (/\byards?|yds?\b/.test(metricWord)) return { metric: "passing_yards", threshold };
-    return { metric: /\bint|interception|pick\b/.test(metricWord) ? "passing_interceptions" : "passing_tds", threshold };
+    if (/\byards?|yds?\b/.test(metricWord)) return { metric: "passing_yards", threshold, exact };
+    return { metric: /\bint|interception|pick\b/.test(metricWord) ? "passing_interceptions" : "passing_tds", threshold, exact };
   }
   const qbYards = normalized.match(/\b(\d{3,4})\+?\s+yards?\b/);
   if (qbYards && /\b(qb|quarterback|passing)\b/.test(normalized)) {
     const threshold = Number(qbYards[1]);
-    if (Number.isFinite(threshold) && threshold >= 500) return { metric: "passing_yards", threshold };
+    if (Number.isFinite(threshold) && threshold >= 500) return { metric: "passing_yards", threshold, exact };
   }
   const qbTds = normalized.match(/\b(\d{1,2})\+?\s+tds?\b/);
   if (qbTds && /\b(qb|quarterback|passing)\b/.test(normalized)) {
     const threshold = Number(qbTds[1]);
-    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "passing_tds", threshold };
+    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "passing_tds", threshold, exact };
   }
 
   const receivingTds = normalized.match(
@@ -462,7 +464,7 @@ export function parseSeasonStatIntent(prompt) {
   );
   if (receivingTds) {
     const threshold = Number(receivingTds[1]);
-    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "receiving_tds", threshold };
+    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "receiving_tds", threshold, exact };
   }
 
   const rushingTds = normalized.match(
@@ -470,25 +472,25 @@ export function parseSeasonStatIntent(prompt) {
   );
   if (rushingTds) {
     const threshold = Number(rushingTds[1]);
-    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "rushing_tds", threshold };
+    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "rushing_tds", threshold, exact };
   }
   const rushingTdsGets = normalized.match(
     /\b(?:gets?|has|records?|scores?|scored)\s+(\d{1,2})\+?\s+rushing\s+(tds?|touchdowns?)\b/
   );
   if (rushingTdsGets) {
     const threshold = Number(rushingTdsGets[1]);
-    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "rushing_tds", threshold };
+    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "rushing_tds", threshold, exact };
   }
   const rushingTdsCompact = normalized.match(/\b(\d{1,2})\+?\s+rushing\s+(tds?|touchdowns?)\b/);
   if (rushingTdsCompact) {
     const threshold = Number(rushingTdsCompact[1]);
-    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "rushing_tds", threshold };
+    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "rushing_tds", threshold, exact };
   }
 
   const receivingTdsCompact = normalized.match(/\b(\d{1,2})\+?\s+receiving\s+(tds?|touchdowns?)\b/);
   if (receivingTdsCompact) {
     const threshold = Number(receivingTdsCompact[1]);
-    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "receiving_tds", threshold };
+    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "receiving_tds", threshold, exact };
   }
 
   const totalTds =
@@ -498,12 +500,12 @@ export function parseSeasonStatIntent(prompt) {
     normalized.match(/\b(\d{1,2})\+?\s+(?:total\s+)?(tds?|touchdowns?)\b/);
   if (totalTds) {
     const threshold = Number(totalTds[1]);
-    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "total_tds", threshold };
+    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "total_tds", threshold, exact };
   }
   const bareTds = normalized.match(/\b(\d{1,2})\+?\s+tds?\b/);
   if (bareTds && !/\bpassing\b/.test(normalized) && !/\brushing\b/.test(normalized) && !/\breceiving\b/.test(normalized)) {
     const threshold = Number(bareTds[1]);
-    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "total_tds", threshold };
+    if (Number.isFinite(threshold) && threshold >= 1) return { metric: "total_tds", threshold, exact };
   }
 
   const receivingYards =
@@ -511,7 +513,7 @@ export function parseSeasonStatIntent(prompt) {
     normalized.match(/\b(\d{2,4})\+?\s+(receiving\s+)?(yards?|yds?)\b/);
   if (receivingYards && /\b(receiv\w*|catch\w*|rec)\b/.test(normalized)) {
     const threshold = Number(receivingYards[1]);
-    if (Number.isFinite(threshold) && threshold >= 10) return { metric: "receiving_yards", threshold };
+    if (Number.isFinite(threshold) && threshold >= 10) return { metric: "receiving_yards", threshold, exact };
   }
 
   const rushingYards = normalized.match(
@@ -519,19 +521,19 @@ export function parseSeasonStatIntent(prompt) {
   );
   if (rushingYards) {
     const threshold = Number(rushingYards[1]);
-    if (Number.isFinite(threshold) && threshold >= 10) return { metric: "rushing_yards", threshold };
+    if (Number.isFinite(threshold) && threshold >= 10) return { metric: "rushing_yards", threshold, exact };
   }
   const rushingYardsCompact = normalized.match(/\b(\d{2,4})\+?\s+rush(?:ing)?\b/);
   if (rushingYardsCompact) {
     const threshold = Number(rushingYardsCompact[1]);
-    if (Number.isFinite(threshold) && threshold >= 10) return { metric: "rushing_yards", threshold };
+    if (Number.isFinite(threshold) && threshold >= 10) return { metric: "rushing_yards", threshold, exact };
   }
   const rushingYardsGets = normalized.match(
     /\b(?:gets?|has|records?|posts?|puts up)\s+(\d{2,4})\+?\s+rushing\s+(yards?|yds?)\b/
   );
   if (rushingYardsGets) {
     const threshold = Number(rushingYardsGets[1]);
-    if (Number.isFinite(threshold) && threshold >= 10) return { metric: "rushing_yards", threshold };
+    if (Number.isFinite(threshold) && threshold >= 10) return { metric: "rushing_yards", threshold, exact };
   }
 
   const scrimmageYards = normalized.match(
@@ -539,7 +541,7 @@ export function parseSeasonStatIntent(prompt) {
   );
   if (scrimmageYards) {
     const threshold = Number(scrimmageYards[1]);
-    if (Number.isFinite(threshold) && threshold >= 50) return { metric: "scrimmage_yards", threshold };
+    if (Number.isFinite(threshold) && threshold >= 50) return { metric: "scrimmage_yards", threshold, exact };
   }
 
   const receptions = normalized.match(
@@ -547,10 +549,17 @@ export function parseSeasonStatIntent(prompt) {
   );
   if (receptions) {
     const threshold = Number(receptions[1]);
-    if (Number.isFinite(threshold) && threshold >= 5) return { metric: "receptions", threshold };
+    if (Number.isFinite(threshold) && threshold >= 5) return { metric: "receptions", threshold, exact };
   }
 
   return null;
+}
+
+function poissonPmf(lambda, k) {
+  if (!Number.isFinite(lambda) || lambda <= 0 || !Number.isFinite(k) || k < 0) return 0;
+  let log = -lambda + k * Math.log(lambda);
+  for (let i = 2; i <= k; i += 1) log -= Math.log(i);
+  return Math.exp(log);
 }
 
 function tierFromName(name) {
@@ -645,6 +654,145 @@ function weightedRecentMean(seasons, metricKey) {
   }
   if (!den) return null;
   return num / den;
+}
+
+function buildQbRushingLambda(profile, asOfDate) {
+  const dataset = loadQbSeasonData();
+  const fallback = Number(dataset?.league?.rushingYardsMean || 240);
+  if (!dataset?.players) {
+    return {
+      lambda: clamp(fallback, 40, 900),
+      modelType: "qb_rush_fallback",
+      sampleSeasons: 0,
+      staleYears: 0,
+      historyValues: [],
+    };
+  }
+
+  const key = normalizeName(profile?.name || "");
+  const row = dataset.players[key];
+  if (!row?.seasons?.length) {
+    return {
+      lambda: clamp(fallback, 40, 900),
+      modelType: "qb_rush_fallback",
+      sampleSeasons: 0,
+      staleYears: 0,
+      historyValues: [],
+    };
+  }
+
+  const valid = row.seasons.filter(
+    (s) => Number.isFinite(Number(s?.rushingYards)) && Number(s.games || 0) >= 6
+  );
+  if (!valid.length) {
+    return {
+      lambda: clamp(fallback, 40, 900),
+      modelType: "qb_rush_fallback",
+      sampleSeasons: 0,
+      staleYears: 0,
+      historyValues: [],
+    };
+  }
+
+  const recent = weightedRecentMean(valid, "rushingYards");
+  const longRunMean = valid.reduce((acc, s) => acc + Number(s.rushingYards || 0), 0) / valid.length;
+  const recentGames = Number(valid[0]?.games || 0);
+  const durabilityFactor = clamp(0.78 + recentGames / 60, 0.78, 1.08);
+  const reliabilityBase = clamp(0.25 + valid.length * 0.12 + recentGames / 200, 0.28, 0.82);
+  const asOfYear = Number(String(asOfDate || new Date().toISOString().slice(0, 10)).slice(0, 4));
+  const latestSeason = Number(dataset.latestSeason || valid[0]?.season || asOfYear - 1);
+  const staleYears = Math.max(0, asOfYear - latestSeason - 1);
+  const reliability = clamp(reliabilityBase * (staleYears >= 1 ? 0.92 : 1), 0.22, 0.84);
+
+  let lambda = clamp((((recent ?? longRunMean) * 0.7 + longRunMean * 0.3) * durabilityFactor), 40, 1200);
+  lambda = clamp(lambda * reliability + fallback * (1 - reliability), 40, 1200);
+
+  return {
+    lambda,
+    modelType: "qb_rush_history",
+    sampleSeasons: valid.length,
+    recentGames,
+    reliability,
+    staleYears,
+    historyValues: valid.map((s) => Number(s.rushingYards || 0)).filter((v) => Number.isFinite(v)),
+  };
+}
+
+function qbRushingPriorPct(threshold, recentValue) {
+  const recent = Number(recentValue || 0);
+  const archetype =
+    recent >= 700 ? "dual" :
+    recent >= 450 ? "mobile" :
+    "pocket";
+  if (threshold >= 1000) {
+    return archetype === "dual" ? 10 : archetype === "mobile" ? 7 : 3;
+  }
+  if (threshold >= 900) {
+    return archetype === "dual" ? 14 : archetype === "mobile" ? 9 : 4;
+  }
+  if (threshold >= 800) {
+    return archetype === "dual" ? 20 : archetype === "mobile" ? 12 : 6;
+  }
+  if (threshold >= 700) {
+    return archetype === "dual" ? 22 : archetype === "mobile" ? 15 : 7;
+  }
+  return archetype === "dual" ? 35 : archetype === "mobile" ? 22 : 12;
+}
+
+export function estimateAnyQbSeasonThreshold(metric, threshold, asOfDate) {
+  const dataset = loadQbSeasonData();
+  const safeMetric = metric === "passing_tds" ? "passingTds"
+    : metric === "passing_interceptions" ? "passingInts"
+    : metric === "passing_yards" ? "passingYards"
+    : metric === "rushing_yards" ? "rushingYards"
+    : null;
+
+  if (!dataset?.players || !safeMetric) {
+    return null;
+  }
+
+  const vals = [];
+  const latestSeason = Number(dataset.latestSeason || 0);
+  const minSeason = metric === "passing_yards" ? latestSeason - 8 : latestSeason - 12;
+  for (const row of Object.values(dataset.players)) {
+    for (const season of row.seasons || []) {
+      if (Number.isFinite(minSeason) && Number(season?.season || 0) < minSeason) continue;
+      const value = Number(season?.[safeMetric]);
+      if (Number.isFinite(value)) vals.push(value);
+    }
+  }
+  if (!vals.length) return null;
+
+  const hits = vals.filter((v) => v >= threshold).length;
+  const perQb = hits / vals.length;
+  let anyPct = clamp((1 - Math.pow(1 - perQb, 32)) * 100, 0.5, 95);
+  if (metric === "passing_yards" && threshold >= 5000) {
+    anyPct = clamp(anyPct, 5, 35);
+  }
+  return {
+    pct: anyPct,
+    label: `Any QB ${metric.replace(/_/g, " ")} ${threshold}`,
+  };
+}
+
+export function estimateAnySkillThreshold(metric, threshold, asOfDate) {
+  const dataset = loadSkillSeasonData();
+  if (!dataset?.players) return null;
+  const vals = [];
+  for (const row of Object.values(dataset.players)) {
+    for (const season of row.seasons || []) {
+      const value = Number(season?.[metric]);
+      if (Number.isFinite(value)) vals.push(value);
+    }
+  }
+  if (!vals.length) return null;
+  const hits = vals.filter((v) => v >= threshold).length;
+  const perPlayer = hits / vals.length;
+  const anyPct = clamp((1 - Math.pow(1 - perPlayer, 40)) * 100, 0.5, 95);
+  return {
+    pct: anyPct,
+    label: `Any player ${metric.replace(/_/g, " ")} ${threshold}`,
+  };
 }
 
 function buildPlayerSeasonLambda(profile, metric, calibration, asOfDate) {
@@ -859,11 +1007,14 @@ export function buildPlayerSeasonStatEstimate(prompt, intent, profile, asOfDate,
     };
   }
 
-  const modelInput = qbOnlyMetric
+  let modelInput = qbOnlyMetric
     ? buildPlayerSeasonLambda(profile, parsed.metric, calibration, asOfDate)
     : buildSkillSeasonLambda(profile, parsed.metric, asOfDate);
+  if (parsed.metric === "rushing_yards" && isQb) {
+    modelInput = buildQbRushingLambda(profile, asOfDate);
+  }
   let lambda = modelInput.lambda;
-  if (parsed.metric === "rushing_yards" && isQb && modelInput.modelType === "skill_fallback" && lambda < 100) {
+  if (parsed.metric === "rushing_yards" && isQb && modelInput.modelType === "qb_rush_fallback" && lambda < 80) {
     lambda = 240;
   }
 
@@ -915,10 +1066,14 @@ export function buildPlayerSeasonStatEstimate(prompt, intent, profile, asOfDate,
     }
   }
   let probabilityPct = clamp(tailProb * 100, 0.01, 99.9);
-  if (parsed.metric === "passing_tds" && parsed.threshold <= 10) {
+  if (parsed.exact) {
+    const exactProb = poissonPmf(lambda, parsed.threshold);
+    probabilityPct = clamp(exactProb * 100, 0.01, 99.9);
+  }
+  if (!parsed.exact && parsed.metric === "passing_tds" && parsed.threshold <= 10) {
     probabilityPct = Math.max(probabilityPct, 99.9);
   }
-  if (parsed.metric === "passing_tds" && parsed.threshold <= 5) {
+  if (!parsed.exact && parsed.metric === "passing_tds" && parsed.threshold <= 5) {
     probabilityPct = Math.max(probabilityPct, 99.95);
   }
   if (parsed.metric === "passing_yards") {
@@ -927,12 +1082,30 @@ export function buildPlayerSeasonStatEstimate(prompt, intent, profile, asOfDate,
     probabilityPct = clamp(tailProb * 100, 0.01, 99.9);
   }
   if (parsed.metric === "rushing_yards" && isQb && parsed.threshold >= 600) {
-    const floor =
-      parsed.threshold >= 1000 ? 0.2 :
-      parsed.threshold >= 900 ? 0.25 :
-      parsed.threshold >= 800 ? 0.3 :
-      0.35;
-    probabilityPct = Math.max(probabilityPct, floor);
+    const history = Array.isArray(modelInput.historyValues) ? modelInput.historyValues : [];
+    const recentValue = history.length ? history[0] : lambda;
+    const priorPct = qbRushingPriorPct(parsed.threshold, recentValue);
+    if (history.length) {
+      const hits = history.filter((v) => v >= parsed.threshold).length;
+      const near = history.filter((v) => v >= parsed.threshold * 0.9).length;
+      const empiricalPct = (hits / history.length) * 100;
+      const nearPct = (near / history.length) * 100;
+      const weight = clamp(history.length / 6, 0.25, 0.6);
+      probabilityPct = clamp(
+        priorPct * (1 - weight) + empiricalPct * weight,
+        0.01,
+        99.9
+      );
+      const floor = clamp(nearPct * 0.65, 4, 65);
+      probabilityPct = Math.max(probabilityPct, floor);
+    } else {
+      probabilityPct = Math.max(probabilityPct, priorPct);
+    }
+    if (parsed.threshold >= 1000) {
+      probabilityPct = clamp(probabilityPct, 5, 15);
+    } else if (parsed.threshold >= 700) {
+      probabilityPct = clamp(probabilityPct, 10, 25);
+    }
   }
   if (["receiving_yards", "rushing_yards", "receptions", "scrimmage_yards", "rushing_tds", "receiving_tds", "total_tds"].includes(parsed.metric)) {
     const seasons = getSkillPlayerSeasons(profile);
@@ -967,7 +1140,10 @@ export function buildPlayerSeasonStatEstimate(prompt, intent, profile, asOfDate,
     }
   }
 
-  const confidence = Number(modelInput.sampleSeasons || 0) === 0 ? "Low" : "High";
+  let confidence = Number(modelInput.sampleSeasons || 0) === 0 ? "Low" : "High";
+  if (parsed.metric === "rushing_yards" && isQb && parsed.threshold >= 900) {
+    confidence = "Low";
+  }
   return {
     status: "ok",
     odds: toAmericanOdds(probabilityPct),

@@ -529,15 +529,15 @@ body {
 }
 
 .odds-output.positive {
-  color: var(--green-win);
+  color: var(--text-primary);
 }
 
 .odds-output.negative {
-  color: var(--red-loss);
+  color: var(--text-primary);
 }
 
 .odds-output.even {
-  color: var(--text-amber);
+  color: var(--text-primary);
 }
 
 .odds-output.lock-mode {
