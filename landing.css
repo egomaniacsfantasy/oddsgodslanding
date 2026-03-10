@@ -254,6 +254,58 @@ body {
   font: inherit;
 }
 
+/* ── $100 contest promo bar ── */
+
+.promo-bar {
+  background: rgba(184, 125, 24, 0.06);
+  border-bottom: 1px solid rgba(184, 125, 24, 0.18);
+  position: relative;
+  z-index: 19;
+}
+
+.promo-bar-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.promo-bar-badge {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #0a0806;
+  background: var(--amber);
+  border-radius: 3px;
+  padding: 2px 8px;
+  flex-shrink: 0;
+}
+
+.promo-bar-text {
+  margin: 0;
+  font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: #d8ccb3;
+}
+
+.promo-bar-link {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--amber-soft);
+  text-decoration: none;
+}
+
+.promo-bar-link:hover {
+  color: var(--text);
+}
+
 main {
   max-width: 1180px;
   margin: 0 auto;
@@ -1835,6 +1887,117 @@ h1 {
   line-height: 1.1;
 }
 
+/* ── Roadmap / "What's next" section ── */
+
+.roadmap {
+  margin-top: 64px;
+  text-align: center;
+}
+
+.roadmap-eyebrow {
+  margin: 0 0 10px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.roadmap-items {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.roadmap-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.roadmap-status {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+
+.roadmap-status--live {
+  color: #0a0806;
+  background: var(--amber);
+}
+
+.roadmap-status--soon {
+  color: var(--amber-soft);
+  border: 1px solid rgba(184, 125, 24, 0.34);
+}
+
+.roadmap-status--later {
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
+.roadmap-label {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+/* ── Visual polish: H1 gradient, hover states ── */
+
+.hero h1 {
+  background: linear-gradient(135deg, var(--text) 0%, var(--amber-soft) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tool-showcase {
+  transition: border-color 400ms ease, box-shadow 400ms ease;
+}
+
+.tool-showcase:hover {
+  border-color: rgba(184, 125, 24, 0.25);
+  box-shadow: 0 0 60px rgba(184, 125, 24, 0.06);
+}
+
+.persona-card {
+  background: rgba(23, 18, 11, 0.6);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  backdrop-filter: blur(4px);
+  transition: border-color 300ms ease, transform 300ms ease;
+}
+
+.persona-card:hover {
+  border-color: rgba(184, 125, 24, 0.2);
+  transform: translateY(-2px);
+}
+
+.example-card {
+  transition: border-color 300ms ease, background 300ms ease;
+}
+
+.example-card:hover {
+  border-color: rgba(184, 125, 24, 0.35);
+  background: rgba(23, 18, 11, 0.9);
+}
+
+.step {
+  transition: background 300ms ease;
+}
+
+.step:hover {
+  background: rgba(184, 125, 24, 0.04);
+}
+
 .footer-brand {
   display: flex;
   flex-direction: column;
@@ -2236,6 +2399,23 @@ body.js-reveal .section-reveal.in-view .stagger-item:nth-child(4) {
   .closing-headline {
     white-space: normal;
     font-size: 28px;
+  }
+
+  .promo-bar-inner {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .roadmap-items {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .roadmap-item {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
   }
 }
 
