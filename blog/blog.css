@@ -1,0 +1,380 @@
+/* ═══ BLOG STYLES ═══
+   Extends landing.css — import both in blog pages
+   Fonts: Instrument Serif (headings), Space Grotesk (body)
+   Colors: same as landing.css variables
+   ═══════════════════ */
+
+/* ── Article layout ── */
+.blog-article {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 60px 20px 100px;
+  position: relative;
+  z-index: 4;
+}
+
+/* ── Article header ── */
+.blog-article-header {
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+.blog-article-category {
+  display: inline-block;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 16px;
+}
+
+.blog-article-title {
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--text);
+  margin: 0 0 20px;
+}
+
+.blog-article-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.blog-article-meta-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.5;
+}
+
+/* ── Hero image ── */
+.blog-hero-image {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto 48px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+.blog-hero-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── Article body ── */
+.blog-body {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.08rem;
+  line-height: 1.78;
+  color: #d8ccb3;
+}
+
+.blog-body h2 {
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-weight: 400;
+  color: var(--text);
+  margin: 56px 0 20px;
+  line-height: 1.15;
+}
+
+.blog-body h3 {
+  font-family: "Instrument Serif", serif;
+  font-size: 1.35rem;
+  font-weight: 400;
+  color: var(--text);
+  margin: 40px 0 16px;
+  line-height: 1.2;
+}
+
+.blog-body p {
+  margin: 0 0 24px;
+}
+
+.blog-body a {
+  color: var(--amber);
+  text-decoration: underline;
+  text-decoration-color: rgba(195, 136, 43, 0.3);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 150ms;
+}
+
+.blog-body a:hover {
+  text-decoration-color: var(--amber);
+}
+
+.blog-body strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.blog-body em {
+  font-style: italic;
+  color: #e0d4bc;
+}
+
+/* ── Lists ── */
+.blog-body ul,
+.blog-body ol {
+  margin: 0 0 24px;
+  padding-left: 24px;
+}
+
+.blog-body li {
+  margin-bottom: 8px;
+}
+
+.blog-body li::marker {
+  color: var(--amber);
+}
+
+/* ── Blockquote ── */
+.blog-body blockquote {
+  margin: 32px 0;
+  padding: 20px 24px;
+  border-left: 3px solid var(--amber);
+  background: rgba(195, 136, 43, 0.04);
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: #d8ccb3;
+}
+
+.blog-body blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Inline images ── */
+.blog-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  margin: 32px 0;
+  display: block;
+}
+
+.blog-body .image-caption {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+  margin-top: -24px;
+  margin-bottom: 32px;
+}
+
+/* ── Highlight box (for key stats or callouts) ── */
+.blog-highlight {
+  margin: 36px 0;
+  padding: 24px 28px;
+  background: rgba(195, 136, 43, 0.05);
+  border: 1px solid rgba(195, 136, 43, 0.15);
+  border-radius: 10px;
+}
+
+.blog-highlight-label {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 8px;
+}
+
+.blog-highlight p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* ── CTA box at end of articles ── */
+.blog-cta {
+  margin: 56px 0 0;
+  padding: 32px 28px;
+  background: linear-gradient(135deg, rgba(195, 136, 43, 0.08) 0%, rgba(195, 136, 43, 0.02) 100%);
+  border: 1px solid rgba(195, 136, 43, 0.2);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.blog-cta-title {
+  font-family: "Instrument Serif", serif;
+  font-size: 1.5rem;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.blog-cta-text {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: 0 0 20px;
+  line-height: 1.6;
+}
+
+.blog-cta .btn-primary {
+  display: inline-block;
+  color: #1a1207;
+  background: linear-gradient(135deg, #d9a351 0%, #af6f1f 100%);
+  border: 1px solid rgba(255, 228, 178, 0.42);
+  border-radius: 999px;
+  padding: 12px 28px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: filter 150ms, transform 150ms;
+}
+
+.blog-cta .btn-primary:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+/* ── Blog listing page ── */
+.blog-listing {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 60px 20px 100px;
+  position: relative;
+  z-index: 4;
+}
+
+.blog-listing-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.blog-listing-title {
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+  font-weight: 400;
+  color: var(--text);
+  margin: 0 0 12px;
+}
+
+.blog-listing-subtitle {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+/* ── Article cards on listing page ── */
+.blog-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.blog-card {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: border-color 200ms, background 200ms, transform 200ms;
+}
+
+.blog-card:hover {
+  border-color: rgba(195, 136, 43, 0.25);
+  background: rgba(195, 136, 43, 0.03);
+  transform: translateY(-2px);
+}
+
+.blog-card-image {
+  width: 180px;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+}
+
+.blog-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.blog-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.blog-card-category {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.blog-card-title {
+  font-family: "Instrument Serif", serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--text);
+  margin: 0;
+}
+
+.blog-card-excerpt {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.blog-card-meta {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.78rem;
+  color: rgba(155, 138, 110, 0.6);
+  margin-top: auto;
+}
+
+@media (max-width: 640px) {
+  .blog-card {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .blog-card-image {
+    width: 100%;
+    height: 180px;
+  }
+}
+
+/* ── Back to blog link on article pages ── */
+.blog-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 32px;
+  transition: color 150ms;
+}
+
+.blog-back:hover {
+  color: var(--amber);
+}
