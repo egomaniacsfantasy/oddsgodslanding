@@ -254,18 +254,13 @@
   margin-bottom: 48px;
 }
 
-.blog-listing-title {
-  font-family: "Instrument Serif", serif;
-  font-size: clamp(2.2rem, 5vw, 3.2rem);
-  font-weight: 400;
-  color: var(--text);
-  margin: 0 0 12px;
-}
-
-.blog-listing-subtitle {
+.blog-listing-eyebrow {
   font-family: "Space Grotesk", sans-serif;
-  font-size: 1rem;
-  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
 }
 
 /* ── Article cards on listing page ── */
@@ -277,11 +272,11 @@
 
 .blog-card {
   display: flex;
-  gap: 24px;
-  padding: 24px;
+  gap: 28px;
+  padding: 28px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 14px;
   text-decoration: none;
   transition: border-color 200ms, background 200ms, transform 200ms;
 }
@@ -289,29 +284,29 @@
 .blog-card:hover {
   border-color: rgba(195, 136, 43, 0.25);
   background: rgba(195, 136, 43, 0.03);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
 .blog-card-image {
-  width: 180px;
-  height: 120px;
-  border-radius: 8px;
+  width: 220px;
+  height: 140px;
+  border-radius: 10px;
   overflow: hidden;
   flex-shrink: 0;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.blog-card-image img {
+.blog-card-image svg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
 }
 
 .blog-card-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
+  justify-content: center;
 }
 
 .blog-card-category {
@@ -325,21 +320,21 @@
 
 .blog-card-title {
   font-family: "Instrument Serif", serif;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 400;
-  line-height: 1.2;
+  line-height: 1.25;
   color: var(--text);
   margin: 0;
 }
 
 .blog-card-excerpt {
   font-family: "Space Grotesk", sans-serif;
-  font-size: 0.88rem;
-  line-height: 1.5;
+  font-size: 0.9rem;
+  line-height: 1.55;
   color: var(--muted);
   margin: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
