@@ -15,7 +15,7 @@
 
 /* ── Article header ── */
 .blog-article-header {
-  margin-bottom: 48px;
+  margin-bottom: 56px;
   text-align: center;
 }
 
@@ -41,12 +41,33 @@
 
 .blog-article-meta {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
+  gap: 4px;
+  margin-top: 24px;
+}
+
+.blog-article-author {
   font-family: "Space Grotesk", sans-serif;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.blog-article-credential {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.8rem;
   color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.blog-article-dateline {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.82rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .blog-article-meta-dot {
@@ -372,4 +393,211 @@
 
 .blog-back:hover {
   color: var(--amber);
+}
+
+/* ═══ PICKS POST STYLES ═══ */
+
+.picks-hero {
+  text-align: center;
+  margin-bottom: 48px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid var(--line);
+}
+
+.picks-eyebrow {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--amber);
+  display: block;
+  margin-bottom: 20px;
+}
+
+.picks-headline {
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--text);
+  margin: 0 0 16px;
+}
+
+.picks-subhead {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* ── Individual pick cards ── */
+
+.pick-card {
+  margin-bottom: 24px;
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  transition: border-color 200ms;
+}
+
+.pick-card:hover {
+  border-color: rgba(195, 136, 43, 0.2);
+}
+
+.pick-card--lead {
+  border-color: rgba(195, 136, 43, 0.25);
+  background: rgba(195, 136, 43, 0.03);
+}
+
+.pick-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.pick-card-team {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pick-card-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.pick-card-team-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pick-card-team-name {
+  font-family: "Instrument Serif", serif;
+  font-size: 1.4rem;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.pick-card-opponent {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.8rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.pick-card-line {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.pick-card-line-value {
+  font-family: "Instrument Serif", serif;
+  font-size: 1.8rem;
+  color: var(--amber);
+  line-height: 1;
+}
+
+.pick-card-line-label {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pick-card-body {
+  margin-bottom: 16px;
+}
+
+.pick-card-body p {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #d8ccb3;
+  margin: 0;
+}
+
+.pick-card-model-edge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: rgba(195, 136, 43, 0.06);
+  border: 1px solid rgba(195, 136, 43, 0.15);
+  border-radius: 8px;
+}
+
+.pick-card-edge-label {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pick-card-edge-value {
+  font-family: "Instrument Serif", serif;
+  font-size: 1.1rem;
+  color: var(--amber);
+}
+
+/* ── Picks disclaimer ── */
+
+.picks-disclaimer {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.72rem;
+  color: rgba(155, 138, 110, 0.5);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ── Mobile adjustments ── */
+
+@media (max-width: 600px) {
+  .pick-card {
+    padding: 20px;
+  }
+
+  .pick-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .pick-card-line {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .pick-card-line-value {
+    font-size: 1.4rem;
+  }
+
+  .pick-card-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .pick-card-team-name {
+    font-size: 1.2rem;
+  }
+
 }

@@ -2036,8 +2036,10 @@ body.js-reveal .section-reveal.in-view .stagger-item:nth-child(4) {
   }
 
   .og-links {
-    position: fixed;
-    inset: 64px 0 0;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
     background: rgba(10, 8, 6, 0.98);
     border-top: 1px solid var(--line);
     display: none;
