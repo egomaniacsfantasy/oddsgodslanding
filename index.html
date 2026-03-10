@@ -49,7 +49,7 @@
         <nav class="og-links" id="nav-links">
           <div class="og-dropdown">
             <button class="og-dropdown-toggle" type="button" aria-haspopup="menu">
-              College Basketball <span class="og-dropdown-caret" aria-hidden="true">▾</span>
+              College Basketball <span class="og-dropdown-caret" aria-hidden="true">&#9662;</span>
             </button>
             <div class="og-dropdown-menu" role="menu" aria-label="College basketball tools">
               <a href="https://bracket.oddsgods.net" role="menuitem">The Bracket Lab</a>
@@ -62,15 +62,18 @@
       </div>
     </header>
 
+    <!-- ── $100 contest promo bar ── -->
     <div class="promo-bar">
       <div class="promo-bar-inner">
-        <span class="promo-bar-badge">$100</span>
-        <p class="promo-bar-text">Best bracket wins $100. Free to play.</p>
-        <a class="promo-bar-link" href="https://bracket.oddsgods.net/">Enter the Bracket Lab &rarr;</a>
+        <span class="promo-bar-badge">$100 PRIZE</span>
+        <p class="promo-bar-text">Build the best bracket. Win $100.</p>
+        <a class="promo-bar-link" href="https://bracket.oddsgods.net/">Enter now &rarr;</a>
       </div>
     </div>
 
     <main id="top">
+
+      <!-- ━━ HERO ━━ -->
       <section class="hero section-reveal">
         <div class="hero-ambient-glow" aria-hidden="true"></div>
         <svg class="hero-lightning" viewBox="0 0 700 520" aria-hidden="true">
@@ -103,7 +106,7 @@
           <img src="/logo-icon.png?v=20260225" alt="Odds Gods" class="hero-logo-icon" />
           <h1>Gods don&apos;t guess.<br />Neither should you.</h1>
           <p class="hero-subhead">
-            Every outcome has a price. Every bracket has a breaking point.
+            An interactive bracket that reprices every team&apos;s championship odds in real time &mdash; pick by pick.
           </p>
           <div class="hero-access-row">
             <div class="hero-access-badge">FREE</div>
@@ -112,7 +115,7 @@
           <div class="hero-actions">
             <a class="btn btn-primary cta-primary" href="https://bracket.oddsgods.net/">
               <span class="cta-icon" aria-hidden="true">🏀</span>
-              Build your NCAA bracket &rarr;
+              Build your bracket &rarr;
             </a>
           </div>
         </div>
@@ -144,36 +147,61 @@
         </div>
       </section>
 
+      <!-- ━━ HOW IT WORKS ━━ -->
       <section class="how-single section-reveal">
         <p class="how-kicker">THE BRACKET LAB <span class="beta-badge">BETA</span></p>
         <h3>One pick.<br />The whole tournament moves.</h3>
         <div class="step-grid stagger-container">
           <div class="step stagger-item">
             <p class="step-num">01</p>
-            <p class="step-title">LOCK A RESULT</p>
-            <p>Click any team. Your outcome becomes the assumption. Everything else adjusts.</p>
+            <p class="step-title">PICK A WINNER</p>
+            <p>Click any team. That result becomes the assumption. Everything else adjusts.</p>
           </div>
           <div class="step stagger-item">
             <p class="step-num">02</p>
-            <p class="step-title">WATCH THE REPRICE</p>
+            <p class="step-title">WATCH ODDS MOVE</p>
             <p>Every contender&apos;s title odds and advancement odds update instantly.</p>
           </div>
           <div class="step stagger-item">
             <p class="step-num">03</p>
             <p class="step-title">FIND YOUR EDGE</p>
-            <p>Stack picks. Stress-test scenarios. Learn what your bracket relies on.</p>
+            <p>Stack picks. Stress-test paths. See what your bracket actually relies on.</p>
           </div>
-        </div>
-
-        <div class="tool-cta-block">
-          <a href="https://bracket.oddsgods.net/" class="btn btn-primary cta-primary tool-cta">
-            <span class="cta-icon" aria-hidden="true">🏀</span>
-            Build your NCAA bracket &rarr;
-          </a>
-          <p class="tool-cta-sub">March Madness &middot; Free &middot; No signup</p>
         </div>
       </section>
 
+      <!-- ━━ EXAMPLES — the proof ━━ -->
+      <section class="how-single section-reveal">
+        <section class="examples" aria-label="Example outcomes">
+          <div class="examples-mask">
+            <div class="examples-track">
+              <article class="example-card example-bracket"><p>IF TENNESSEE ST SHOCKS ARIZONA</p><p>Michigan title odds</p><strong>13.1% &rarr; 16.0% &uarr;</strong></article>
+              <article class="example-card example-bracket"><p>IF FLORIDA WINS THE SOUTH</p><p>Florida title odds</p><strong>8.4% &rarr; 27.6% &uarr;</strong></article>
+              <article class="example-card example-bracket"><p>IF ALL 1-SEEDS WIN R64</p><p>Arizona title odds</p><strong>15.4% &rarr; 17.1% &uarr;</strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF TENNESSEE ST SHOCKS ARIZONA</p><p>Michigan title odds</p><strong>13.1% &rarr; 16.0% &uarr;</strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF FLORIDA WINS THE SOUTH</p><p>Florida title odds</p><strong>8.4% &rarr; 27.6% &uarr;</strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF ALL 1-SEEDS WIN R64</p><p>Arizona title odds</p><strong>15.4% &rarr; 17.1% &uarr;</strong></article>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- ━━ $100 CONTEST CTA ━━ -->
+      <section class="contest-cta section-reveal">
+        <div class="contest-cta-inner">
+          <span class="contest-cta-amount">$100</span>
+          <div class="contest-cta-copy">
+            <h3>Best bracket wins.</h3>
+            <p>Build your bracket in the Bracket Lab. The most accurate bracket at the end of the tournament takes home $100. No entry fee. No catch.</p>
+          </div>
+          <a class="btn btn-primary cta-primary" href="https://bracket.oddsgods.net/">
+            <span class="cta-icon" aria-hidden="true">🏆</span>
+            Enter the contest &rarr;
+          </a>
+        </div>
+      </section>
+
+      <!-- ━━ POWER RANKINGS ━━ -->
       <section class="tool-showcase tool-showcase--rankings section-reveal">
         <div class="tool-showcase-copy">
           <p class="tool-showcase-eyebrow">POWER RANKINGS</p>
@@ -201,60 +229,11 @@
         </div>
       </section>
 
-      <section class="how-single section-reveal">
-        <section class="examples" aria-label="Example outcomes">
-          <div class="examples-mask">
-            <div class="examples-track">
-              <article class="example-card example-bracket"><p>IF TENNESSEE ST SHOCKS ARIZONA</p><p>Michigan title odds</p><strong>13.1% &rarr; 16.0% &uarr;</strong></article>
-              <article class="example-card example-bracket"><p>IF FLORIDA WINS THE SOUTH</p><p>Florida title odds</p><strong>8.4% &rarr; 27.6% &uarr;</strong></article>
-              <article class="example-card example-bracket"><p>IF ALL 1-SEEDS WIN R64</p><p>Arizona title odds</p><strong>15.4% &rarr; 17.1% &uarr;</strong></article>
-              <article class="example-card example-bracket" aria-hidden="true"><p>IF TENNESSEE ST SHOCKS ARIZONA</p><p>Michigan title odds</p><strong>13.1% &rarr; 16.0% &uarr;</strong></article>
-              <article class="example-card example-bracket" aria-hidden="true"><p>IF FLORIDA WINS THE SOUTH</p><p>Florida title odds</p><strong>8.4% &rarr; 27.6% &uarr;</strong></article>
-              <article class="example-card example-bracket" aria-hidden="true"><p>IF ALL 1-SEEDS WIN R64</p><p>Arizona title odds</p><strong>15.4% &rarr; 17.1% &uarr;</strong></article>
-            </div>
-          </div>
-        </section>
-      </section>
-
-      <section class="personas section-reveal">
-        <h3>Built for anyone with a take.</h3>
-        <p class="personas-sub">You don&apos;t need to be a statistician. You just need to give a damn.</p>
-        <div class="persona-grid stagger-container">
-          <article class="persona-card stagger-item">
-            <div class="persona-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M3 17h18M6 14l3-4 3 2 5-6 2 3" /></svg>
-            </div>
-            <p class="persona-title">THE NERD</p>
-            <p>You already have a model. This is what it looks like when it talks back in prices.</p>
-          </article>
-          <article class="persona-card stagger-item">
-            <div class="persona-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M12 8v8M9.5 10c0-1 1-2 2.5-2s2.5 1 2.5 2-1 2-2.5 2-2.5 1-2.5 2 1 2 2.5 2 2.5-1 2.5-2" /></svg>
-            </div>
-            <p class="persona-title">THE DEGENERATE</p>
-            <p>You have a system. This tells you if the math agrees.</p>
-          </article>
-          <article class="persona-card stagger-item">
-            <div class="persona-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M4 13l4 2 8-5 4 2M6 18h12" /></svg>
-            </div>
-            <p class="persona-title">THE PURIST</p>
-            <p>You&apos;ve watched every play. Now see what the numbers say.</p>
-          </article>
-          <article class="persona-card stagger-item">
-            <div class="persona-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M12 4l2.4 4.8L20 9.6l-4 3.9.9 5.5L12 16.8 7.1 19l.9-5.5-4-3.9 5.6-.8z" /></svg>
-            </div>
-            <p class="persona-title">THE CASUAL</p>
-            <p>You fill out one bracket a year. This year, you stop guessing.</p>
-          </article>
-        </div>
-      </section>
-
+      <!-- ━━ MATCHUP PREDICTOR ━━ -->
       <section class="tool-showcase tool-showcase--predictor section-reveal">
         <div class="tool-showcase-copy">
           <p class="tool-showcase-eyebrow">MATCHUP PREDICTOR</p>
-          <h2 class="tool-showcase-headline">Settle the bar argument before tip.</h2>
+          <h2 class="tool-showcase-headline">Settle the argument before tip-off.</h2>
           <p class="tool-showcase-sub">
             Pick any two D1 teams. Get the win probability, the line, and the key stats driving the number.
           </p>
@@ -282,17 +261,66 @@
               </div>
             </div>
             <div class="tool-matchup-bar"><span style="width: 60.6%"></span></div>
-            <p class="tool-matchup-note">Current-season Elo, efficiency, rankings, and form all in one card.</p>
+            <p class="tool-matchup-note">Elo, efficiency, rankings, and form &mdash; all in one card.</p>
           </article>
         </div>
       </section>
 
+      <!-- ━━ PERSONAS ━━ -->
+      <section class="personas section-reveal">
+        <h3>Built for anyone with a take.</h3>
+        <p class="personas-sub">You don&apos;t need a model. You just need to give a damn.</p>
+        <div class="persona-grid stagger-container">
+          <article class="persona-card stagger-item">
+            <div class="persona-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M3 17h18M6 14l3-4 3 2 5-6 2 3" /></svg>
+            </div>
+            <p class="persona-title">THE NERD</p>
+            <p>You already have a model. This is what it looks like when it talks back in prices.</p>
+          </article>
+          <article class="persona-card stagger-item">
+            <div class="persona-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M12 8v8M9.5 10c0-1 1-2 2.5-2s2.5 1 2.5 2-1 2-2.5 2-2.5 1-2.5 2 1 2 2.5 2 2.5-1 2.5-2" /></svg>
+            </div>
+            <p class="persona-title">THE DEGENERATE</p>
+            <p>You live on the edge. This tells you when the math is on your side.</p>
+          </article>
+          <article class="persona-card stagger-item">
+            <div class="persona-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 13l4 2 8-5 4 2M6 18h12" /></svg>
+            </div>
+            <p class="persona-title">THE PURIST</p>
+            <p>You&apos;ve watched every game. Now see if the numbers agree.</p>
+          </article>
+          <article class="persona-card stagger-item">
+            <div class="persona-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 4l2.4 4.8L20 9.6l-4 3.9.9 5.5L12 16.8 7.1 19l.9-5.5-4-3.9 5.6-.8z" /></svg>
+            </div>
+            <p class="persona-title">THE CASUAL</p>
+            <p>One bracket a year. This year, make it count.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ━━ CLOSING CTA ━━ -->
+      <section class="closing-cta section-reveal">
+        <h2>Your bracket. Real odds. $100 on the line.</h2>
+        <p class="closing-cta-sub">Free to play. Takes five minutes. No signup required.</p>
+        <div class="hero-actions center">
+          <a class="btn btn-primary cta-primary" href="https://bracket.oddsgods.net/">
+            <span class="cta-icon" aria-hidden="true">🏀</span>
+            Build your bracket &rarr;
+          </a>
+        </div>
+      </section>
+
+      <!-- ━━ ROADMAP ━━ -->
       <section class="roadmap section-reveal">
         <p class="roadmap-eyebrow">WHAT&apos;S NEXT</p>
         <h3>College basketball is just the start.</h3>
         <div class="roadmap-items">
           <div class="roadmap-item">
-            <span class="roadmap-status roadmap-status--live">LIVE</span>
+            <span class="roadmap-status roadmap-status--live">LIVE NOW</span>
             <span class="roadmap-label">NCAA March Madness</span>
           </div>
           <div class="roadmap-item">

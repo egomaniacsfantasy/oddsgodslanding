@@ -306,6 +306,75 @@ body {
   color: var(--text);
 }
 
+/* ── $100 contest CTA section ── */
+
+.contest-cta {
+  margin: 48px 0 8px;
+}
+
+.contest-cta-inner {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 32px 36px;
+  border: 1px solid rgba(184, 125, 24, 0.28);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 0% 50%, rgba(184, 125, 24, 0.1), transparent 50%),
+    rgba(14, 12, 9, 0.7);
+}
+
+.contest-cta-amount {
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(3rem, 6vw, 4.5rem);
+  font-weight: 400;
+  line-height: 1;
+  color: var(--amber-soft);
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+
+.contest-cta-copy {
+  flex: 1;
+}
+
+.contest-cta-copy h3 {
+  margin: 0;
+  font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+  line-height: 1.1;
+}
+
+.contest-cta-copy p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* ── Closing CTA section ── */
+
+.closing-cta {
+  margin-top: 72px;
+  text-align: center;
+  padding: 56px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.closing-cta h2 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.05;
+  background: linear-gradient(135deg, var(--text) 20%, var(--amber-soft) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.closing-cta-sub {
+  margin: 16px 0 28px;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
 main {
   max-width: 1180px;
   margin: 0 auto;
@@ -2405,6 +2474,21 @@ body.js-reveal .section-reveal.in-view .stagger-item:nth-child(4) {
     flex-direction: column;
     gap: 6px;
     text-align: center;
+  }
+
+  .contest-cta-inner {
+    flex-direction: column;
+    text-align: center;
+    padding: 28px 22px;
+    gap: 20px;
+  }
+
+  .contest-cta-amount {
+    font-size: 3.5rem;
+  }
+
+  .closing-cta {
+    padding: 40px 16px;
   }
 
   .roadmap-items {
