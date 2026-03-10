@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog | Odds Gods</title>
+  <meta name="description" content="Insights, analysis, and guides from the Odds Gods team. March Madness probabilities, bracket strategy, and sports betting intelligence.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./landing.css">
+  <link rel="stylesheet" href="./blog.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="og-nav" id="site-nav">
+    <div class="og-nav-inner">
+      <a class="brand-lockup" href="https://oddsgods.net" aria-label="Odds Gods">
+        <img class="brand-logo" src="/logo-icon.png" alt="Odds Gods" width="24" height="24" />
+        <span class="og-wordmark"><span>ODDS</span> <strong>GODS</strong></span>
+      </a>
+      <button class="og-menu-btn" id="menu-btn" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
+      <nav class="og-links" id="nav-links">
+        <a href="https://bracket.oddsgods.net/">The Bracket Lab <span class="beta-badge">BETA</span></a>
+        <a href="https://blog.oddsgods.net" style="color: var(--text);">Blog</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="blog-listing">
+    <div class="blog-listing-header">
+      <h1 class="blog-listing-title">Blog</h1>
+      <p class="blog-listing-subtitle">Insights, analysis, and bracket strategy from Odds Gods.</p>
+    </div>
+
+    <div class="blog-cards">
+      <!-- Each article gets a card here. Add new cards at the top as articles are published. -->
+      <a href="/predicting-college-basketball-methodology" class="blog-card">
+        <div class="blog-card-content">
+          <span class="blog-card-category">Technical Methodology</span>
+          <h2 class="blog-card-title">Predicting College Basketball: A Complete Technical Methodology</h2>
+          <p class="blog-card-excerpt">A complete account of the design, engineering, and statistical reasoning behind a full-stack college basketball prediction system trained on 13 seasons and nearly 50,000 games.</p>
+          <span class="blog-card-meta">March 10, 2026 · 15 min read</span>
+        </div>
+      </a>
+      <a href="/how-one-upset-reshapes-march-madness" class="blog-card">
+        <div class="blog-card-content">
+          <span class="blog-card-category">Bracket Strategy</span>
+          <h2 class="blog-card-title">How One Upset Reshapes an Entire March Madness Region</h2>
+          <p class="blog-card-excerpt">Pick a 15-seed over a 2-seed and watch what happens to every other team's championship odds. The math behind why upsets cascade through the entire tournament.</p>
+          <span class="blog-card-meta">March 10, 2026 · 5 min read</span>
+        </div>
+      </a>
+      <!-- Future articles go here -->
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('menu-btn').addEventListener('click', function () {
+      var nav = document.getElementById('nav-links');
+      var open = nav.classList.toggle('open');
+      this.setAttribute('aria-expanded', open);
+    });
+  </script>
+
+  <footer class="og-footer">
+    <a class="footer-wordmark" href="/"><span>ODDS</span> <strong>GODS</strong></a>
+    <p>&copy; 2026 Odds Gods</p>
+    <div class="footer-links">
+      <a href="https://bracket.oddsgods.net">Bracket Lab</a>
+    </div>
+  </footer>
+</body>
+</html>

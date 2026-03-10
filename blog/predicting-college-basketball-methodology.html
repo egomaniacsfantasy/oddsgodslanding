@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Predicting College Basketball: A Complete Technical Methodology | Odds Gods Blog</title>
+  <meta name="description" content="A complete account of the design, engineering, and statistical reasoning behind OddsGods' full-stack college basketball prediction system. Custom Elo, gradient boosted trees, isotonic calibration, and 10,000-run Monte Carlo tournament simulations.">
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://blog.oddsgods.net/predicting-college-basketball-methodology">
+  <meta property="og:title" content="Predicting College Basketball: A Complete Technical Methodology">
+  <meta property="og:description" content="A complete account of the design, engineering, and statistical reasoning behind OddsGods' full-stack college basketball prediction system. Custom Elo, gradient boosted trees, isotonic calibration, and 10,000-run Monte Carlo tournament simulations.">
+  <meta property="og:site_name" content="Odds Gods">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./landing.css">
+  <link rel="stylesheet" href="./blog.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="og-nav" id="site-nav">
+    <div class="og-nav-inner">
+      <a class="brand-lockup" href="https://oddsgods.net" aria-label="Odds Gods">
+        <img class="brand-logo" src="/logo-icon.png" alt="Odds Gods" width="24" height="24" />
+        <span class="og-wordmark"><span>ODDS</span> <strong>GODS</strong></span>
+      </a>
+      <button class="og-menu-btn" id="menu-btn" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
+      <nav class="og-links" id="nav-links">
+        <a href="https://bracket.oddsgods.net/">The Bracket Lab <span class="beta-badge">BETA</span></a>
+        <a href="https://blog.oddsgods.net" style="color: var(--text);">Blog</a>
+      </nav>
+    </div>
+  </header>
+
+  <article class="blog-article">
+    <a href="/" class="blog-back">&larr; Back to Blog</a>
+
+    <header class="blog-article-header">
+      <span class="blog-article-category">Technical Methodology</span>
+      <h1 class="blog-article-title">Predicting College Basketball: A Complete Technical Methodology</h1>
+      <div class="blog-article-meta">
+        <span>Franco Castagliuolo (B.S. Data Analytics and Mathematical Sciences, Bentley University)</span>
+        <span class="blog-article-meta-dot"></span>
+        <span>March 10, 2026</span>
+        <span class="blog-article-meta-dot"></span>
+        <span>15 min read</span>
+      </div>
+    </header>
+
+    <div class="blog-body">
+      <p>What follows is a complete account of the design, engineering, and statistical reasoning behind a full stack college basketball prediction system. The system is built for all D1 college basketball games, with particular emphasis on accurately predicting NCAA Tournament games.</p>
+
+      <p>The pipeline ingests raw game data spanning 13 seasons (2014-2026). It engineers features such as team efficiency metrics, a custom Elo rating system, statistical rankings, and recent form. These features are used in a gradient boosted tree classifier training with rolling forward cross validation. The output probabilities are calibrated with isotonic regression on out of fold predictions. The trained model is used to simulate the NCAA and conference tournaments 10,000 times, collecting round by round advancement probabilities for every team; produce head to head probabilities for all 66,430 unique Division I matchups on a neutral floor, home, and away, and generate a custom team ranking system based on model probabilities.</p>
+
+      <h2>Data Collection and Preprocessing</h2>
+
+      <p>The dataset used for this system originates from Kaggle's long running NCAA basketball machine learning competition. It provides an abundance of data that serves as the foundation for an accurate predictive model. The Kaggle datasets cover seasons from 2003 through early February 2026 and include game results, location, date, detailed box score statistics, conference affiliation, and national ranking weekly snapshots from dozens of rating systems pulled from the Massey Rankings website. The master dataset is derived from these files. It is a single wide table in which each row represents one game and the columns contain engineered predictive variables computed from all data before the game. All variables represent a team's state entering the game to prevent leakage. The master dataset includes all NCAA basketball games from 2014-2026 and is approaching 50,000 games. Each row in the master dataset is from the perspective of "Team 1" (where they played the game, whether they won or lost, difference in predictive variables between them and Team 2, etc).</p>
+
+      <p>The predictive variables can be grouped into the following categories: game context, ranking systems, Elo based statistics, team efficiency and box score stats, and recent form. As for game context, I used Location and DayNum. Location represents whether the game was at home, away, or on a neutral floor from the perspective of Team 1. DayNum is the number of days that have elapsed since the first day of the season (Day 0). This is eventually used in Elo statistics for weighting games based on when they occurred in the season and identifying NCAA Tournament games. I selected six ranking systems as explanatory variables based on their reputation and prevalence in the dataset. They are KenPom, Moore, Whitlock, Massey, Bihl and NET rankings. KenPom is the most widely used adjusted efficiency metric and holds significant predictive value. Massey ratings are one of the original college basketball computer rating systems that emphasizes game results and strength of schedule, as do Bihl, Whitlock, and Moore, but each methodology is different to provide diversity among the ranking systems. NET is the official metric used by the NCAA and combines game results, strength of schedule, net efficiency, and scoring margin. NET is only available beginning in 2029, resulting in 39% missing values across the full dataset. The model deals with these missing values natively. The model uses the pairwise difference in each system's ranking between the teams as the input feature (Team 1 - Team 2).</p>
+
+      <h2>Custom Elo Rating System</h2>
+
+      <p>I developed a custom Elo rating system and derived three explanatory variables from it. The system was initialized at the beginning of the 2014 season where each team started at a rating of 1500. At the start of each subsequent season, team ratings regressed towards the mean of all elo ratings by 15%. The formula for the Elo at the start of the next season is 0.85*Elo_Previous_Season + 0.15*Elo_Mean. 85% of the previous season survives and I chose this number because historical program strength is something I think should be considered. Yes, the yearly roster turnover in college basketball is high, but coaching continuity and recruiting power are stable for consistently dominant teams and that should be taken into account. As for computing Elo, we first need expected win probability according to the standard Elo logistic formula. I first adjusted for home court advantage. If the winning team played at home, 50 elo points were subtracted from the losing team's Elo and if the winner played away, I added 50 points to the losing team's Elo. The expected win probability for the winning team is therefore:</p>
+
+      <div class="blog-highlight">
+        <div class="blog-highlight-label">Elo Win Probability Formula</div>
+        <p>1 / (1 + 10^((adjusted_elo_loser - elo_winner) / 400))</p>
+      </div>
+
+      <p>My construction of the K factor involved three combined multipliers. The K factor controls how much a single game moves ratings and my first component was "K_phase", which depends on the average number of games played by the two teams this season entering the game. If the average is less than 5, K_phase was 50, 5 to 19 saw K_phase set to 40, and 20 or more saw it set to 15. I chose this because early season games have high variance due to new rosters, status of team cohesion, and other circumstances. The high K value of 50 lets the Elo ratings respond quickly to new and early season information. Once we reach the final third of the regular season, the ratings have likely converged and stabilized and should be harder to move rapidly. The second component is the game quality multiplier (q_mult). This component considers the average Elo of the two teams, allowing games between two elite teams to move Elo more than games between two weak teams. The final component is what I call "cross conference boost" (cc_mult). The K component here is simply 1.75 if conferences differ and 1 otherwise. Cross conferences games crucially allow the model to compare teams from across the entire country. The higher weight will allow teams from power conferences who do extremely well in their non conference schedule to grow faster and establish conference strength. If the Big 12 teams have a collectively excellent performance during the non conference part of the season, the Elo ratings of teams in the Big 12 will be higher once we enter conference play, allowing in conference games between power conference teams to move ratings more than mid majors. This prevents dominant mid majors from occupying a high Elo just because they are obliterating weaker competition. This helps mitigate what I call the "Gonzaga problem". Gonzaga is a legitimately good team, but their Elo would be inflated if this conference adjustment wasn't taken into consideration. They would receive too much credit in a mediocre WCC without it.</p>
+
+      <div class="blog-highlight">
+        <div class="blog-highlight-label">K Factor Formula</div>
+        <p>K = K_phase × q_mult × cc_mult</p>
+        <p>New Elo (winner) = current Elo + K × (1 - E(winner))</p>
+        <p>New Elo (loser) = current Elo + K × (0 - (1 - E(winner)))</p>
+      </div>
+
+      <p>This feature is stored in the dataset and is each team's rating before the game that row represents has occurred, known as elo_last. I also computed a variable called elo_trend, which is the ordinary least squares slope of the team's Elo history for a particular season. It resembles the average Elo points gained or lost during the season. Finally, I have a strength of schedule variable based on Elo. The variable elo_sos is the expanding mean of opponents' pre game Elo up to but not including the current game. Both the raw Elo variables and differences between the two teams in these categories are inserted into the model.</p>
+
+      <h2>Efficiency Metrics and Recent Form</h2>
+
+      <p>The next group involves efficiency and box score statistics. These statistics are computed as the expanding mean of all prior games as the season progresses. For each efficiency metric, the model sees both teams' averages and their differential. The most important in terms of signal were differences in net rating, offensive rating, defensive rating, and offensive rebounding percentage. Finally, I added a recent form variable, which is simply the difference between the teams among the scoring margin in their last five games.</p>
+
+      <h2>Model Training, Validation, and Calibration</h2>
+
+      <p>The prediction model is a LightGBM gradient boosted decision tree binary classifier as the goal is to predict the probability that Team 1 wins. LightGBM builds an ensemble of decision trees sequentially, and each new tree is designed to correct the residual errors of all previous trees combined. There were 1,545 total trees producing a collective prediction with the goal being to minimize binary log loss. I added sample weights applied to the type of game. In the master dataset, game type is defined as either a regular season, conference tournament, or NCAA tournament game. I found it most important to accurately predict NCAA tournament games because they are the highest stakes and games we want to accurately predict the most, so I created a weighting structure that teaches the model to prioritize games later in the season, especially NCAA tournament games. Regular season games within the first 100 days of the season were given a weight of 1, regular season games beyond 100 and conference tournament games had a weight of 2, and NCAA tournament games had a weight of 6. This pushes the model to get late season games with higher stakes correct at the cost of higher error rates in early season games.</p>
+
+      <p>I used rolling forward cross validation with Optuna hyperparameter tuning. A standard k-fold cross validation would be inappropriate here. Given that our training set is from 2014-2023, a standard k-fold cross validation would see the model use data from future years to predict the past at times. Rolling forward cross validation is better in this case as the validation set is always after the training set sequentially. I used seven folds. Fold 1 trained on 2014-2016 and validated on 2017, Fold 2 trained on 2014-2017 and validated on 2018 and so on up until 2023. The primary validation metric is binary log loss, but I also tracked other metrics of interest such as AUC, accuracy, and Brier score to assess probabilistic calibration. Gradient boosted trees have many hyperparameters that have a direct impact on model performance and generalization. It is typical to use a randomized or grid search to extract the best hyperparameters, such as learning rate, maximum depth of each tree, and the minimum gain needed for a tree to split. This pipeline uses Optuna, which uses Bayesian optimization to find the best set of hyperparameters. Optuna utilizes a probabilistic model of which hyperparameter regions have typically produced good validation performance, then samples hyperparameter values from those regions. This is substantially more efficient than a typical grid or random search. 100 trials were run with early stopping if 20 consecutive trials resulted in no improvement in log loss. The final model is then trained on all games from 2014-2023 with Optuna's best set of hyperparameters, validated on the 2024 season, and 2025 is used as a test set.</p>
+
+      <p>The last adjustment I made was isotonic regression calibration of raw probability output from the model. Gradient boosted models are known to produce overconfident probabilities at the extremes; meaning Duke against a 16 seed could see Duke unrealistically close to 100% to win that game. Isotonic regression calibration helps us get to a point where the estimated win probability from the model is roughly equal to the win rate of the favorite in the game. If Duke vs Michigan has Duke as a 60% favorite, then roughly 60% of games between these teams should see Duke win. Isotonic regression calibration fits a non-parametric and monotonically increasing step function of raw model probabilities to empirical win probabilities. There are no assumptions about the structure of distribution of the data; it simply finds the best fitting monotone regression line to the data. We calibrate on out of fold predictions using the same rolling forward folds that we used in cross validation. The data for the isotonic regression line comes from model probabilities paired with actual outcomes.</p>
+
+      <h2>Performance, Limitations, and Future Improvements</h2>
+
+      <div class="blog-highlight">
+        <div class="blog-highlight-label">Model Performance</div>
+        <p><strong>2024 validation set:</strong> Log loss 0.551, Brier score 0.187, AUC 0.788, accuracy 71.32%. NCAA tournament accuracy: 71.64%.</p>
+        <p><strong>2025 test set:</strong> Log loss 0.54, Brier score 0.183, AUC 0.8, accuracy 72.56%. NCAA tournament: accuracy 77.61%, AUC 0.8865, Brier 0.153, log loss 0.473.</p>
+      </div>
+
+      <p>I consider this good performance when analyzing the full season in 2024 and 2025. This college basketball game prediction model in comparison to publicly available ones such as Evan Miya's lags in accuracy by about ~2%. In a Kaggle discussion regarding the competition where this data comes from, participants claimed that an ensemble of expert models produced a Brier score between approximately 0.170 and 0.175, leaving me behind that by around a point to a point and a half. I think that performance is especially promising given I only have one base model. It is well known that competition winning models are ensembles or stacked models where a diverse set of models work together to perform better than any one model on its own. I intend to create more base learners in the future with each trained on a different mix of variables to create diversity and speciality among the base learners. A key limitation is the inability to adjust to non-statistical information. Injuries and other emerging team circumstances cannot be captured by the current model. My idea is to develop a model designed for semantic analysis regarding that information. This will help the algorithm to adjust for non-statistical information.</p>
+
+      <h2>Tournament Simulations and Rankings</h2>
+
+      <p>Using the calibrated win probabilities for every potential matchup, we are able to produce a full probability distribution over every possible NCAA and conference tournament outcome. We also use those head to head win probabilities to create the OddsGods rankings. Before any simulation is run, the model is used to compute win probabilities for every possible head to head matchup in the country at each location (home, away, neutral floor) and those probabilities are stored in a dataset. These head to head probabilities are computed as of the current DayNum of the season. As for the NCAA tournament, we subset that dataset to the 68 teams who are projected to be or already in the tournament. However, this expands because we need to know the win probability for every potential round the teams could meet in the NCAA tournament, given that the model considers the DayNum of the season. There are sometimes small differences in head to head win probabilities based on the round. The dynamics of sweet 16 games are sometimes slightly different than the national championship, resulting in slightly different probabilities on occasion. The dataset is expanded such that we get the head to head win probabilities if the teams met in the first four (Day 1 and 2), first round (Day 1 and 2), second round (Day 1 and 2), Sweet 16 (Day 1 and 2), Elite 8 (Day 1 and 2), Final Four, and the National Championship. The simulation then runs 10,000 times referencing the head to head win probabilities for the appropriate round of each matchup. The simulation tracks the advancement of each team to every round to get the percentages you see on the brackets.</p>
+
+      <p>The separating feature that OddsGods provides is dynamically re-simulating the tournament as the user makes selections. The entire tournament re-prices whenever the user makes a selection. The tournament simulation is initialized with no results and 67 games to be played. When the user fills out the first four, the tournament is re-simulated 10,000 times with the simulation taking those results as given to show how the probabilities update as the user moves through the bracket. If the user selects the 1 over 16 in the East Region first round next, the tournament is simulated again with that result taken as given. The same process occurs every time a result is determined by the user. The same logic is used for conference tournaments.</p>
+
+      <h2>OddsGods Power Rankings</h2>
+
+      <p>The OddsGods power rankings uses the head to head win probabilities from the model to rank teams 1 through 365. It does not directly consider record, scoring margins, efficiency margins, or strength of schedule like other ranking systems. They are rather used indirectly as we use the model inputs (KenPom, Massey, OddsGods elo and elo SOS, etc) to predict the win probability for every matchup on a neutral floor. We compute the win probability on a neutral floor for all 66,430 unique matchups on the current date of the season. This gives us the expected win percentage on a neutral floor for each team against the other 364 Division I teams. The simplest way to rank the teams would be through average winning percentage against all 364 hypothetical opponents. This accounts for strength of schedule because each team plays the same hypothetical schedule, but the key limitation here is that we're treating each opponent roughly linearly. If beating Duke is extremely difficult (Duke average win% is 95) and a mid major is less difficult (say 75% average win%), beating Duke only rewards 20 percentage points more in a linear fashion, but this understates the difficulty of beating a team like Duke. Beating Duke is far more meaningful and difficult than the linear difference suggests. We use a Markov style ranking that makes the reward for beating a team proportional to how hard that team is to beat by anyone, which is a function of how hard their opponents are to beat, and so on recursively.</p>
+
+      <p>Consider the following example. We have three teams; A, B, and C. A is an elite team, B is average, and C is weak. The model says A beats B 90% of the time and C 98% of the time and B beats C 80% of the time. If we used average winning percentage, A is scored at 94%, B at 45%, and C at 11%. The Markov idea is that scores transmit through wins, and think of each team as holding a pile of "credit chips". After every iteration, each team concedes their chips to whoever beats them proportionally based on how likely they are to get beaten by each opponent. Let's consider each team starting with team A. Team A has a total exposure to being defeated of 12% (10% from team B and 2% from team C). Team B collects 10/12 = 83% of team A's "chips" and team C collects 2/12 = 17%. As for team B, their total exposure is 110% (90 from team A, 20 from team C). Team A collects 90/110 = 82% of team B's "chips" and team C collects 20/110 = 18%. As for team C, its total exposure to being beaten is 98+80 = 178%. Team A gets 98/178 = 55% of team C's "chips" and team B gets 80/178 = 45%.</p>
+
+      <p>Next, we use power iteration until convergence. Everyone starts with an equal amount of "credit chips" (each team with 1/3). In the first round, team A receives 82% of team B's chips and 55% of C's: 0.82×0.333 + 0.55×0.333 = 0.456. Team B receives 83% of team A's chips and 45% of team C's: 0.83×0.333 + 0.45×0.333 = 0.427. Team C receives 17% of A's chips and 18% of B's: 0.17×0.333 + 0.18×0.333 = 0.117. This process is repeated with the team scores from round 1 in round 2. Team A would receive 0.82×0.427 + 0.55×0.117 = 0.414 for example. This process continues until the scores converge. Now imagine doing this for all 365 teams. The final converged values for all 365 teams is their ranking "score". The reason this works better mathematically is because Markov scores compound. If you beat a team with a high score, it transfers a large amount of score to you. Therefore, beating a team with a very low score is worth almost nothing and beating an elite team changes scores noticeably. This solves the linear nature of average win percentage. It allows for more separation between elite, average, and poor teams because elite teams accumulate higher scores by beating each other. A team with a ranking of 1.0 is considered average.</p>
+    </div>
+
+    <div class="blog-cta">
+      <h3 class="blog-cta-title">Try Bracket Lab</h3>
+      <p class="blog-cta-text">Every pick reprices the entire tournament. See what your bracket actually means.</p>
+      <a href="https://bracket.oddsgods.net" class="btn-primary">Build your bracket &rarr;</a>
+    </div>
+  </article>
+
+  <script>
+    document.getElementById('menu-btn').addEventListener('click', function () {
+      var nav = document.getElementById('nav-links');
+      var open = nav.classList.toggle('open');
+      this.setAttribute('aria-expanded', open);
+    });
+  </script>
+
+  <footer class="og-footer">
+    <a class="footer-wordmark" href="/"><span>ODDS</span> <strong>GODS</strong></a>
+    <p>&copy; 2026 Odds Gods</p>
+    <div class="footer-links">
+      <a href="https://bracket.oddsgods.net">Bracket Lab</a>
+    </div>
+  </footer>
+</body>
+</html>
