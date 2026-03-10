@@ -15,6 +15,11 @@
       href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="../landing.css" />
     <link rel="stylesheet" href="../styles.css" />
   </head>
   <body>
@@ -25,19 +30,23 @@
 
     <header class="og-nav" id="site-nav">
       <div class="og-nav-inner">
-        <a class="brand-lockup" href="/" aria-label="Odds Gods">
-          <img class="brand-logo" src="/logo-icon.png?v=20260225b" alt="Odds Gods" width="32" height="32" />
+        <a class="brand-lockup" href="https://oddsgods.net" aria-label="Odds Gods">
+          <img class="brand-logo" src="/logo-icon.png?v=20260225b" alt="Odds Gods" width="24" height="24" />
           <span class="og-wordmark"><span>ODDS</span> <strong>GODS</strong></span>
         </a>
+        <button class="og-menu-btn" id="menu-btn" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
         <nav class="og-links" id="nav-links">
-          <a href="https://bracket.oddsgods.net/" class="nav-link">
-            The Bracket Lab
-            <span class="beta-badge">BETA</span>
-          </a>
-          <a href="https://wato.oddsgods.net/" class="nav-link is-active">
-            What Are the Odds?
-            <span class="beta-badge">BETA</span>
-          </a>
+          <div class="og-dropdown">
+            <button class="og-dropdown-toggle" type="button" aria-haspopup="menu">
+              College Basketball <span class="og-dropdown-caret" aria-hidden="true">&#9662;</span>
+            </button>
+            <div class="og-dropdown-menu" role="menu" aria-label="College basketball tools">
+              <a href="https://bracket.oddsgods.net/" role="menuitem">The Bracket Lab</a>
+              <a href="https://bracket.oddsgods.net/rankings" role="menuitem">Power Rankings</a>
+              <a href="https://bracket.oddsgods.net/predictor" role="menuitem">Matchup Predictor</a>
+            </div>
+          </div>
+          <a href="https://blog.oddsgods.net">Blog</a>
         </nav>
       </div>
     </header>
@@ -167,5 +176,19 @@
     <div id="share-toast" class="share-toast hidden" aria-live="polite"></div>
 
     <script src="../app.js"></script>
+    <script>
+      document.getElementById('menu-btn')?.addEventListener('click', function () {
+        var nav = document.getElementById('nav-links');
+        var open = nav.classList.toggle('open');
+        this.setAttribute('aria-expanded', open);
+      });
+    </script>
+    <footer class="og-footer">
+      <div class="footer-brand">
+        <img src="/logo-icon.png?v=20260225" class="footer-logo-icon" alt="Odds Gods" />
+        <p class="footer-wordmark"><span>ODDS</span> <strong>GODS</strong></p>
+      </div>
+      <div class="footer-meta">&copy; 2026 Odds Gods &middot; For entertainment purposes only.</div>
+    </footer>
   </body>
 </html>

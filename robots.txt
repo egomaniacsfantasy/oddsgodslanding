@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://oddsgods.net/sitemap.xml

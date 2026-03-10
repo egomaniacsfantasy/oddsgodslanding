@@ -1898,6 +1898,12 @@ h1 {
   font-size: 0.86rem;
 }
 
+.footer-meta {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
 .footer-links {
   display: flex;
   justify-content: flex-end;
