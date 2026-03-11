@@ -45,6 +45,8 @@ const demoUnderdogOdds = document.getElementById("demo-underdog-odds");
 const demoFavoriteSeed = document.getElementById("demo-favorite-seed");
 const demoFavoriteName = document.getElementById("demo-favorite-name");
 const demoFavoriteOdds = document.getElementById("demo-favorite-odds");
+const demoUnderdogLogo = document.getElementById("demo-underdog-logo");
+const demoFavoriteLogo = document.getElementById("demo-favorite-logo");
 const demoWato = document.getElementById("demo-wato");
 const demoWatoQuery = document.getElementById("demo-wato-query");
 const demoWatoOdds = document.getElementById("demo-wato-odds");
@@ -575,9 +577,11 @@ function runBracketDemo() {
       region: "West",
       underdogSeed: 16,
       underdog: "Tennessee St",
+      underdogLogo: 2634,
       underdogOdds: "+1600",
       favoriteSeed: 1,
       favorite: "Arizona",
+      favoriteLogo: 12,
       favoriteOdds: "-1600",
       rows: [
         { name: "Arizona", pct: 15.4, target: 0, delta: null, moving: false, featured: true, eliminated: false },
@@ -592,9 +596,11 @@ function runBracketDemo() {
       region: "East",
       underdogSeed: 16,
       underdog: "Cent Arkansas",
+      underdogLogo: 2110,
       underdogOdds: "+9200",
       favoriteSeed: 1,
       favorite: "Duke",
+      favoriteLogo: 150,
       favoriteOdds: "-9200",
       rows: [
         { name: "Duke", pct: 18.8, target: 0, delta: null, moving: false, featured: true, eliminated: false },
@@ -609,9 +615,11 @@ function runBracketDemo() {
       region: "South",
       underdogSeed: 14,
       underdog: "Troy",
+      underdogLogo: 2653,
       underdogOdds: "+709",
       favoriteSeed: 3,
       favorite: "Purdue",
+      favoriteLogo: 2509,
       favoriteOdds: "-709",
       rows: [
         { name: "Purdue", pct: 4.6, target: 0, delta: null, moving: false, featured: true, eliminated: false },
@@ -689,6 +697,8 @@ function runBracketDemo() {
     demoFavoriteSeed.textContent = String(scenario.favoriteSeed);
     demoFavoriteName.textContent = scenario.favorite;
     demoFavoriteOdds.textContent = scenario.favoriteOdds;
+    if (demoUnderdogLogo) demoUnderdogLogo.src = `https://a.espncdn.com/i/teamlogos/ncaa/500/${scenario.underdogLogo}.png`;
+    if (demoFavoriteLogo) demoFavoriteLogo.src = `https://a.espncdn.com/i/teamlogos/ncaa/500/${scenario.favoriteLogo}.png`;
   }
 
   function resetBaseline(rows) {

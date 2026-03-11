@@ -1011,7 +1011,6 @@ h1 {
   width: 20px;
   height: 20px;
   object-fit: contain;
-  border-radius: 50%;
   flex-shrink: 0;
 }
 
@@ -2652,7 +2651,6 @@ body.js-reveal .section-reveal.in-view .stagger-item:nth-child(4) {
   width: 22px;
   height: 22px;
   object-fit: contain;
-  border-radius: 50%;
   vertical-align: middle;
   margin-right: 6px;
 }
