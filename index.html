@@ -131,11 +131,13 @@
               <p class="demo-game-meta" id="demo-game-meta">R64  Tennessee St  +1600  vs  Arizona  -1600</p>
               <div class="demo-team-row" id="demo-underdog-row">
                 <span class="demo-seed" id="demo-underdog-seed">16</span>
+                <img class="demo-team-logo" src="https://a.espncdn.com/i/teamlogos/ncaa/500/2554.png" alt="">
                 <span class="demo-team-name" id="demo-underdog-name">Tennessee St</span>
                 <span class="demo-odds-value" id="demo-underdog-odds">+1600</span>
               </div>
               <div class="demo-team-row demo-favorite">
                 <span class="demo-seed" id="demo-favorite-seed">1</span>
+                <img class="demo-team-logo" src="https://a.espncdn.com/i/teamlogos/ncaa/500/12.png" alt="">
                 <span class="demo-team-name" id="demo-favorite-name">Arizona</span>
                 <span class="demo-odds-value" id="demo-favorite-odds">-1600</span>
               </div>
@@ -218,11 +220,11 @@
               <span>Neutral-floor model</span>
             </div>
             <ol class="tool-rank-list">
-              <li><span>#1 Duke</span><strong>ACC</strong></li>
-              <li><span>#2 Arizona</span><strong>Big 12</strong></li>
-              <li><span>#3 Michigan</span><strong>Big Ten</strong></li>
-              <li><span>#4 Florida</span><strong>SEC</strong></li>
-              <li><span>#5 Houston</span><strong>Big 12</strong></li>
+              <li><span><img class="rank-logo" src="https://a.espncdn.com/i/teamlogos/ncaa/500/150.png" alt="">#1 Duke</span><strong>ACC</strong></li>
+              <li><span><img class="rank-logo" src="https://a.espncdn.com/i/teamlogos/ncaa/500/12.png" alt="">#2 Arizona</span><strong>Big 12</strong></li>
+              <li><span><img class="rank-logo" src="https://a.espncdn.com/i/teamlogos/ncaa/500/130.png" alt="">#3 Michigan</span><strong>Big Ten</strong></li>
+              <li><span><img class="rank-logo" src="https://a.espncdn.com/i/teamlogos/ncaa/500/57.png" alt="">#4 Florida</span><strong>SEC</strong></li>
+              <li><span><img class="rank-logo" src="https://a.espncdn.com/i/teamlogos/ncaa/500/248.png" alt="">#5 Houston</span><strong>Big 12</strong></li>
             </ol>
             <p class="tool-rank-note">Built from expected head-to-head results, not poll inertia.</p>
           </article>
@@ -248,6 +250,7 @@
             <div class="tool-matchup-main">
               <div class="tool-matchup-team">
                 <span class="tool-matchup-badge">1 seed</span>
+                <img class="matchup-logo" src="https://a.espncdn.com/i/teamlogos/ncaa/500/150.png" alt="">
                 <strong>Duke</strong>
                 <span class="tool-matchup-odds">-154</span>
                 <small>60.6%</small>
@@ -255,6 +258,7 @@
               <span class="tool-matchup-vs">VS</span>
               <div class="tool-matchup-team">
                 <span class="tool-matchup-badge">2 seed</span>
+                <img class="matchup-logo" src="https://a.espncdn.com/i/teamlogos/ncaa/500/57.png" alt="">
                 <strong>Florida</strong>
                 <span class="tool-matchup-odds">+154</span>
                 <small>39.4%</small>
@@ -337,18 +341,20 @@
     </main>
 
     <footer class="og-footer">
-      <div class="footer-brand">
+      <div class="footer-left">
         <img src="/logo-icon.png?v=20260225" class="footer-logo-icon" alt="Odds Gods" />
         <p class="footer-wordmark"><span>ODDS</span> <strong>GODS</strong></p>
-        <p class="footer-tool-links">
-          <a href="https://bracket.oddsgods.net/">The Bracket Lab</a>
-          <a href="https://bracket.oddsgods.net/rankings">Power Rankings</a>
-          <a href="https://bracket.oddsgods.net/predictor">Matchup Predictor</a>
-          <a href="https://blog.oddsgods.net">Blog</a>
-        </p>
-        <p class="footer-coming">Fantasy football &middot; Fall 2026</p>
       </div>
-      <div class="footer-meta">&copy; 2026 Odds Gods &middot; For entertainment purposes only.</div>
+      <nav class="footer-tool-links">
+        <a href="https://bracket.oddsgods.net/">The Bracket Lab</a>
+        <a href="https://bracket.oddsgods.net/rankings">Power Rankings</a>
+        <a href="https://bracket.oddsgods.net/predictor">Matchup Predictor</a>
+        <a href="https://blog.oddsgods.net">Blog</a>
+      </nav>
+      <div class="footer-right">
+        <p class="footer-coming">Fantasy football &middot; Fall 2026</p>
+        <p class="footer-meta">&copy; 2026 Odds Gods</p>
+      </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
