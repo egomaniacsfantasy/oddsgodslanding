@@ -608,6 +608,28 @@ h1 {
   z-index: 3;
 }
 
+.tool-featured {
+  font-size: 11px;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(240, 230, 208, 0.45);
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.tool-featured a {
+  color: #b87d18;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(184, 125, 24, 0.3);
+  transition: border-color 0.2s;
+}
+
+.tool-featured a:hover {
+  border-bottom-color: #b87d18;
+}
+
 .hero-actions.center {
   justify-content: center;
 }
@@ -2143,6 +2165,28 @@ h1 {
   color: var(--muted);
   font-size: 0.82rem;
   white-space: nowrap;
+}
+
+.footer-meta-links {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 11px;
+}
+
+.footer-meta-links a {
+  color: rgba(240, 230, 208, 0.3);
+  text-decoration: none;
+}
+
+.footer-meta-links a:hover {
+  color: rgba(240, 230, 208, 0.5);
+}
+
+.footer-sep {
+  color: rgba(240, 230, 208, 0.15);
+  margin: 0 8px;
 }
 
 .footer-links {
