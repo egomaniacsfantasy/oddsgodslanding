@@ -143,6 +143,15 @@ body {
   text-transform: uppercase;
 }
 
+.footer-wordmark--brand {
+  color: #b87d18;
+  font-size: 1.45rem;
+  font-style: italic;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
 .footer-wordmark strong {
   color: #fae8c7;
   font-weight: 700;
