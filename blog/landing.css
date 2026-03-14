@@ -80,32 +80,39 @@ body {
 .og-nav {
   position: sticky;
   top: 0;
-  z-index: 20;
-  background: rgba(14, 12, 9, 0.92);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid transparent;
-  transition: border-color 220ms ease;
-  z-index: 20;
+  z-index: 120;
+  background: #0e0c09;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(171, 138, 69, 0.15);
 }
 
 .og-nav.is-scrolled {
-  border-bottom-color: var(--line);
+  border-bottom-color: rgba(171, 138, 69, 0.15);
 }
 
 .og-nav-inner {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 14px 20px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 16px;
 }
 
 .brand-lockup {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.brand-lockup:visited,
+.brand-lockup:hover,
+.brand-lockup:active {
+  color: inherit;
   text-decoration: none;
 }
 
@@ -113,12 +120,20 @@ body {
   width: 24px;
   height: 24px;
   flex: 0 0 24px;
-  border-radius: 4px;
   object-fit: contain;
   display: block;
+  filter: none !important;
 }
 
-.og-wordmark,
+.og-wordmark {
+  text-decoration: none;
+  color: #b87d18;
+  font-family: "Instrument Serif", serif;
+  font-size: 1.45rem;
+  font-style: italic;
+  line-height: 1;
+}
+
 .footer-wordmark {
   text-decoration: none;
   color: var(--text);
@@ -128,7 +143,6 @@ body {
   text-transform: uppercase;
 }
 
-.og-wordmark strong,
 .footer-wordmark strong {
   color: #fae8c7;
   font-weight: 700;
@@ -248,6 +262,14 @@ body {
   margin-left: 6px;
   position: relative;
   top: -1px;
+}
+
+.brand-lockup .beta-badge {
+  color: rgba(184, 125, 24, 0.9);
+  border: 1px solid rgba(184, 125, 24, 0.35);
+  margin-left: 9px;
+  align-self: center;
+  top: 0;
 }
 
 .og-menu-btn {
@@ -2118,9 +2140,17 @@ body.js-reveal .section-reveal.in-view .stagger-item:nth-child(4) {
 
 @media (max-width: 760px) {
   .brand-logo {
-    width: 18px;
-    height: 18px;
-    flex-basis: 18px;
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+  }
+
+  .brand-lockup {
+    gap: 8px;
+  }
+
+  .og-wordmark {
+    font-size: 1.2rem;
   }
 
   .og-menu-btn {
