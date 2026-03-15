@@ -11,20 +11,20 @@ const nav = document.getElementById("site-nav");
 const menuBtn = document.getElementById("menu-btn");
 const navLinks = document.getElementById("nav-links");
 
-const heroHoustonOdds = document.getElementById("hero-houston-odds");
-const heroLongwoodOdds = document.getElementById("hero-longwood-odds");
+const heroFavOdds = document.getElementById("hero-fav-odds");
+const heroDogOdds = document.getElementById("hero-dog-odds");
 const heroBracketNote = document.getElementById("hero-bracket-note");
 const heroTyped = document.getElementById("hero-typed");
 const heroOddsResult = document.getElementById("hero-odds-result");
 const heroImpliedResult = document.getElementById("hero-implied-result");
 
 const bracketButtons = Array.from(document.querySelectorAll(".team-chip"));
-const chipHouston = document.getElementById("chip-houston");
-const chipLongwood = document.getElementById("chip-longwood");
-const futuresKansas = document.getElementById("futures-kansas");
+const chipFavInline = document.getElementById("chip-fav-inline");
+const chipDogInline = document.getElementById("chip-dog-inline");
+const futuresArizona = document.getElementById("futures-arizona");
 const futuresHouston = document.getElementById("futures-houston");
 const futuresDuke = document.getElementById("futures-duke");
-const futuresTennessee = document.getElementById("futures-tennessee");
+const futuresMichigan = document.getElementById("futures-michigan");
 
 const miniOddsForm = document.getElementById("mini-odds-form");
 const miniInput = document.getElementById("mini-odds-input");
@@ -66,6 +66,16 @@ const watoResultEntityImage = document.getElementById("wato-result-entity-image"
 const watoResultEntityName = document.getElementById("wato-result-entity-name");
 
 const heroPromptExamples = [
+  {
+    prompt: "Arizona wins the national championship",
+    odds: "+502",
+    implied: "16.6% implied",
+  },
+  {
+    prompt: "A 12-seed makes the Elite Eight",
+    odds: "+280",
+    implied: "26.3% implied",
+  },
   { prompt: "Drake Maye wins NFL MVP before turning 25", odds: "+260" },
   { prompt: "Josh Allen wins a Super Bowl before he retires", odds: "-210" },
   { prompt: "Kenneth Walker III wins a second Super Bowl MVP", odds: "+5000" },
@@ -99,6 +109,8 @@ const heroPromptExamples = [
 ];
 
 const miniPlaceholders = [
+  "Arizona wins the national title",
+  "A 5-seed makes the Final Four",
   "Lamar Jackson wins back-to-back MVPs",
   "A team goes 19-0 before 2030",
   "Bills win the Super Bowl before the Chiefs do",
@@ -118,18 +130,18 @@ const WATO_EXAMPLES = [
 
 const heroBracketFrames = [
   {
-    houstonOdds: "-3040",
-    longwoodOdds: "+3040",
-    note: "South region · repricing around one lock",
+    favOdds: "-1986",
+    dogOdds: "+1986",
+    note: "West region · model baseline",
   },
   {
-    houstonOdds: "-3150",
-    longwoodOdds: "+3150",
-    note: "Model pass · futures pressure shifts",
+    favOdds: "-2096",
+    dogOdds: "+2096",
+    note: "Futures shift · path repriced",
   },
   {
-    houstonOdds: "-2990",
-    longwoodOdds: "+2990",
+    favOdds: "-1931",
+    dogOdds: "+1931",
     note: "Bracket weight settles after rerun",
   },
 ];
@@ -181,12 +193,12 @@ function revealOnScroll() {
 }
 
 function animateHeroBracket() {
-  if (!heroHoustonOdds || !heroLongwoodOdds || !heroBracketNote) return;
+  if (!heroFavOdds || !heroDogOdds || !heroBracketNote) return;
   window.setInterval(() => {
     heroFrameIndex = (heroFrameIndex + 1) % heroBracketFrames.length;
     const frame = heroBracketFrames[heroFrameIndex];
-    heroHoustonOdds.textContent = frame.houstonOdds;
-    heroLongwoodOdds.textContent = frame.longwoodOdds;
+    heroFavOdds.textContent = frame.favOdds;
+    heroDogOdds.textContent = frame.dogOdds;
     heroBracketNote.textContent = frame.note;
   }, 3400);
 }
@@ -207,6 +219,13 @@ function typeText(el, text, speed = 30) {
   });
 }
 
+function formatImpliedFromAmerican(oddsText) {
+  const odds = Number.parseInt(String(oddsText || "").trim(), 10);
+  if (!Number.isFinite(odds) || odds === 0) return "";
+  const implied = odds > 0 ? 100 / (odds + 100) : Math.abs(odds) / (Math.abs(odds) + 100);
+  return `${(implied * 100).toFixed(1)}% implied`;
+}
+
 async function animateHeroPrompt() {
   if (!heroTyped || !heroOddsResult || !heroImpliedResult) return;
 
@@ -215,7 +234,7 @@ async function animateHeroPrompt() {
     heroTyped.textContent = "";
     await typeText(heroTyped, frame.prompt, 24);
     heroOddsResult.textContent = frame.odds;
-    heroImpliedResult.textContent = frame.implied;
+    heroImpliedResult.textContent = frame.implied || formatImpliedFromAmerican(frame.odds);
     await new Promise((resolve) => window.setTimeout(resolve, 1800));
     heroTyped.textContent = "";
     heroPromptIndex = (heroPromptIndex + 1) % heroPromptExamples.length;
@@ -223,55 +242,65 @@ async function animateHeroPrompt() {
 }
 
 function setupBracketInline() {
-  if (!bracketButtons.length) return;
+  if (
+    !bracketButtons.length ||
+    !chipFavInline ||
+    !chipDogInline ||
+    !futuresArizona ||
+    !futuresDuke ||
+    !futuresMichigan ||
+    !futuresHouston
+  ) {
+    return;
+  }
 
   const neutral = {
-    houstonOdds: "-3330",
-    longwoodOdds: "+3330",
-    kansas: "14.2%",
-    houston: "11.8%",
-    duke: "9.7%",
-    tennessee: "7.0%",
+    favOdds: "-1986",
+    dogOdds: "+1986",
+    arizona: "16.6%",
+    duke: "16.1%",
+    michigan: "11.7%",
+    houston: "8.8%",
   };
   const outcomes = {
-    houston: {
-      houstonOdds: "-6400",
-      longwoodOdds: "+6400",
-      kansas: "13.1%",
-      houston: "17.2%",
-      duke: "9.1%",
-      tennessee: "6.8%",
-      deltas: { kansas: -1.1, houston: 5.4, duke: -0.6, tennessee: -0.2 },
+    duke: {
+      favOdds: "-5200",
+      dogOdds: "+5200",
+      arizona: "16.4%",
+      duke: "16.9%",
+      michigan: "11.6%",
+      houston: "8.7%",
+      deltas: { arizona: -0.2, duke: 0.8, michigan: -0.1, houston: -0.1 },
     },
-    longwood: {
-      houstonOdds: "+2500",
-      longwoodOdds: "-2500",
-      kansas: "18.3%",
-      houston: "3.4%",
-      duke: "11.5%",
-      tennessee: "8.2%",
-      deltas: { kansas: 4.1, houston: -8.4, duke: 1.8, tennessee: 1.2 },
+    siena: {
+      favOdds: "+2900",
+      dogOdds: "-2900",
+      arizona: "19.8%",
+      duke: "0.0%",
+      michigan: "13.9%",
+      houston: "10.5%",
+      deltas: { arizona: 3.2, duke: -16.1, michigan: 2.2, houston: 1.7 },
     },
   };
 
   function applyState(state, deltas) {
-    chipHouston.textContent = state.houstonOdds;
-    chipLongwood.textContent = state.longwoodOdds;
-    futuresKansas.textContent = state.kansas;
+    chipFavInline.textContent = state.favOdds;
+    chipDogInline.textContent = state.dogOdds;
+    futuresArizona.textContent = state.arizona;
     futuresHouston.textContent = state.houston;
     futuresDuke.textContent = state.duke;
-    futuresTennessee.textContent = state.tennessee;
+    futuresMichigan.textContent = state.michigan;
 
-    [futuresKansas, futuresHouston, futuresDuke, futuresTennessee].forEach((el) => {
+    [futuresArizona, futuresHouston, futuresDuke, futuresMichigan].forEach((el) => {
       el.classList.remove("is-up", "is-down");
     });
 
     if (deltas) {
       const map = [
-        [futuresKansas, deltas.kansas],
+        [futuresArizona, deltas.arizona],
         [futuresHouston, deltas.houston],
         [futuresDuke, deltas.duke],
-        [futuresTennessee, deltas.tennessee],
+        [futuresMichigan, deltas.michigan],
       ];
       map.forEach(([el, v]) => {
         if (v > 0) el.classList.add("is-up");
@@ -576,58 +605,58 @@ function runBracketDemo() {
     {
       region: "West",
       underdogSeed: 16,
-      underdog: "Tennessee St",
-      underdogLogo: 2634,
-      underdogOdds: "+1600",
+      underdog: "LIU Brooklyn",
+      underdogLogo: 112358,
+      underdogOdds: "+1986",
       favoriteSeed: 1,
       favorite: "Arizona",
       favoriteLogo: 12,
-      favoriteOdds: "-1600",
+      favoriteOdds: "-1986",
       rows: [
-        { name: "Arizona", pct: 15.4, target: 0, delta: null, moving: false, featured: true, eliminated: false },
-        { name: "Duke", pct: 18.8, target: 19.9, delta: "+1.1", moving: true, featured: false, eliminated: false },
-        { name: "Michigan", pct: 13.1, target: 16.0, delta: "+2.9", moving: true, featured: false, eliminated: false },
-        { name: "Florida", pct: 8.4, target: 9.7, delta: "+1.3", moving: true, featured: false, eliminated: false },
-        { name: "Illinois", pct: 6.4, target: 8.9, delta: "+2.5", moving: true, featured: false, eliminated: false },
-        { name: "Houston", pct: 6.7, target: 8.4, delta: "+1.7", moving: true, featured: false, eliminated: false },
+        { name: "Arizona", seed: 1, pct: 16.6, target: 0, delta: null, moving: false, featured: true, eliminated: false },
+        { name: "Duke", pct: 16.1, target: 19.3, delta: "+3.2", moving: true, featured: false, eliminated: false },
+        { name: "Michigan", pct: 11.7, target: 14.0, delta: "+2.3", moving: true, featured: false, eliminated: false },
+        { name: "Houston", pct: 8.8, target: 10.6, delta: "+1.8", moving: true, featured: false, eliminated: false },
+        { name: "Florida", pct: 7.9, target: 9.5, delta: "+1.6", moving: true, featured: false, eliminated: false },
+        { name: "Iowa St", pct: 7.1, target: 8.5, delta: "+1.4", moving: true, featured: false, eliminated: false },
       ],
     },
     {
       region: "East",
       underdogSeed: 16,
-      underdog: "Cent Arkansas",
-      underdogLogo: 2110,
-      underdogOdds: "+9200",
+      underdog: "Siena",
+      underdogLogo: 2561,
+      underdogOdds: "+1986",
       favoriteSeed: 1,
       favorite: "Duke",
       favoriteLogo: 150,
-      favoriteOdds: "-9200",
+      favoriteOdds: "-1986",
       rows: [
-        { name: "Duke", pct: 18.8, target: 0, delta: null, moving: false, featured: true, eliminated: false },
-        { name: "Arizona", pct: 15.4, target: 16.5, delta: "+1.1", moving: true, featured: false, eliminated: false },
-        { name: "Michigan", pct: 13.1, target: 14.0, delta: "+0.9", moving: true, featured: false, eliminated: false },
-        { name: "Florida", pct: 8.4, target: 10.6, delta: "+2.2", moving: true, featured: false, eliminated: false },
-        { name: "Houston", pct: 6.7, target: 7.8, delta: "+1.0", moving: true, featured: false, eliminated: false },
-        { name: "Illinois", pct: 6.4, target: 7.1, delta: "+0.6", moving: true, featured: false, eliminated: false },
+        { name: "Duke", seed: 1, pct: 16.1, target: 0, delta: null, moving: false, featured: true, eliminated: false },
+        { name: "Arizona", pct: 16.6, target: 19.8, delta: "+3.2", moving: true, featured: false, eliminated: false },
+        { name: "Michigan", pct: 11.7, target: 13.9, delta: "+2.2", moving: true, featured: false, eliminated: false },
+        { name: "Houston", pct: 8.8, target: 10.5, delta: "+1.7", moving: true, featured: false, eliminated: false },
+        { name: "Florida", pct: 7.9, target: 9.4, delta: "+1.5", moving: true, featured: false, eliminated: false },
+        { name: "Iowa St", pct: 7.1, target: 8.5, delta: "+1.4", moving: true, featured: false, eliminated: false },
       ],
     },
     {
       region: "South",
-      underdogSeed: 14,
-      underdog: "Troy",
-      underdogLogo: 2653,
-      underdogOdds: "+709",
-      favoriteSeed: 3,
-      favorite: "Purdue",
-      favoriteLogo: 2509,
-      favoriteOdds: "-709",
+      underdogSeed: 16,
+      underdog: "Prairie View",
+      underdogLogo: 2504,
+      underdogOdds: "+3425",
+      favoriteSeed: 1,
+      favorite: "Florida",
+      favoriteLogo: 57,
+      favoriteOdds: "-3425",
       rows: [
-        { name: "Purdue", pct: 4.6, target: 0, delta: null, moving: false, featured: true, eliminated: false },
-        { name: "Duke", pct: 18.8, target: 19.2, delta: "+0.4", moving: true, featured: false, eliminated: false },
-        { name: "Arizona", pct: 15.4, target: 15.7, delta: "+0.3", moving: true, featured: false, eliminated: false },
-        { name: "Michigan", pct: 13.1, target: 13.5, delta: "+0.4", moving: true, featured: false, eliminated: false },
-        { name: "Florida", pct: 8.4, target: 11.1, delta: "+2.7", moving: true, featured: false, eliminated: false },
-        { name: "Houston", pct: 6.7, target: 6.8, delta: "+0.1", moving: true, featured: false, eliminated: false },
+        { name: "Florida", seed: 1, pct: 7.9, target: 0, delta: null, moving: false, featured: true, eliminated: false },
+        { name: "Arizona", pct: 16.6, target: 18.0, delta: "+1.4", moving: true, featured: false, eliminated: false },
+        { name: "Duke", pct: 16.1, target: 17.5, delta: "+1.4", moving: true, featured: false, eliminated: false },
+        { name: "Michigan", pct: 11.7, target: 12.7, delta: "+1.0", moving: true, featured: false, eliminated: false },
+        { name: "Houston", pct: 8.8, target: 9.6, delta: "+0.8", moving: true, featured: false, eliminated: false },
+        { name: "Iowa St", pct: 7.1, target: 7.7, delta: "+0.6", moving: true, featured: false, eliminated: false },
       ],
     },
   ];
@@ -697,8 +726,14 @@ function runBracketDemo() {
     demoFavoriteSeed.textContent = String(scenario.favoriteSeed);
     demoFavoriteName.textContent = scenario.favorite;
     demoFavoriteOdds.textContent = scenario.favoriteOdds;
-    if (demoUnderdogLogo) demoUnderdogLogo.src = `https://a.espncdn.com/i/teamlogos/ncaa/500/${scenario.underdogLogo}.png`;
-    if (demoFavoriteLogo) demoFavoriteLogo.src = `https://a.espncdn.com/i/teamlogos/ncaa/500/${scenario.favoriteLogo}.png`;
+    if (demoUnderdogLogo) {
+      demoUnderdogLogo.src = `https://a.espncdn.com/i/teamlogos/ncaa/500/${scenario.underdogLogo}.png`;
+      demoUnderdogLogo.alt = scenario.underdog;
+    }
+    if (demoFavoriteLogo) {
+      demoFavoriteLogo.src = `https://a.espncdn.com/i/teamlogos/ncaa/500/${scenario.favoriteLogo}.png`;
+      demoFavoriteLogo.alt = scenario.favorite;
+    }
   }
 
   function resetBaseline(rows) {
@@ -1423,8 +1458,12 @@ function initLandingPage() {
     document.body.classList.add("js-reveal");
   }
   revealOnScroll();
+  animateHeroBracket();
+  animateHeroPrompt();
+  setupBracketInline();
   setupLightningBackground();
   runBracketDemo();
+  setupWatoDemoWidget();
   setRotatingPlaceholder();
   loadApiVersion();
   setupMiniOddsForm();
