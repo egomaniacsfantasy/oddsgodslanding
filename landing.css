@@ -1902,7 +1902,7 @@ h1 {
   display: flex;
   gap: 12px;
   width: max-content;
-  animation: strip-move 40s linear infinite;
+  animation: strip-move 120s linear infinite;
 }
 
 .examples-track:hover {
