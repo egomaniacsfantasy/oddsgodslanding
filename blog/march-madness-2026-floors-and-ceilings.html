@@ -4,17 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>March Madness 2026: Initial Thoughts, Floors, and Ceilings | Odds Gods Blog</title>
-  <meta name="description" content="A team-by-team breakdown of every 2026 NCAA Tournament team, with realistic floors, upside ceilings, and the reasoning behind each projection.">
-  <!-- Open Graph -->
+  <meta name="description" content="Initial thoughts on the 2026 NCAA Tournament field, plus a floor and ceiling for every team in the bracket.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://blog.oddsgods.net/march-madness-2026-floors-and-ceilings">
   <meta property="og:title" content="March Madness 2026: Initial Thoughts, Floors, and Ceilings">
-  <meta property="og:description" content="A team-by-team breakdown of every 2026 NCAA Tournament team, with realistic floors, upside ceilings, and the reasoning behind each projection.">
+  <meta property="og:description" content="Initial thoughts on the 2026 NCAA Tournament field, plus a floor and ceiling for every team in the bracket.">
   <meta property="og:site_name" content="Odds Gods">
   <meta property="og:image" content="https://oddsgods.net/og-image.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="March Madness 2026: Initial Thoughts, Floors, and Ceilings" />
-  <meta name="twitter:description" content="A team-by-team breakdown of every 2026 NCAA Tournament team — floors, ceilings, and the reasoning behind each projection." />
+  <meta name="twitter:description" content="Initial thoughts on the 2026 NCAA Tournament field, plus a floor and ceiling for every team in the bracket." />
   <meta name="twitter:image" content="https://oddsgods.net/og-image.png" />
   <link rel="icon" href="/favicon.ico?v=20260315" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=20260315" />
@@ -41,49 +40,27 @@
   </script>
   <!-- End Meta Pixel Code -->
   <style>
-    .team-entry {
-      margin: 2rem 0;
-      padding: 1.25rem 1.5rem;
-      border-left: 3px solid rgba(195,136,43,0.4);
-      background: rgba(195,136,43,0.04);
-      border-radius: 0 6px 6px 0;
+    .section-header {
+      margin: 3rem 0 0.5rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(195,136,43,0.25);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(195,136,43,0.6);
     }
-    .team-entry h3 {
-      margin: 0 0 0.5rem 0;
+    .subsection-title {
+      margin: 2.5rem 0 0.6rem 0;
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.05rem;
+      font-size: 1.15rem;
       font-weight: 700;
       color: var(--text, #f0ede8);
-    }
-    .team-entry .team-lines {
-      display: flex;
-      gap: 2rem;
-      margin-bottom: 0.6rem;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.78rem;
-      color: rgba(195,136,43,0.9);
-    }
-    .team-entry .team-lines span {
-      display: flex;
-      flex-direction: column;
-      gap: 0.15rem;
-    }
-    .team-entry .team-lines .label {
-      font-size: 0.65rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: rgba(195,136,43,0.5);
-    }
-    .team-entry p {
-      margin: 0;
-      font-size: 0.93rem;
-      line-height: 1.65;
-      color: rgba(240,237,232,0.85);
     }
     .fc-table {
       width: 100%;
       border-collapse: collapse;
-      margin: 2rem 0 3rem 0;
+      margin: 1.5rem 0 3rem 0;
       font-family: 'IBM Plex Mono', monospace;
       font-size: 0.78rem;
     }
@@ -102,37 +79,18 @@
       border-bottom: 1px solid rgba(255,255,255,0.05);
       vertical-align: middle;
     }
-    .fc-table tr:last-child td {
-      border-bottom: none;
+    .fc-table tr:last-child td { border-bottom: none; }
+    .fc-table .ceiling-col { color: rgba(195,136,43,0.9); }
+    .fc-table .floor-col { color: rgba(240,237,232,0.45); }
+    .team-note {
+      margin: 1.75rem 0 0 0;
+      font-size: 0.93rem;
+      line-height: 1.68;
+      color: rgba(240,237,232,0.85);
     }
-    .fc-table .seed-col {
-      color: rgba(195,136,43,0.7);
-      width: 2.5rem;
-    }
-    .fc-table .region-row td {
-      padding-top: 1rem;
-      padding-bottom: 0.25rem;
-      font-size: 0.62rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: rgba(195,136,43,0.45);
-      border-bottom: 1px solid rgba(195,136,43,0.15);
-    }
-    .fc-table .floor-col {
-      color: rgba(240,237,232,0.5);
-    }
-    .fc-table .ceiling-col {
-      color: rgba(195,136,43,0.85);
-    }
-    .region-header {
-      margin: 3rem 0 1rem 0;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid rgba(195,136,43,0.25);
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: rgba(195,136,43,0.6);
+    .team-note strong {
+      color: var(--text, #f0ede8);
+      font-family: 'Space Grotesk', sans-serif;
     }
   </style>
 </head>
@@ -179,455 +137,117 @@
         <div class="blog-article-dateline">
           <span>March 16, 2026</span>
           <span class="blog-article-meta-dot"></span>
-          <span>12 min read</span>
+          <span>10 min read</span>
         </div>
       </div>
     </header>
 
     <div class="blog-body">
 
-      <p>The bracket is set. Every team's season has been distilled down to a seeding, a region, and a path. What follows is a team-by-team breakdown of every program in the 2026 NCAA Tournament field, with realistic floors, upside ceilings, and the reasoning behind each projection.</p>
+      <p class="section-header">Initial Thoughts</p>
 
-      <p>Floors and ceilings are not predictions &mdash; they are the range of plausible outcomes given what we know about a team's strengths, vulnerabilities, and bracket position. A floor is the worst reasonable outcome, excluding catastrophic upsets. A ceiling is the best we can honestly expect, grounded in the numbers rather than hype. The model's 10,000-run Monte Carlo simulations inform these ranges but do not dictate them; basketball is not played on a spreadsheet.</p>
+      <h2 class="subsection-title">Arizona: The Best Value Pick to Win It All</h2>
 
-      <p>A few themes define this field before we get into individual teams.</p>
+      <p>Duke and Arizona are neck-and-neck according to OddsGods. Arizona leads Duke by the narrowest of margins in our overall rankings, and holds an equally slim edge in championship win probability. Most bracket challenges and sportsbooks will list Duke and Michigan as the two clear favorites, but the analysts at OddsGods see it differently: Duke and Arizona are statistically identical, with Michigan a clear step behind as the third member of the big three.</p>
 
-      <p><strong>The East is loaded at the top.</strong> Duke and UConn are the two most complete programs in the country. Both have the talent and coaching to reach Atlanta. The path through the East is the hardest draw in the bracket.</p>
+      <p style="margin-top: 0.85rem;">Arizona sits nearly 100 Elo points ahead of Duke in our ratings, largely due to their sustained dominance against upper-echelon competition in the Big 12. Duke&rsquo;s r&eacute;sum&eacute; is impressive, but down the stretch Arizona has defeated elite team after elite team &mdash; Houston twice, Iowa State twice, Kansas &mdash; while Duke has been running it up against a weaker ACC. The bottom line is that there is near-zero separation between Duke and Arizona, who are clearly a tier above Michigan in our analytics. Arizona is a strong value pick in any bracket challenge, precisely because the overwhelming majority of the field will default to Duke or Michigan.</p>
 
-      <p><strong>Florida is the most complete team in the field.</strong> The Gators have the best efficiency differential, the deepest rotation, and the most favorable South draw. If this tournament goes chalky, Florida cuts the nets.</p>
+      <h2 class="subsection-title">UConn Is Fraudulent</h2>
 
-      <p><strong>Michigan earned the Midwest 1 seed but the region has teeth.</strong> Iowa State and Kentucky are dangerous. This is not a relaxed path to the Final Four.</p>
+      <p>I am personally picking UCLA over UConn in the second round. UCLA was the strongest of the 7-seeds, and that matchup significantly caps UConn&rsquo;s ceiling. Among the 2-seeds, UConn has by far the lowest probability of reaching the Sweet 16: Houston at 72%, Iowa State and Purdue at 73%, and UConn at just 59%. A hypothetical UConn&ndash;UCLA second-round game has UConn as only a &minus;135 favorite &mdash; and they would be an underdog against Michigan State in the Sweet 16. There is real value in fading them early in a bracket pool.</p>
 
-      <p><strong>Purdue is underseeded.</strong> A 2 seed in the West feels like a gift. The Boilermakers are a legitimate national championship contender, and Arizona &mdash; the 1 seed in the same region &mdash; is the only program in the field we would argue is clearly better.</p>
+      <h2 class="subsection-title">Best Cinderella: Akron to the Sweet 16</h2>
 
-      <p>Now, team by team.</p>
+      <p>Akron holds the highest first-round upset probability among all 12-seeds at 30% against Texas Tech, which is arguably the weakest of the 5-seeds. Akron ranks 7th in the country in raw offensive rating and 15th in raw net rating &mdash; they have the explosiveness and firepower to beat anyone on a given night. They also carry the highest Sweet 16 probability of any 12-seed at 11%, and a potential second-round matchup with Alabama &mdash; another offensively volatile team &mdash; would see Akron enter at 27%, not dissimilar to their odds against Texas Tech.</p>
+
+      <p class="section-header" style="margin-top: 3.5rem;">Floors and Ceilings</p>
 
       <table class="fc-table">
         <thead>
-          <tr>
-            <th class="seed-col">Seed</th>
-            <th>Team</th>
-            <th>Floor</th>
-            <th>Ceiling</th>
-          </tr>
+          <tr><th>Team</th><th>Ceiling</th><th>Floor</th></tr>
         </thead>
         <tbody>
-          <tr class="region-row"><td colspan="4">East</td></tr>
-          <tr><td class="seed-col">1</td><td>Duke</td><td class="floor-col">Elite Eight</td><td class="ceiling-col">National Championship</td></tr>
-          <tr><td class="seed-col">2</td><td>UConn</td><td class="floor-col">Elite Eight</td><td class="ceiling-col">National Championship</td></tr>
-          <tr><td class="seed-col">3</td><td>Michigan State</td><td class="floor-col">Second Round</td><td class="ceiling-col">Final Four</td></tr>
-          <tr><td class="seed-col">4</td><td>Kansas</td><td class="floor-col">Second Round</td><td class="ceiling-col">Elite Eight</td></tr>
-          <tr><td class="seed-col">5</td><td>St. John's</td><td class="floor-col">Second Round</td><td class="ceiling-col">Sweet Sixteen</td></tr>
-          <tr><td class="seed-col">6</td><td>Louisville</td><td class="floor-col">First Round</td><td class="ceiling-col">Sweet Sixteen</td></tr>
-          <tr><td class="seed-col">7</td><td>UCLA</td><td class="floor-col">First Round</td><td class="ceiling-col">Sweet Sixteen</td></tr>
-          <tr><td class="seed-col">8</td><td>Ohio State</td><td class="floor-col">First Round</td><td class="ceiling-col">Second Round</td></tr>
-          <tr><td class="seed-col">9</td><td>TCU</td><td class="floor-col">First Round</td><td class="ceiling-col">Second Round</td></tr>
-          <tr class="region-row"><td colspan="4">South</td></tr>
-          <tr><td class="seed-col">1</td><td>Florida</td><td class="floor-col">Elite Eight</td><td class="ceiling-col">National Championship</td></tr>
-          <tr><td class="seed-col">2</td><td>Houston</td><td class="floor-col">Sweet Sixteen</td><td class="ceiling-col">National Championship</td></tr>
-          <tr><td class="seed-col">3</td><td>Illinois</td><td class="floor-col">Second Round</td><td class="ceiling-col">Final Four</td></tr>
-          <tr><td class="seed-col">4</td><td>Nebraska</td><td class="floor-col">Second Round</td><td class="ceiling-col">Sweet Sixteen</td></tr>
-          <tr><td class="seed-col">5</td><td>Vanderbilt</td><td class="floor-col">Second Round</td><td class="ceiling-col">Sweet Sixteen</td></tr>
-          <tr><td class="seed-col">6</td><td>North Carolina</td><td class="floor-col">First Round</td><td class="ceiling-col">Elite Eight</td></tr>
-          <tr><td class="seed-col">7</td><td>Saint Mary's</td><td class="floor-col">First Round</td><td class="ceiling-col">Sweet Sixteen</td></tr>
-          <tr><td class="seed-col">8</td><td>Clemson</td><td class="floor-col">First Round</td><td class="ceiling-col">Second Round</td></tr>
-          <tr><td class="seed-col">9</td><td>Iowa</td><td class="floor-col">First Round</td><td class="ceiling-col">Second Round</td></tr>
-          <tr class="region-row"><td colspan="4">Midwest</td></tr>
-          <tr><td class="seed-col">1</td><td>Michigan</td><td class="floor-col">Sweet Sixteen</td><td class="ceiling-col">National Championship</td></tr>
-          <tr><td class="seed-col">2</td><td>Iowa State</td><td class="floor-col">Sweet Sixteen</td><td class="ceiling-col">Final Four</td></tr>
-          <tr><td class="seed-col">3</td><td>Virginia</td><td class="floor-col">Second Round</td><td class="ceiling-col">Elite Eight</td></tr>
-          <tr><td class="seed-col">4</td><td>Alabama</td><td class="floor-col">Second Round</td><td class="ceiling-col">Sweet Sixteen</td></tr>
-          <tr><td class="seed-col">5</td><td>Texas Tech</td><td class="floor-col">Second Round</td><td class="ceiling-col">Sweet Sixteen</td></tr>
-          <tr><td class="seed-col">6</td><td>Tennessee</td><td class="floor-col">Second Round</td><td class="ceiling-col">Sweet Sixteen</td></tr>
-          <tr><td class="seed-col">7</td><td>Kentucky</td><td class="floor-col">Second Round</td><td class="ceiling-col">Elite Eight</td></tr>
-          <tr><td class="seed-col">8</td><td>Georgia</td><td class="floor-col">First Round</td><td class="ceiling-col">Second Round</td></tr>
-          <tr><td class="seed-col">9</td><td>Saint Louis</td><td class="floor-col">First Round</td><td class="ceiling-col">Second Round</td></tr>
-          <tr><td class="seed-col">10</td><td>Santa Clara</td><td class="floor-col">First Round</td><td class="ceiling-col">Second Round</td></tr>
-          <tr><td class="seed-col">12</td><td>Akron</td><td class="floor-col">First Round</td><td class="ceiling-col">Second Round</td></tr>
-          <tr class="region-row"><td colspan="4">West</td></tr>
-          <tr><td class="seed-col">1</td><td>Arizona</td><td class="floor-col">Sweet Sixteen</td><td class="ceiling-col">National Championship</td></tr>
-          <tr><td class="seed-col">2</td><td>Purdue</td><td class="floor-col">Elite Eight</td><td class="ceiling-col">National Championship (Final)</td></tr>
-          <tr><td class="seed-col">3</td><td>Gonzaga</td><td class="floor-col">Sweet Sixteen</td><td class="ceiling-col">Final Four</td></tr>
-          <tr><td class="seed-col">4</td><td>Arkansas</td><td class="floor-col">Second Round</td><td class="ceiling-col">Sweet Sixteen</td></tr>
-          <tr><td class="seed-col">5</td><td>Wisconsin</td><td class="floor-col">First Round</td><td class="ceiling-col">Sweet Sixteen</td></tr>
-          <tr><td class="seed-col">6</td><td>BYU</td><td class="floor-col">First Round</td><td class="ceiling-col">Sweet Sixteen</td></tr>
-          <tr><td class="seed-col">7</td><td>Miami (FL)</td><td class="floor-col">First Round</td><td class="ceiling-col">Second Round</td></tr>
-          <tr><td class="seed-col">8</td><td>Villanova</td><td class="floor-col">First Round</td><td class="ceiling-col">Sweet Sixteen</td></tr>
-          <tr><td class="seed-col">9</td><td>Utah State</td><td class="floor-col">First Round</td><td class="ceiling-col">Second Round</td></tr>
-          <tr><td class="seed-col">12</td><td>High Point</td><td class="floor-col">First Round</td><td class="ceiling-col">Second Round</td></tr>
+          <tr><td>Duke</td><td class="ceiling-col">National Champion</td><td class="floor-col">Elite Eight</td></tr>
+          <tr><td>Arizona</td><td class="ceiling-col">National Champion</td><td class="floor-col">Elite Eight</td></tr>
+          <tr><td>Florida</td><td class="ceiling-col">National Champion</td><td class="floor-col">Sweet Sixteen</td></tr>
+          <tr><td>Michigan</td><td class="ceiling-col">National Champion</td><td class="floor-col">Sweet Sixteen</td></tr>
+          <tr><td>Houston</td><td class="ceiling-col">National Champion</td><td class="floor-col">Sweet Sixteen</td></tr>
+          <tr><td>Iowa State</td><td class="ceiling-col">National Champion</td><td class="floor-col">Sweet Sixteen</td></tr>
+          <tr><td>Purdue</td><td class="ceiling-col">National Championship</td><td class="floor-col">Sweet Sixteen</td></tr>
+          <tr><td>Alabama</td><td class="ceiling-col">Final Four</td><td class="floor-col">Second Round</td></tr>
+          <tr><td>Gonzaga</td><td class="ceiling-col">Final Four</td><td class="floor-col">Sweet Sixteen</td></tr>
+          <tr><td>Illinois</td><td class="ceiling-col">Final Four</td><td class="floor-col">Sweet Sixteen</td></tr>
+          <tr><td>Michigan State</td><td class="ceiling-col">Final Four</td><td class="floor-col">Second Round</td></tr>
+          <tr><td>Tennessee</td><td class="ceiling-col">Elite Eight</td><td class="floor-col">Second Round</td></tr>
+          <tr><td>Virginia</td><td class="ceiling-col">Elite Eight</td><td class="floor-col">Second Round</td></tr>
+          <tr><td>UConn</td><td class="ceiling-col">Elite Eight</td><td class="floor-col">Second Round</td></tr>
+          <tr><td>Arkansas</td><td class="ceiling-col">Elite Eight</td><td class="floor-col">Second Round</td></tr>
+          <tr><td>Texas Tech</td><td class="ceiling-col">Elite Eight</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Wisconsin</td><td class="ceiling-col">Elite Eight</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Vanderbilt</td><td class="ceiling-col">Elite Eight</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Louisville</td><td class="ceiling-col">Elite Eight</td><td class="floor-col">First Round</td></tr>
+          <tr><td>UCLA</td><td class="ceiling-col">Elite Eight</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Kansas</td><td class="ceiling-col">Sweet Sixteen</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Nebraska</td><td class="ceiling-col">Sweet Sixteen</td><td class="floor-col">Second Round</td></tr>
+          <tr><td>BYU</td><td class="ceiling-col">Sweet Sixteen</td><td class="floor-col">First Round</td></tr>
+          <tr><td>UNC</td><td class="ceiling-col">Sweet Sixteen</td><td class="floor-col">First Round</td></tr>
+          <tr><td>St. John&rsquo;s</td><td class="ceiling-col">Sweet Sixteen</td><td class="floor-col">Second Round</td></tr>
+          <tr><td>South Florida</td><td class="ceiling-col">Sweet Sixteen</td><td class="floor-col">First Round</td></tr>
+          <tr><td>High Point</td><td class="ceiling-col">Sweet Sixteen</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Akron</td><td class="ceiling-col">Sweet Sixteen</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Kentucky</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Santa Clara</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Ohio State</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Villanova</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Clemson</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Georgia</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>TCU</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Utah State</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Iowa</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>St. Louis</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>UCF</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Missouri</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Texas A&amp;M</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>McNeese</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Cal Baptist</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Miami FL</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>Saint Mary&rsquo;s</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>VCU</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
+          <tr><td>NC State / Texas</td><td class="ceiling-col">Second Round</td><td class="floor-col">First Round</td></tr>
         </tbody>
       </table>
 
-      <p class="region-header">East Region</p>
+      <p class="team-note"><strong>Duke &mdash;</strong> The only realistic Sweet 16 threat is St. John&rsquo;s, against whom Duke would be nearly a &minus;300 favorite. Floor is Elite Eight.</p>
 
-      <div class="team-entry">
-        <h3>(1) Duke Blue Devils</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Elite Eight</span>
-          <span><span class="label">Ceiling</span>National Championship</span>
-        </div>
-        <p>Duke has been the best team in the ACC wire to wire, and the model agrees. Their offensive efficiency is elite &mdash; they space the floor, attack in transition, and limit turnovers at a rate few programs match. The ceiling is a national championship and it is not a stretch. The floor is Elite Eight because the East bracket will force them to beat at least one elite opponent before the Final Four, and on a bad night that game could end their run. But on a neutral floor with a week to prepare, Duke is one of the five programs in this field capable of winning every game they play.</p>
-      </div>
+      <p class="team-note"><strong>Arizona &mdash;</strong> The hottest team in the country. Arkansas or Wisconsin could theoretically eliminate them in the Sweet 16, but Arizona would be approximately a &minus;300 favorite over Arkansas and &minus;330 over Wisconsin. Floor is controversially Elite Eight.</p>
 
-      <div class="team-entry">
-        <h3>(2) UConn Huskies</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Elite Eight</span>
-          <span><span class="label">Ceiling</span>National Championship</span>
-        </div>
-        <p>UConn is the defending dynasty of this era. Dan Hurley's program does not rebuild &mdash; it reloads. They defend at an elite level, play physically without fouling, and are almost impossible to beat in a half-court game. The concern is their half of the bracket may force a Duke matchup in the Elite Eight, which would be appointment television. Both teams are capable of winning that game. If UConn gets to the Final Four, they are a legitimate title threat no matter who they face.</p>
-      </div>
+      <p class="team-note"><strong>Florida &mdash;</strong> The sole legitimate threat in Florida&rsquo;s half of the South bracket is Vanderbilt, who would enter as +200 underdogs. That is within the realm of possibility, which keeps the floor at Sweet Sixteen.</p>
 
-      <div class="team-entry">
-        <h3>(3) Michigan State Spartans</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Second Round</span>
-          <span><span class="label">Ceiling</span>Final Four</span>
-        </div>
-        <p>Tom Izzo teams do not get worse in March &mdash; they get better. Michigan State's schedule-adjusted numbers are strong enough to justify the 3 seed, and their experience in tournament settings is unmatched at this level. The floor is second round because their offense can be limited by physical, disciplined defenses, and they will see one in the Sweet Sixteen. But if Izzo gets them to Atlanta, nothing about that would be surprising.</p>
-      </div>
+      <p class="team-note"><strong>Michigan &mdash;</strong> Nearly identical to Florida. Would roll through every opponent except Alabama, whose explosive offense makes for a dangerous Sweet 16 matchup. Michigan would be around a &minus;175 favorite.</p>
 
-      <div class="team-entry">
-        <h3>(4) Kansas Jayhawks</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Second Round</span>
-          <span><span class="label">Ceiling</span>Elite Eight</span>
-        </div>
-        <p>Kansas is a program people are still treating like a dynasty, but this version of the Jayhawks is more vulnerable than their seeding implies. They defend reasonably well and have enough offensive weapons to advance past inferior opponents, but their efficiency numbers against top-40 defenses are concerning. The floor is second round because an upset-minded 5 or 13 seed could catch them. The ceiling is Elite Eight &mdash; they are not going to out-execute UConn or Duke in the bracket's top half.</p>
-      </div>
+      <p class="team-note"><strong>UConn &mdash;</strong> Ceiling is Elite Eight, where they run into Duke. This team will not make the Final Four. They have stumbled badly down the stretch &mdash; losing to a bad Marquette squad and getting embarrassed by St. John&rsquo;s &mdash; and drew a brutal first bracket with what I consider the best 7-seed in the field. Floor is second round.</p>
 
-      <div class="team-entry">
-        <h3>(5) St. John's Red Storm</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Second Round</span>
-          <span><span class="label">Ceiling</span>Sweet Sixteen</span>
-        </div>
-        <p>St. John's winning the Big East Tournament was one of the best stories of conference tournament week. They play with an edge and their defense is genuinely disruptive. The model likes their profile more than the casual fan might &mdash; this is not a bubble team riding a hot week. Still, their path through the East is steep, and their offense relies too heavily on individual creation to sustain a deep run. Second round is the floor because they earned their bid. Sweet Sixteen is the ceiling unless their defense carries them to something special.</p>
-      </div>
+      <p class="team-note"><strong>Purdue &mdash;</strong> Quickly turned around what looked like a sputtering season with a dominant Big Ten Tournament run. The momentum is real, but they are too inconsistent to project as a title contender. Floor is Sweet Sixteen.</p>
 
-      <div class="team-entry">
-        <h3>(6) Louisville Cardinals</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Sweet Sixteen</span>
-        </div>
-        <p>Louisville is a physical team that can make life difficult for any opponent in a single game. They rebound, they defend in the paint, and they have players who can carry a game-winning performance on the right night. The concern is consistency &mdash; they have had too many flat offensive outings this season to feel safe in the first round. A first-round exit is a real possibility. If they make the second round, a Sweet Sixteen run against a fatigued or shorthanded opponent is not out of the question.</p>
-      </div>
+      <p class="team-note"><strong>Houston &mdash;</strong> Sitting fourth in national title odds despite being a 2-seed. Structurally elite defensively (4th in raw defensive rating) and 4th in our overall rankings. They would be a slight favorite over Florida in an Elite Eight matchup and a narrow +125 underdog against Arizona or Duke. A potential Sweet 16 matchup with Illinois &mdash; one of the country&rsquo;s most explosive offensive teams &mdash; is where they are most vulnerable, entering as a narrow &minus;125 favorite.</p>
 
-      <div class="team-entry">
-        <h3>(7) UCLA Bruins</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Sweet Sixteen</span>
-        </div>
-        <p>UCLA has talent that does not always show up in results. They have underachieved relative to their roster this season, which cuts both ways in March &mdash; they could finally put it together, or the inconsistency could catch up to them in a one-game format. The model sees them as a genuine threat to the 2 seed if they play to their ceiling. If they come out flat, a first-round exit is on the table. There is real variance here.</p>
-      </div>
+      <p class="team-note"><strong>Iowa State &mdash;</strong> 5th in our rankings, 3rd in raw defensive rating nationally. Looked capable of beating anyone when they went toe-to-toe with Arizona in the Big 12 Tournament. Would be around a &minus;200 favorite over Tennessee or Virginia in the Sweet 16, which is not comfortable enough to lock in an Elite Eight floor.</p>
 
-      <div class="team-entry">
-        <h3>(8) Ohio State Buckeyes</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Second Round</span>
-        </div>
-        <p>Ohio State is in the field on the strength of a Big Ten schedule that does not gift easy wins. They grind, their defense is solid, and they protect the rim. But they are going to face Duke or UConn in the second round if they advance, which makes the Sweet Sixteen ceiling implausible. A first-round exit is possible &mdash; they match up poorly with several potential 9 seeds. If they win game one, they deserve credit and likely face a wall in game two.</p>
-      </div>
+      <p class="team-note"><strong>Michigan State &mdash;</strong> Louisville potentially awaits in the second round, and many analytical systems, including ours, still rate Louisville highly. MSU would be only a &minus;135 favorite in that game. They are the only team in the East that could remotely challenge Duke, but I would not take them further than the Final Four in any bracket.</p>
 
-      <div class="team-entry">
-        <h3>(9) TCU Horned Frogs</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Second Round</span>
-        </div>
-        <p>TCU is one of the more interesting 9 seeds in the field. They have the athleticism and defensive energy to give Ohio State real problems. In a one-possession game, their length and activity can disrupt any opponent's offense. The ceiling is second round because their path gets exceedingly difficult after that &mdash; but pulling the first-round upset is genuinely plausible.</p>
-      </div>
+      <p class="team-note"><strong>Gonzaga &mdash;</strong> The Gonzaga doubters will point to their loss to Portland and their weak conference. We disagree. Gonzaga ranks 9th in our overall standings and 5th in Elo, even after accounting for their soft schedule. Their non-conference SOS, if extrapolated across a full season, would project to roughly 30th in the country. They have Final Four upside, but I cannot in good conscience project them as a national title contender given the conference they play in.</p>
 
-      <p class="region-header">South Region</p>
+      <p class="team-note"><strong>Illinois &mdash;</strong> A fantastic draw for the Illini. Best offense in the country, 8th in our overall rankings. Penn poses no real threat, and they match up well with Houston and Florida &mdash; but they will not advance past a potential Duke semifinal.</p>
 
-      <div class="team-entry">
-        <h3>(1) Florida Gators</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Elite Eight</span>
-          <span><span class="label">Ceiling</span>National Championship</span>
-        </div>
-        <p>Florida is the model's top team in the field. Their adjusted efficiency differential is the best of any team in the tournament, they defend at an elite level, and they play through multiple capable scorers, making them difficult to game-plan against. The South bracket is manageable. Their floor is Elite Eight because no 1 seed exits earlier than that in our baseline projections, and Florida specifically has the depth to weather a cold shooting night. The ceiling is a national championship, and depending on how the bracket develops, they may enter the Final Four as the favorite regardless of opponent.</p>
-      </div>
+      <p class="team-note"><strong>Virginia &mdash;</strong> Just cannot beat a top seed. Michigan, Duke, Arizona &mdash; Virginia is a full tier below all of them. Their absolute ceiling is defeating Iowa State in the Sweet 16, which is even generous given a projected line around +210.</p>
 
-      <div class="team-entry">
-        <h3>(2) Houston Cougars</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Sweet Sixteen</span>
-          <span><span class="label">Ceiling</span>National Championship</span>
-        </div>
-        <p>Houston under Kelvin Sampson is one of the sport's premier defensive programs. They are relentless, they guard without fouling, and they make possessions ugly for opponents who want to play fast. The concern entering this tournament is their offense &mdash; they have struggled to generate clean looks against top-20 defenses and can go through stretches where they cannot buy a basket. If they find an offensive rhythm, they can go all the way. The floor is Sweet Sixteen because a hot-shooting team can expose their offensive limitations in a single elimination game.</p>
-      </div>
+      <p class="team-note"><strong>Kansas &mdash;</strong> Do not like Kansas analytically or on film. Darryn Peterson has floated in and out of the lineup all season, and the team lacks cohesion. For a 4-seed, ranking 25th in our system is mediocre. Their line against Cal Baptist is surprisingly close for a 4-seed. Cannot envision them beating Duke in the Sweet 16.</p>
 
-      <div class="team-entry">
-        <h3>(3) Illinois Fighting Illini</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Second Round</span>
-          <span><span class="label">Ceiling</span>Final Four</span>
-        </div>
-        <p>Illinois has the size and physicality to make life difficult for anyone in this bracket. They protect the rim, rebound at an elite rate, and have guards who can create off the bounce and space the floor simultaneously. The floor is second round because they can be beaten by a hot-shooting team that takes away the paint. But the ceiling is genuine Final Four contention. If they get past the Sweet Sixteen, they will have beaten someone worth beating, and they will carry the model's respect going into Atlanta.</p>
-      </div>
+      <p class="team-note"><strong>Arkansas &mdash;</strong> Will win at least one game and would face a dangerous Wisconsin in the second round. It is not impossible that they beat Arizona in the Sweet 16, but projecting them further is unnecessary risk in any bracket.</p>
 
-      <div class="team-entry">
-        <h3>(4) Nebraska Cornhuskers</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Second Round</span>
-          <span><span class="label">Ceiling</span>Sweet Sixteen</span>
-        </div>
-        <p>Nebraska has had a quietly impressive season. Their half-court offense is well-designed and they have enough rim protection to compete defensively in this field. The issue is that once they hit a top-20 opponent, their ability to keep pace offensively is questionable. Second round is the floor because they are legitimately good enough to win their first game. Sweet Sixteen is the ceiling because everything beyond that requires them to outperform their season-long efficiency against elite competition.</p>
-      </div>
+      <p class="team-note"><strong>Nebraska &mdash;</strong> Not high on Nebraska. Weak non-conference schedule, sliding seed lines late in the season, and gifted a favorable 13-seed in Troy. Maybe they beat Vanderbilt in the second round as underdogs, but Florida ends their run in the Sweet 16.</p>
 
-      <div class="team-entry">
-        <h3>(5) Vanderbilt Commodores</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Second Round</span>
-          <span><span class="label">Ceiling</span>Sweet Sixteen</span>
-        </div>
-        <p>Vanderbilt is here because they beat Florida twice and took down Arkansas in the SEC Tournament. That is not noise &mdash; that is a team that has proven it can beat elite competition. Their defense is underrated and their half-court execution is cleaner than most programs at this seed. The floor is second round and the ceiling is Sweet Sixteen, but do not be surprised if they push Houston in a potential second-round matchup. They have the defensive profile to make that game ugly.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(6) North Carolina Tar Heels</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Elite Eight</span>
-        </div>
-        <p>UNC is the program in this field with the widest range of outcomes. On their best day, they have the talent and tradition to reach the Elite Eight &mdash; they have done it repeatedly. On their worst day, they have shown a capacity for inexplicable losses to unranked opponents. The first-round floor is real because their defense has been porous at times and their effort level has been inconsistent. But if they arrive in March with something to prove, the ceiling is Elite Eight and it would not shock anyone.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(7) Saint Mary's Gaels</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Sweet Sixteen</span>
-        </div>
-        <p>Saint Mary's is a Randy Bennett team, which means disciplined, efficient, and fundamentally sound in every aspect of the game. They do not beat themselves. They protect the ball, shoot threes selectively, and compete for 40 minutes. The ceiling is Sweet Sixteen because they can absolutely slow down a better team and steal two games. The floor is first round because their slower pace can be disrupted by a longer, more athletic team that pressures them into uncomfortable situations.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(8) Clemson Tigers</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Second Round</span>
-        </div>
-        <p>Clemson is a hard-nosed defensive team that grinded through an ACC schedule including multiple top-15 opponents. They can make any game ugly and uncomfortable. The ceiling is second round because their half-court offense is limited enough that surviving into the Sweet Sixteen requires things to go very right. A first-round exit is a real possibility against a hot 9 seed.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(9) Iowa Hawkeyes</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Second Round</span>
-        </div>
-        <p>Iowa plays through their post presence and has enough shooting to keep defenses honest. They are not a glamorous 9 seed, but they are a capable one. Against Clemson, they have the interior advantage. If they advance, they walk into a Florida or Houston buzz saw. First round to second round is the realistic window.</p>
-      </div>
-
-      <p class="region-header">Midwest Region</p>
-
-      <div class="team-entry">
-        <h3>(1) Michigan Wolverines</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Sweet Sixteen</span>
-          <span><span class="label">Ceiling</span>National Championship</span>
-        </div>
-        <p>Michigan earned the Midwest 1 seed through a Big Ten regular season that had no easy nights. They are long, athletic, and well-coached. Their offense has multiple creation modes and their defense communicates exceptionally well in transition. The floor is Sweet Sixteen rather than Elite Eight because Iowa State is capable of ending their run there, and the Midwest is not a comfortable path despite the 1 seed. The ceiling is a national championship &mdash; this team is complete enough to win it all, and the bracket gives them a path.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(2) Iowa State Cyclones</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Sweet Sixteen</span>
-          <span><span class="label">Ceiling</span>Final Four</span>
-        </div>
-        <p>Iowa State is a genuinely dangerous program in March. T.J. Otzelberger's defensive system is disruptive in ways that do not show up cleanly in box scores &mdash; they force opponents into uncomfortable shot selection and transition opportunities dry up fast. Their offense is not flashy but it is efficient and ball-movement oriented. The ceiling is Final Four because they can beat Michigan if the matchup goes a certain way. The floor is Sweet Sixteen because they are too good to lose in the first two rounds.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(3) Virginia Cavaliers</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Second Round</span>
-          <span><span class="label">Ceiling</span>Elite Eight</span>
-        </div>
-        <p>Virginia under Tony Bennett is perpetually on the list of teams that can reach the Elite Eight because they never beat themselves. Their pack-line defense makes games brutally slow and gives opponents fits when they rely on transition offense. The floor is second round because they will have at least one opponent who cannot figure out how to score on them. The ceiling is Elite Eight, and with their bracket position in the Midwest, a run to that point is a genuine possibility.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(4) Alabama Crimson Tide</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Second Round</span>
-          <span><span class="label">Ceiling</span>Sweet Sixteen</span>
-        </div>
-        <p>Alabama is an athletic, physically imposing team that can overwhelm lesser opponents in the open floor. Their pace and length create problems for half-court defenses. The issue is that when teams slow them down and force them into structured half-court possessions, their shot selection becomes erratic. Second round is the floor because they are talented enough to advance. Sweet Sixteen is the ceiling &mdash; their defensive inconsistency limits their upside against precision offenses.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(5) Texas Tech Red Raiders</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Second Round</span>
-          <span><span class="label">Ceiling</span>Sweet Sixteen</span>
-        </div>
-        <p>Texas Tech remains one of the sport's premier defensive programs. They are physical, disciplined, and capable of making any offense look broken for 35 minutes. The ceiling is Sweet Sixteen because if their three-point shooting gets hot, they have the defensive backbone to hold a lead. The floor is second round &mdash; their half-court defense is too reliable to fail in the first game.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(6) Tennessee Volunteers</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Second Round</span>
-          <span><span class="label">Ceiling</span>Sweet Sixteen</span>
-        </div>
-        <p>Tennessee is another program built on defensive physicality and rebounding dominance. Rick Barnes has the Vols playing their best basketball in late February and March. Their concern is a potential mismatch against a quicker, more skilled offensive team that can get into the lane at will. Second round floor, Sweet Sixteen ceiling &mdash; though they have the defensive profile to push it further on a good night.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(7) Kentucky Wildcats</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Second Round</span>
-          <span><span class="label">Ceiling</span>Elite Eight</span>
-        </div>
-        <p>Kentucky has the talent to go anywhere in this bracket. Mark Pope has rebuilt this program faster than most people expected, and the Wildcats have NBA-caliber talent at multiple positions. Their ceiling is Elite Eight and it is not a reach &mdash; if they are playing their best basketball, they can beat Iowa State. The floor is second round because there are games where their young core plays like freshmen, and one of those games in March ends their tournament early.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(8) Georgia Bulldogs</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Second Round</span>
-        </div>
-        <p>Georgia is the most dangerous 8 seed in the bracket for Kentucky. They play with energy and have enough perimeter shooting to compete in any single game. The ceiling is second round &mdash; if they upset Kentucky, they walk into Michigan or Iowa State, which is not survivable. A first-round exit is also plausible. This is a one-game team with a clear ceiling.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(9) Saint Louis Billikens</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Second Round</span>
-        </div>
-        <p>Saint Louis is a disciplined program with good ball movement and a defensive identity. They made the tournament on merit and can compete in a first-round game. The ceiling is second round &mdash; if they pull the upset, they have earned respect. First-round exit is more likely given the strength of their potential opponent.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(10) Santa Clara Broncos</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Second Round</span>
-        </div>
-        <p>Santa Clara is here because they can shoot threes from anywhere and they play fearlessly in big games. Their conference tournament run was convincing. The ceiling is second round and they are the type of team that bracket players will be picking as a sleeper. The floor is first round &mdash; they will see a more athletic opponent who can defend the perimeter and control the tempo.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(12) Akron Zips</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Second Round</span>
-        </div>
-        <p>Akron won the MAC Tournament and earned their spot. They are a physical team with a legitimate scorer who can carry them on the right night. The classic 12-5 upset is always in play in March, and Akron has the profile &mdash; physical, disciplined, with a capable primary option. A first-round exit is the most likely outcome, but the second round ceiling is real.</p>
-      </div>
-
-      <p class="region-header">West Region</p>
-
-      <div class="team-entry">
-        <h3>(1) Arizona Wildcats</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Sweet Sixteen</span>
-          <span><span class="label">Ceiling</span>National Championship</span>
-        </div>
-        <p>Arizona is the model's second-ranked team in the field and a legitimate national championship contender. Tommy Lloyd's system produces elite offensive efficiency &mdash; they share the ball, they space the floor, and they have multiple players who can create in isolation or out of the pick-and-roll. The floor is Sweet Sixteen rather than Elite Eight because their defense has been inconsistent this season, and a hot-shooting team can expose them in a single game. The ceiling is a national championship. If Arizona is playing their best basketball in Atlanta, they are a nightmare to stop.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(2) Purdue Boilermakers</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Elite Eight</span>
-          <span><span class="label">Ceiling</span>National Championship (Final)</span>
-        </div>
-        <p>Purdue feels underseeded at 2. Their interior dominance is unprecedented in this year's field &mdash; no team in the country has a more reliable post presence, and they complement it with capable perimeter shooting and experience. Matt Painter has this group locked in. The floor is Elite Eight because they have the size and experience to absorb almost anything a first or second weekend opponent throws at them. The ceiling is a national championship. If Purdue meets Arizona in the West final, that is one of the tournament's best potential matchups &mdash; post dominance versus ball movement and perimeter creation. Whoever wins that game is a Final Four darling.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(3) Gonzaga Bulldogs</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Sweet Sixteen</span>
-          <span><span class="label">Ceiling</span>Final Four</span>
-        </div>
-        <p>Gonzaga is Gonzaga. Mark Few's program finds a way to make deep tournament runs because they play the right way &mdash; fast, efficient, and with an offensive system that punishes teams that go under screens. The concern is that their schedule this year was lighter than it has been historically, and their efficiency numbers against top-25 defenses are not as clean as their overall numbers suggest. The floor is Sweet Sixteen because they will advance past the first weekend. The ceiling is Final Four, because beating Arizona or Purdue requires them to play their best basketball of the year.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(4) Arkansas Razorbacks</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>Second Round</span>
-          <span><span class="label">Ceiling</span>Sweet Sixteen</span>
-        </div>
-        <p>Arkansas is an SEC team built on athleticism, pressure defense, and fast-break opportunities. They can run teams off the floor on the right night. The concern is that in slow, half-court tournament environments, their offense can stagnate. Second round is the floor &mdash; they are too talented to lose in the first round. Sweet Sixteen is the ceiling because Gonzaga or the team coming out of the 2-7 matchup presents a very difficult half-court challenge.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(5) Wisconsin Badgers</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Sweet Sixteen</span>
-        </div>
-        <p>Wisconsin is Wisconsin &mdash; they run the offense slowly, protect the ball, and make opponents earn everything. Their efficiency in the half court is consistently elite. The floor is first round because a long, athletic team can disrupt their slower pace and create problems in transition. The ceiling is Sweet Sixteen, and it is attainable. Wisconsin beats teams they are not supposed to beat in March because they are patient and disciplined, two qualities that are rare in the tournament environment.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(6) BYU Cougars</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Sweet Sixteen</span>
-        </div>
-        <p>BYU has the perimeter shooting to beat anyone in the field on a hot night. Their offense is modern and well-spaced. The concern is their defense has been exploitable this season by teams with capable interior scorers. They would face Purdue's post presence in the Sweet Sixteen, which is a difficult stylistic matchup. Floor is first round, ceiling is Sweet Sixteen, and they need to find a way to slow down elite bigs to get there.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(7) Miami (FL) Hurricanes</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Second Round</span>
-        </div>
-        <p>Miami is an experienced team with capable guards and a defensive edge that has won them games this season. They can knock off Villanova if they play with their characteristic intensity. A first-round exit is also possible against a Villanova program that has been doing this for decades. The ceiling is second round &mdash; advancing past that requires things to go very right against a higher-caliber opponent.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(8) Villanova Wildcats</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Sweet Sixteen</span>
-        </div>
-        <p>Villanova is a program. They recruit for the tournament, they prepare for the tournament, and they consistently deliver performances that exceed their seed. The ceiling is Sweet Sixteen &mdash; this program, even in a post-dynasty cycle, knows how to win in March. The floor is first round because Miami has the personnel to disrupt their system. A potential 8-1 matchup against Arizona in the second round would be one of the tournament's best games.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(9) Utah State Aggies</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Second Round</span>
-        </div>
-        <p>Utah State won the Mountain West Tournament and is here playing confident basketball. They can shoot and they compete. Against Gonzaga, they are significant underdogs, but they have the perimeter skills to make it uncomfortable. A first-round exit is more likely, but the second-round ceiling exists if Gonzaga is not fully locked in.</p>
-      </div>
-
-      <div class="team-entry">
-        <h3>(12) High Point Panthers</h3>
-        <div class="team-lines">
-          <span><span class="label">Floor</span>First Round</span>
-          <span><span class="label">Ceiling</span>Second Round</span>
-        </div>
-        <p>High Point is a Big South automatic qualifier who plays with pace and has a genuine go-to scorer. They are not here by accident and they will compete. Against Wisconsin's patient, physical system, they face a tough stylistic matchup. The classic 12-5 upset possibility is diminished here by Wisconsin's discipline, but tournament basketball has taught us to never say never.</p>
-      </div>
-
-      <h2>Final Thoughts</h2>
-
-      <p>The model's top four championship contenders heading into the tournament are Florida, Arizona, Duke, and Purdue &mdash; in that order. These are the four programs with the combination of elite efficiency, defensive reliability, and bracket positioning to reach and win in Atlanta.</p>
-
-      <p>The upset watches that most interest us: Tennessee over Alabama in the Midwest second round, Virginia making the Elite Eight, St. John's advancing out of the second round in the East, and Utah State giving Gonzaga a scare in the first round.</p>
-
-      <p>The team the model likes least given their seeding: Kansas as a 4 seed. Their numbers against top-40 defenses are not convincing, and a first-round exit is not out of the question.</p>
-
-      <p>Play your bracket. Trust the numbers when it is comfortable, and go with your gut when it is not. That is the game, and it is why we love it.</p>
-
-      <p>The full bracket simulator, head-to-head matchup probabilities, and power rankings are available at <a href="https://bracket.oddsgods.net">bracket.oddsgods.net</a>.</p>
+      <p class="team-note"><strong>Alabama &mdash;</strong> That 8th-ranked raw offense can carry this team a long way. Favorable draw as well. Michigan would be around a &minus;175 favorite in the Sweet 16 &mdash; that is an eminently winnable game for Alabama. Iowa State or Illinois in the Elite Eight would be similarly close. Cannot see them getting past Duke or Arizona, however.</p>
 
     </div>
   </article>
