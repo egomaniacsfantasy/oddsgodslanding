@@ -45,8 +45,6 @@ const SLEEPER_NFL_PLAYERS_URL = "https://api.sleeper.app/v1/players/nfl";
 const PHASE2_CALIBRATION_FILE = process.env.PHASE2_CALIBRATION_FILE || "data/phase2_calibration.json";
 const ACCOLADES_INDEX_FILE = process.env.ACCOLADES_INDEX_FILE || "data/accolades_index.json";
 const MVP_PRIORS_FILE = process.env.MVP_PRIORS_FILE || "data/mvp_odds_2026_27_fanduel.json";
-const QB_SEASON_STATS_FILE = process.env.QB_SEASON_STATS_FILE || "data/qb_season_stats.json";
-const SKILL_SEASON_STATS_FILE = process.env.SKILL_SEASON_STATS_FILE || "data/skill_position_season_stats.json";
 const FEEDBACK_EVENTS_FILE = process.env.FEEDBACK_EVENTS_FILE || "data/feedback_events.jsonl";
 const ODDS_QUERY_EVENTS_FILE = process.env.ODDS_QUERY_EVENTS_FILE || "data/odds_query_events.jsonl";
 const FEATURE_ENABLE_TRACE = String(process.env.FEATURE_ENABLE_TRACE || "true") === "true";
@@ -72,13 +70,8 @@ let phase2Calibration = null;
 let phase2CalibrationLoadedAt = 0;
 let accoladesIndex = null;
 let accoladesLoadedAt = 0;
-let accoladesPlayerNameCatalog = [];
 let mvpPriorsIndex = null;
 let mvpPriorsLoadedAt = 0;
-let qbSeasonStatsIndex = null;
-let skillSeasonStatsIndex = null;
-let creativeStatsLoadedAt = 0;
-let creativeStatsLoadPromise = null;
 const metrics = {
   oddsRequests: 0,
   baselineServed: 0,
@@ -93,25 +86,6 @@ const metrics = {
   snarks: 0,
   feedbackUp: 0,
   feedbackDown: 0,
-};
-
-const ARCHETYPE_BASELINES = {
-  kicker_mvp: 0.05,
-  punter_mvp: 0.02,
-  defensive_player_mvp: 1.5,
-  running_back_mvp: 3.0,
-  wide_receiver_mvp: 1.5,
-  tight_end_mvp: 0.5,
-  rookie_qb_mvp: 2.0,
-  rookie_mvp: 1.0,
-  undrafted_opoy: 0.3,
-  kicker_opoy: 0.02,
-  rookie_opoy: 4.0,
-  rookie_qb_5000_yards: 0.3,
-  rookie_qb_4500_yards: 1.5,
-  rookie_qb_4000_yards: 6.0,
-  rookie_qb_35_tds: 2.0,
-  rookie_qb_30_tds: 5.0,
 };
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -713,12 +687,12 @@ function buildNonsenseSportsSnarkResponse(playerOrTeam, prompt = "") {
       return offTopic;
     }
   }
+  const label = playerOrTeam || "that";
   return {
     status: "snark",
-    snarkType: "off_topic",
     title: "Need A Scenario.",
-    message: "I need an actual NFL outcome to price. Try something like “Patriots win the Super Bowl next season.”",
-    hint: "Try a measurable NFL scenario.",
+    message: `You gave me ${label}, but not an actual outcome to price.`,
+    hint: "Try something measurable: wins MVP, throws 30 TDs, makes playoffs, wins Super Bowl, etc.",
   };
 }
 
@@ -748,7 +722,6 @@ function buildOffTopicSnarkResponse(prompt) {
   if (topic) {
     return {
       status: "snark",
-      snarkType: "off_topic",
       title: topic.title,
       message: topic.message,
       hint: topic.hint,
@@ -759,8 +732,8 @@ function buildOffTopicSnarkResponse(prompt) {
     status: "snark",
     snarkType: "off_topic",
     title: "Nice Try.",
-    message: "That’s not an NFL scenario. Try something like “Patriots win the Super Bowl next season.”",
-    hint: "Try an NFL team or player instead.",
+    message: "I’m an odds widget for sports scenarios, not random life hypotheticals.",
+    hint: "Try a player, team, or league outcome.",
   };
 }
 
@@ -845,7 +818,7 @@ function shouldAllowLlmLastResort(prompt, context = {}) {
   if (hardImpossibleReason(prompt)) return false;
   if (context.conditionalIntent || context.jointEventIntent) return false;
 
-  const strongSportsDomain = /\b(nfl|super bowl|afc|nfc|playoffs?|mvp|hall of fame|touchdowns?|tds?|interceptions?|ints?|passing|receiving|rushing|wins?|rings?|championship rings?)\b/.test(
+  const strongSportsDomain = /\b(nfl|super bowl|afc|nfc|playoffs?|mvp|hall of fame|touchdowns?|tds?|interceptions?|ints?|passing|receiving|rushing|wins?)\b/.test(
     lower
   );
   if (!strongSportsDomain) return false;
@@ -856,7 +829,7 @@ function shouldAllowLlmLastResort(prompt, context = {}) {
       context.referenceAnchors?.length ||
       context.playerStatus?.isSportsFigure === "yes"
   );
-  if (!hasResolvedEntity && !context.archetypePrompt && !context.forceResolvedEntity) return false;
+  if (!hasResolvedEntity) return false;
 
   if (context.playerHint && !context.localPlayerStatus && context.playerStatus?.isSportsFigure !== "yes") {
     return false;
@@ -1069,10 +1042,6 @@ function buildRoleWordMismatchSnarkResponse(words) {
 
 function clamp(num, min, max) {
   return Math.min(max, Math.max(min, num));
-}
-
-function round1(num) {
-  return Math.round(Number(num || 0) * 10) / 10;
 }
 
 function normalizePrompt(prompt) {
@@ -1352,7 +1321,7 @@ function parseAwardClause(clause) {
     return null;
   }
   const player = extractPlayerName(clause);
-  if (!player || isGenericArchetypeSubject(player)) return null;
+  if (!player) return null;
   let awardType = "mvp";
   if (/\b(opoy|offensive player of the year)\b/.test(lower)) awardType = "opoy";
   else if (/\b(dpoy|defensive player of the year)\b/.test(lower)) awardType = "dpoy";
@@ -1438,18 +1407,18 @@ function parseOutcomeClause(clause, defaults = {}) {
   const nonQbMvp = parseNonQbMvpIntent(clause);
   if (nonQbMvp) return { type: "non_qb_mvp" };
 
-  if (/\b(rookie\s+qb|rookie\s+quarterback)\b/i.test(clause) && /\bmvp\b/i.test(clause)) {
-    return { type: "rookie_qb_mvp" };
-  }
-  if (/\b(rookie\s+qb|rookie\s+quarterback)\b/i.test(clause) && /\b(roy|rookie of the year)\b/i.test(clause)) {
-    return { type: "any_rookie_qb_roy" };
-  }
-
   const qbMvp = parseQbMvpIntent(clause);
   if (qbMvp) return { type: "qb_mvp" };
 
   if (/\b(defensive mvp|defensive player wins mvp)\b/i.test(clause)) {
     return { type: "defensive_mvp" };
+  }
+
+  if (/\b(rookie\s+qb|rookie\s+quarterback)\b/i.test(clause) && /\bmvp\b/i.test(clause)) {
+    return { type: "rookie_qb_mvp" };
+  }
+  if (/\b(rookie\s+qb|rookie\s+quarterback)\b/i.test(clause) && /\b(roy|rookie of the year)\b/i.test(clause)) {
+    return { type: "any_rookie_qb_roy" };
   }
 
   const market = parseTeamMarketFromText(clause);
@@ -1466,13 +1435,7 @@ function parseOutcomeClause(clause, defaults = {}) {
     if (/\b(any|a)\s+(qb|quarterback)\b/.test(lower)) {
       return { type: "any_qb_stat", metric: statIntent.metric, threshold: statIntent.threshold };
     }
-    let player = defaults.player || "";
-    if (!player) {
-      const extractedPlayer = extractPlayerName(clause) || "";
-      if (extractedPlayer && !isGenericArchetypeSubject(extractedPlayer) && isKnownCreativePlayerName(extractedPlayer)) {
-        player = extractedPlayer;
-      }
-    }
+    const player = extractPlayerName(clause) || defaults.player || "";
     if (player) {
       return { type: "player_stat", player, metric: statIntent.metric, threshold: statIntent.threshold };
     }
@@ -1779,28 +1742,19 @@ function parseMultiYearWindow(prompt) {
 
 function parseThreePeatIntent(prompt) {
   const lower = normalizePrompt(prompt);
-  if (
-    !/\bthreepeat\b/.test(lower) &&
-    !/\bthree-?peat\b/.test(lower) &&
-    !/\bthree\s+peat\b/.test(lower) &&
-    !/\bback[-\s]?to[-\s]?back[-\s]?to[-\s]?back\b/.test(lower)
-  ) {
-    return null;
-  }
+  if (!/\bthreepeat\b/.test(lower) && !/\bthree-?peat\b/.test(lower) && !/\bthree\s+peat\b/.test(lower)) return null;
   const team = extractKnownTeamTokens(prompt, 1)?.[0] || extractTeamName(prompt);
-  if (!team) {
-    return { team: "", market: "super_bowl_winner", years: 3, generic: true };
-  }
-  return { team, market: "super_bowl_winner", years: 3, generic: false };
+  if (!team) return null;
+  return { team, market: "super_bowl_winner", years: 3 };
 }
 
 async function buildThreePeatEstimate(prompt, asOfDate) {
   const intent = parseThreePeatIntent(prompt);
   if (!intent) return null;
-  const ref = intent.generic ? null : await getSportsbookReferenceByTeamAndMarket(intent.team, intent.market);
+  const ref = await getSportsbookReferenceByTeamAndMarket(intent.team, intent.market);
   let seasonPct = ref ? Number(String(ref.impliedProbability || "").replace("%", "")) : null;
   if (!Number.isFinite(seasonPct) || seasonPct <= 0) {
-    seasonPct = intent.generic ? 14 : defaultSeasonPctForTeamMarket(intent.team, intent.market);
+    seasonPct = defaultSeasonPctForTeamMarket(intent.team, intent.market);
   }
   const p0 = clamp(seasonPct / 100, 0.001, 0.6);
   const p1 = clamp(p0 * 0.92, 0.0005, 0.55);
@@ -1815,7 +1769,7 @@ async function buildThreePeatEstimate(prompt, asOfDate) {
       "Three-peat modeled as three consecutive season title events.",
       "Season-by-season probabilities decay modestly with roster volatility.",
     ],
-    summaryLabel: intent.generic ? "A team wins three straight Super Bowls" : `${titleCaseWords(intent.team)} three-peat`,
+    summaryLabel: `${titleCaseWords(intent.team)} three-peat`,
     liveChecked: Boolean(ref),
     asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
     sourceType: ref ? "sportsbook" : "historical_model",
@@ -2261,31 +2215,6 @@ function shortTeamLabel(teamToken = "") {
   return abbr || titleCaseWords(teamToken);
 }
 
-function fullTeamLabel(teamToken = "") {
-  const abbr = extractNflTeamAbbr(teamToken) || NFL_TEAM_ALIASES[normalizeTeamToken(teamToken)] || "";
-  return NFL_TEAM_DISPLAY[abbr] || titleCaseWords(teamToken);
-}
-
-function teamNickname(teamToken = "") {
-  const full = fullTeamLabel(teamToken);
-  const parts = String(full || "").trim().split(/\s+/).filter(Boolean);
-  return parts.length ? parts[parts.length - 1] : full;
-}
-
-function teamSubjectLabel(teamToken = "", options = {}) {
-  const nickname = teamNickname(teamToken) || fullTeamLabel(teamToken);
-  if (!nickname) return titleCaseWords(teamToken);
-  return options.article ? `the ${nickname}` : nickname;
-}
-
-function formatDivisionLabel(divisionKey = "") {
-  const match = String(divisionKey || "").toUpperCase().match(/^(AFC|NFC)_(EAST|WEST|NORTH|SOUTH)$/);
-  if (!match) return String(divisionKey || "").replace(/_/g, " ");
-  const conference = match[1];
-  const side = match[2];
-  return `${conference} ${side.charAt(0)}${side.slice(1).toLowerCase()}`;
-}
-
 function shortMarketTag(market = "") {
   const key = String(market || "").toLowerCase();
   if (key === "super_bowl_winner") return "SB";
@@ -2307,10 +2236,6 @@ function statMetricLabel(metric = "") {
     receiving_tds: "receiving tds",
     total_tds: "total tds",
     scrimmage_yards: "scrimmage yards",
-    passing_interceptions: "passing interceptions",
-    interceptions: "interceptions",
-    sacks: "sacks",
-    receptions: "receptions",
   };
   return labels[key] || key.replace(/_/g, " ");
 }
@@ -2327,191 +2252,7 @@ function buildStatPrompt(player, metric, threshold) {
   if (key === "receiving_tds") return `${player} scores ${n} receiving touchdowns this season`;
   if (key === "total_tds") return `${player} scores ${n} total touchdowns this season`;
   if (key === "scrimmage_yards") return `${player} gets ${n} scrimmage yards this season`;
-  if (key === "passing_interceptions" || key === "interceptions") return `${player} throws ${n} interceptions this season`;
-  if (key === "receptions") return `${player} records ${n} receptions this season`;
-  if (key === "sacks") return `${player} records ${n} sacks this season`;
   return `${player} ${statMetricLabel(metric)} ${n} this season`;
-}
-
-function resolveDisplayStatMetric(metric = "", prompt = "") {
-  const key = String(metric || "").toLowerCase();
-  if (key !== "total_tds") return key;
-  const lower = normalizePrompt(prompt);
-  if (/\b(throw|throws|passing|passes|qb|quarterback)\b/.test(lower)) return "passing_tds";
-  if (/\b(catch|catches|receiv|receptions?)\b/.test(lower)) return "receiving_tds";
-  if (/\b(rush|rushes|rushing|runs?)\b/.test(lower)) return "rushing_tds";
-  return key;
-}
-
-function buildStatThresholdPhrase(metric, threshold, prompt = "") {
-  const key = resolveDisplayStatMetric(metric, prompt);
-  const n = Number(threshold);
-  const thresholdLabel = Number.isFinite(n) ? n.toLocaleString("en-US") : String(threshold || "");
-  const metricPhrases = {
-    passing_tds: `throws ${thresholdLabel} touchdowns`,
-    total_tds: `scores ${thresholdLabel} touchdowns`,
-    passing_yards: `throws for ${thresholdLabel} passing yards`,
-    rushing_yards: `rushes for ${thresholdLabel} yards`,
-    receiving_yards: `records ${thresholdLabel} receiving yards`,
-    rushing_tds: `scores ${thresholdLabel} rushing touchdowns`,
-    receiving_tds: `scores ${thresholdLabel} receiving touchdowns`,
-    receptions: `records ${thresholdLabel} receptions`,
-    sacks: `records ${thresholdLabel} sacks`,
-    passing_interceptions: `throws ${thresholdLabel} interceptions`,
-    interceptions: `records ${thresholdLabel} interceptions`,
-    scrimmage_yards: `records ${thresholdLabel} scrimmage yards`,
-  };
-  return metricPhrases[key] || `hits ${thresholdLabel} ${statMetricLabel(key)}`;
-}
-
-function buildStatThresholdLabel(playerName, metric, threshold, prompt = "") {
-  const subject = String(playerName || "").trim() || "A player";
-  return `${subject} ${buildStatThresholdPhrase(metric, threshold, prompt)} this season`;
-}
-
-function buildSubjectStatThresholdLabel(subject, metric, threshold, prompt = "") {
-  const cleanSubject = String(subject || "").trim() || "A player";
-  return `${cleanSubject} ${buildStatThresholdPhrase(metric, threshold, prompt)} this season`;
-}
-
-function buildPlayerAwardSummaryLabel(playerName, awardType = "mvp") {
-  const subject = String(playerName || "").trim() || "A player";
-  const key = String(awardType || "").toLowerCase();
-  if (key === "mvp") return `${subject} wins MVP`;
-  if (key === "opoy") return `${subject} wins OPOY`;
-  if (key === "dpoy") return `${subject} wins DPOY`;
-  if (key === "sb_mvp") return `${subject} wins Super Bowl MVP`;
-  return `${subject} wins ${String(awardType || "").toUpperCase()}`;
-}
-
-function isGenericArchetypeSubject(text = "") {
-  return /^(a|an)\s+(rookie\b|rookie quarterback|rookie qb|quarterback|qb|running back|wide receiver|receiver|tight end|fullback|kicker|punter|long snapper|undrafted(?: free agent| player)?|defensive player)\b/i.test(
-    String(text || "").trim()
-  );
-}
-
-function buildTeamMarketSummaryLabel(teamToken, market) {
-  const team = teamSubjectLabel(teamToken);
-  const key = String(market || "").toLowerCase();
-  if (key === "super_bowl_winner") return `${team} win the Super Bowl`;
-  if (key === "afc_winner") return `${team} win the AFC Championship`;
-  if (key === "nfc_winner") return `${team} win the NFC Championship`;
-  const division = key.match(/^nfl_(afc|nfc)_(east|west|north|south)_winner$/i);
-  if (division) {
-    return `${team} win the ${formatDivisionLabel(`${division[1]}_${division[2]}`)}`;
-  }
-  return `${team} win ${teamMarketLabel(market)}`;
-}
-
-function repairDisplayNumbersInLabel(label = "") {
-  let out = String(label || "");
-  out = out.replace(/\b0{2,}\s+((?:passing|receiving|rushing)\s+yards?)\s+(\d{4,})\b/gi, (_m, phrase, digits) => {
-    const n = Number(digits);
-    return Number.isFinite(n) ? `${n.toLocaleString("en-US")} ${phrase}` : `${digits} ${phrase}`;
-  });
-  out = out.replace(/\b(\d{4,})\b/g, (digits) => {
-    const n = Number(digits);
-    return Number.isFinite(n) ? n.toLocaleString("en-US") : digits;
-  });
-  return out.replace(/\s+/g, " ").trim();
-}
-
-function parseLabelSubjectAndPredicate(label = "") {
-  const match = String(label || "").match(
-    /^(.+?)\s+(wins?|throws?|rush(?:es|ing)?|scores?|records?|catches?|gets?|makes?|misses?|reach(?:es)?|finish(?:es)?|beats?|out[-\s]?\w+)\b\s*(.*)$/i
-  );
-  if (!match) return null;
-  return {
-    subject: String(match[1] || "").trim(),
-    predicate: `${String(match[2] || "").trim()} ${String(match[3] || "").trim()}`.trim(),
-  };
-}
-
-function joinOutcomeSummaryLabels(rows = []) {
-  const labels = (Array.isArray(rows) ? rows : [])
-    .map((row) => String(row?.label || "").trim())
-    .filter(Boolean);
-  if (!labels.length) return "";
-  if (labels.length === 1) return repairDisplayNumbersInLabel(labels[0]);
-  if (labels.length === 2) {
-    const left = parseLabelSubjectAndPredicate(labels[0]);
-    const right = parseLabelSubjectAndPredicate(labels[1]);
-    if (left && right && left.subject.toLowerCase() === right.subject.toLowerCase()) {
-      const leftHasSeason = /\bthis season\b/i.test(left.predicate);
-      const rightHasSeason = /\bthis season\b/i.test(right.predicate);
-      const leftPredicate = left.predicate.replace(/\s+this season\b/i, "").trim();
-      const rightPredicate = right.predicate.replace(/\s+this season\b/i, "").trim();
-      return repairDisplayNumbersInLabel(
-        `${left.subject} ${leftPredicate} and ${rightPredicate}${leftHasSeason || rightHasSeason ? " this season" : ""}`
-      );
-    }
-  }
-  return repairDisplayNumbersInLabel(labels.join(" and "));
-}
-
-async function buildPlayerSeasonStatEstimateWithPolish(prompt, intent, profile, asOfDate, calibration = {}) {
-  const parsed = parseSeasonStatIntent(prompt);
-  if (parsed?.metric === "total_tds" && !parsed.exact) {
-    await loadCreativeSeasonStats(false).catch(() => {});
-    const playerKey = normalizePersonName(profile?.name || "");
-    const qbRow = qbSeasonStatsIndex?.players?.[playerKey] || null;
-    const isQb = String(profile?.position || "").toUpperCase() === "QB" || Boolean(qbRow);
-    if (isQb && Array.isArray(qbRow?.seasons) && qbRow.seasons.length) {
-      const values = adjustedComparisonSeasonValues(qbRow.seasons, (season) => extractQbComparisonMetricValue(season, "total_tds"));
-      if (values.length) {
-        const mean = weightedComparisonMean(values);
-        if (Number.isFinite(mean)) {
-          const sigma = Math.max(standardDeviation(values), comparisonMetricSigmaFloor("total_tds"), 3.5);
-          const probabilityPct = clamp(normalTailAtLeast(mean, sigma, parsed.threshold) * 100, 0.01, 99.9);
-          const latestSeason = Number(qbSeasonStatsIndex?.latestSeason || 0);
-          const mostRecentSeason = Number(qbRow.seasons?.[0]?.season || latestSeason || 0);
-          return {
-            status: "ok",
-            odds: toAmericanOdds(probabilityPct),
-            impliedProbability: `${probabilityPct.toFixed(1)}%`,
-            confidence: values.length >= 2 ? "High" : "Low",
-            assumptions: [
-              `Used quarterback touchdown history directly because ${profile.name} is a QB and total touchdowns include both passing and rushing scores.`,
-              `${profile.name} projects to about ${round1(mean)} total touchdowns per season based on recent production.`,
-              "Recent partial seasons are prorated, with extra variance preserved for injuries and role changes.",
-            ],
-            playerName: profile.name || null,
-            headshotUrl: null,
-            summaryLabel: buildStatThresholdLabel(profile.name || "A quarterback", parsed.metric, parsed.threshold, prompt),
-            liveChecked: false,
-            asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
-            sourceType: "historical_model",
-            sourceLabel: "Season stat baseline model",
-            trace: {
-              baselineEventKey: "player_season_total_tds_qb_model",
-              statMetric: parsed.metric,
-              threshold: parsed.threshold,
-              lambda: mean,
-              sampleSeasons: values.length,
-              recentGames: Number(qbRow.seasons?.[0]?.games || 0),
-              modelType: "qb_total_tds_history_blended",
-              reliability: values.length >= 2 ? "medium" : "low",
-              staleYears: latestSeason && mostRecentSeason ? Math.max(0, latestSeason - mostRecentSeason) : 0,
-            },
-          };
-        }
-      }
-    }
-  }
-
-  const result = buildPlayerSeasonStatEstimate(prompt, intent, profile, asOfDate, calibration);
-  if (!result) return null;
-  if (
-    parsed &&
-    profile?.name &&
-    !/position constraint/i.test(String(result?.sourceLabel || ""))
-  ) {
-    return {
-      ...result,
-      summaryLabel: buildStatThresholdLabel(profile.name, parsed.metric, parsed.threshold, prompt),
-    };
-  }
-  return result;
 }
 
 async function buildBeforeOtherTeamEstimate(prompt, asOfDate) {
@@ -3290,10 +3031,6 @@ async function resolveBeforeRaceSide(sideText, asOfDate) {
 }
 
 async function buildMixedBeforeEstimate(prompt, asOfDate) {
-  const ageConstraint = parseBeforeAgeConstraint(prompt);
-  if (ageConstraint) {
-    return await buildBeforeAgeEstimate(prompt, asOfDate, ageConstraint);
-  }
   const lower = normalizePrompt(prompt);
   if (!/\b(before|prior to|ahead of|sooner than)\b/.test(lower)) return null;
   const parts = String(prompt || "").split(/\b(before|prior to|ahead of|sooner than)\b/i);
@@ -3590,7 +3327,7 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
     if (!Number.isFinite(pct) || pct <= 0) pct = defaultSeasonPctForTeamMarket(outcome.team, outcome.market);
     return {
       pct: clamp(pct, 0.2, 70),
-      label: buildTeamMarketSummaryLabel(outcome.team, outcome.market),
+      label: `${shortTeamLabel(outcome.team)} ${shortMarketTag(outcome.market) || teamMarketLabel(outcome.market)}`,
       team: outcome.team,
       eventKey: String(outcome.market || ""),
     };
@@ -3603,7 +3340,7 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
     const pct = outcome.type === "team_miss_playoffs" ? 100 - makePct : makePct;
     return {
       pct,
-      label: `${teamSubjectLabel(outcome.team, { article: true })} ${outcome.type === "team_miss_playoffs" ? "miss the playoffs" : "make the playoffs"}`,
+      label: `${shortTeamLabel(outcome.team)} ${outcome.type === "team_miss_playoffs" ? "miss playoffs" : "make playoffs"}`,
       team: outcome.team,
       eventKey: "team_playoffs",
     };
@@ -3614,7 +3351,7 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
     if (!Number.isFinite(pct)) return null;
     return {
       pct,
-      label: `${teamSubjectLabel(outcome.team, { article: true })} win a playoff game`,
+      label: `${shortTeamLabel(outcome.team)} win a playoff game`,
       team: outcome.team,
       eventKey: "team_playoff_win",
     };
@@ -3627,7 +3364,7 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
     if (!Number.isFinite(pct)) return null;
     return {
       pct,
-      label: `${teamSubjectLabel(outcome.team)} reach the ${String(outcome.conference || "").toUpperCase()} Championship Game`,
+      label: `${shortTeamLabel(outcome.team)} reach ${String(outcome.conference || "").toUpperCase()} CG`,
       team: outcome.team,
       eventKey: "team_conf_champ_appearance",
     };
@@ -3640,7 +3377,7 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
     if (!Number.isFinite(pct)) return null;
     return {
       pct,
-      label: `${teamSubjectLabel(outcome.team)} finish last in the ${formatDivisionLabel(outcome.divisionKey)}`,
+      label: `${shortTeamLabel(outcome.team)} finish last`,
       team: outcome.team,
       eventKey: "team_division_finish_last",
     };
@@ -3653,7 +3390,7 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
     if (!Number.isFinite(pct)) return null;
     return {
       pct,
-      label: `${teamSubjectLabel(outcome.team, { article: true })} ${outcome.winType === "exact" ? `win exactly ${outcome.wins} games` : `win ${outcome.wins}+ games`}`,
+      label: `${shortTeamLabel(outcome.team)} ${outcome.winType === "exact" ? `exactly ${outcome.wins} wins` : `${outcome.wins}+ wins`}`,
       team: outcome.team,
       eventKey: "team_win_total",
     };
@@ -3671,13 +3408,13 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
     };
     const prompt = buildStatPrompt(outcome.player, outcome.metric, outcome.threshold);
     const intent = parseIntent(prompt);
-    const stat = await buildPlayerSeasonStatEstimateWithPolish(prompt, intent, profile, today, phase2Calibration || {});
+    const stat = buildPlayerSeasonStatEstimate(prompt, intent, profile, today, phase2Calibration || {});
     if (!stat?.impliedProbability) return null;
     const pct = parseImpliedProbabilityPct(stat.impliedProbability);
     if (!Number.isFinite(pct)) return null;
     return {
       pct,
-      label: stat.summaryLabel || buildStatThresholdLabel(outcome.player, outcome.metric, outcome.threshold, prompt),
+      label: `${getLastName(outcome.player)} ${statMetricLabel(outcome.metric)} ${outcome.threshold}`,
       player: outcome.player,
       team: profile.teamAbbr || "",
       eventKey: String(stat?.trace?.baselineEventKey || "player_stat"),
@@ -3697,7 +3434,7 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
     const pct = awardPerSeasonPct(profile, outcome.awardType || "mvp");
     return {
       pct: clamp(pct, 0.2, 35),
-      label: buildPlayerAwardSummaryLabel(outcome.player, outcome.awardType || "mvp"),
+      label: `${getLastName(outcome.player)} ${String(outcome.awardType || "MVP").toUpperCase()}`,
       player: outcome.player,
       team: profile.teamAbbr || "",
       eventKey: `player_award_${String(outcome.awardType || "mvp")}`,
@@ -3707,7 +3444,7 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
   if (outcome.type === "non_qb_mvp") {
     return {
       pct: 18,
-      label: "A non-quarterback wins MVP",
+      label: "Non-QB MVP",
       eventKey: "non_qb_mvp",
     };
   }
@@ -3715,7 +3452,7 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
   if (outcome.type === "qb_mvp") {
     return {
       pct: 82,
-      label: "A quarterback wins MVP",
+      label: "QB MVP",
       eventKey: "qb_mvp",
     };
   }
@@ -3723,7 +3460,7 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
   if (outcome.type === "rookie_qb_mvp") {
     return {
       pct: 3.5,
-      label: "A rookie quarterback wins MVP",
+      label: "Rookie QB MVP",
       eventKey: "rookie_qb_mvp",
     };
   }
@@ -3731,7 +3468,7 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
   if (outcome.type === "defensive_mvp") {
     return {
       pct: 2.8,
-      label: "A defensive player wins MVP",
+      label: "Defensive MVP",
       eventKey: "defensive_mvp",
     };
   }
@@ -3749,22 +3486,13 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
     const per = perQb ? parseImpliedProbabilityPct(perQb.impliedProbability) : 8;
     const perProb = clamp(per / 100, 0.01, 0.6);
     const anyPct = clamp((1 - Math.pow(1 - perProb, 32)) * 100, 10, 95);
-    return { pct: anyPct, label: buildSubjectStatThresholdLabel("A quarterback", metric, threshold, baselinePrompt), eventKey: "any_qb_stat" };
+    return { pct: anyPct, label: "Any QB stat", eventKey: "any_qb_stat" };
   }
 
   if (outcome.type === "any_rookie_qb_stat") {
     const perProb = 0.38;
     const anyPct = clamp((1 - Math.pow(1 - perProb, 4)) * 100, 5, 90);
-    return {
-      pct: anyPct,
-      label: buildSubjectStatThresholdLabel(
-        "A rookie quarterback",
-        outcome.metric,
-        outcome.threshold,
-        buildStatPrompt("A rookie quarterback", outcome.metric, outcome.threshold)
-      ),
-      eventKey: "any_rookie_qb_stat",
-    };
+    return { pct: anyPct, label: "Any rookie QB stat", eventKey: "any_rookie_qb_stat" };
   }
 
   if (outcome.type === "any_rookie_qb_playoffs") {
@@ -3776,27 +3504,15 @@ async function estimateOutcomeProbabilityByType(outcome, asOfDate) {
   }
 
   if (outcome.type === "any_rusher_stat") {
-    return {
-      pct: 55,
-      label: buildSubjectStatThresholdLabel("A player", outcome.metric, outcome.threshold, buildStatPrompt("A player", outcome.metric, outcome.threshold)),
-      eventKey: "any_rusher_stat",
-    };
+    return { pct: 55, label: "Any rusher stat", eventKey: "any_rusher_stat" };
   }
 
   if (outcome.type === "any_receiver_stat") {
-    return {
-      pct: 50,
-      label: buildSubjectStatThresholdLabel("A receiver", outcome.metric, outcome.threshold, buildStatPrompt("A receiver", outcome.metric, outcome.threshold)),
-      eventKey: "any_receiver_stat",
-    };
+    return { pct: 50, label: "Any receiver stat", eventKey: "any_receiver_stat" };
   }
 
   if (outcome.type === "any_player_stat") {
-    return {
-      pct: 45,
-      label: buildSubjectStatThresholdLabel("A player", outcome.metric, outcome.threshold, buildStatPrompt("A player", outcome.metric, outcome.threshold)),
-      eventKey: "any_player_stat",
-    };
+    return { pct: 45, label: "Any player stat", eventKey: "any_player_stat" };
   }
 
   if (outcome.type === "any_team_win_total") {
@@ -3857,7 +3573,7 @@ async function buildCompositeAndEstimate(prompt, outcomes, asOfDate) {
   const base = rows.reduce((acc, r) => acc * clamp(Number(r.pct || 0) / 100, 0, 0.999), 1) * 100;
   const factor = dependenceFactorForOutcomes(outcomes, rows);
   const probPct = clamp(base * factor, 0.2, 99.0);
-  const label = joinOutcomeSummaryLabels(rows);
+  const label = rows.map((r) => r.label).filter(Boolean).join(" and ");
   return {
     status: "ok",
     odds: toAmericanOdds(probPct),
@@ -3900,7 +3616,7 @@ async function buildCompositeAndEstimateFallback(prompt, outcomes, asOfDate) {
   const base = rows.reduce((acc, r) => acc * clamp(Number(r.pct || 0) / 100, 0, 0.999), 1) * 100;
   const factor = dependenceFactorForOutcomes(outcomes, rows);
   const probPct = clamp(base * factor, 0.2, 99.0);
-  const label = joinOutcomeSummaryLabels(rows);
+  const label = rows.map((r) => r.label).filter(Boolean).join(" and ");
   return {
     status: "ok",
     odds: toAmericanOdds(probPct),
@@ -4064,7 +3780,7 @@ async function estimateEntityOutcomeProbability(entity, outcomeSuffix, asOfDate)
     }
 
     const parsedIntent = parseIntent(prompt);
-    const seasonStat = await buildPlayerSeasonStatEstimateWithPolish(
+    const seasonStat = buildPlayerSeasonStatEstimate(
       prompt,
       parsedIntent,
       profile,
@@ -4494,18 +4210,10 @@ async function loadAccoladesIndex() {
       throw new Error("invalid accolades index shape");
     }
     accoladesIndex = parsed;
-    accoladesPlayerNameCatalog = Object.entries(parsed.players)
-      .map(([key, row]) => ({
-        key,
-        displayName: String(row?.displayName || titleCaseWords(key)).trim(),
-      }))
-      .filter((row) => row.key && row.displayName)
-      .sort((a, b) => b.key.length - a.key.length);
     accoladesLoadedAt = Date.now();
     return accoladesIndex;
   } catch (_error) {
     accoladesIndex = null;
-    accoladesPlayerNameCatalog = [];
     accoladesLoadedAt = 0;
     return null;
   }
@@ -4544,1130 +4252,6 @@ async function loadMvpPriorsIndex() {
     mvpPriorsLoadedAt = 0;
     return null;
   }
-}
-
-async function loadCreativeSeasonStats(force = false) {
-  const isFresh = creativeStatsLoadedAt > 0 && qbSeasonStatsIndex?.players && skillSeasonStatsIndex?.players;
-  if (!force && isFresh) {
-    return {
-      qb: qbSeasonStatsIndex,
-      skill: skillSeasonStatsIndex,
-    };
-  }
-  if (creativeStatsLoadPromise) return creativeStatsLoadPromise;
-
-  creativeStatsLoadPromise = (async () => {
-    try {
-      const [qbRaw, skillRaw] = await Promise.all([
-        fs.readFile(path.resolve(process.cwd(), QB_SEASON_STATS_FILE), "utf8"),
-        fs.readFile(path.resolve(process.cwd(), SKILL_SEASON_STATS_FILE), "utf8"),
-      ]);
-      const qbParsed = JSON.parse(qbRaw);
-      const skillParsed = JSON.parse(skillRaw);
-      qbSeasonStatsIndex = qbParsed && qbParsed.players ? qbParsed : null;
-      skillSeasonStatsIndex = skillParsed && skillParsed.players ? skillParsed : null;
-      creativeStatsLoadedAt = Date.now();
-      return {
-        qb: qbSeasonStatsIndex,
-        skill: skillSeasonStatsIndex,
-      };
-    } catch (_error) {
-      qbSeasonStatsIndex = null;
-      skillSeasonStatsIndex = null;
-      creativeStatsLoadedAt = 0;
-      return {
-        qb: null,
-        skill: null,
-      };
-    } finally {
-      creativeStatsLoadPromise = null;
-    }
-  })();
-
-  return creativeStatsLoadPromise;
-}
-
-function isKnownCreativePlayerName(name) {
-  const key = normalizePersonName(name || "");
-  if (!key) return false;
-  if (nflPlayerIndex.get(key)?.length) return true;
-  if (accoladesIndex?.players?.[key]) return true;
-  if (qbSeasonStatsIndex?.players?.[key]) return true;
-  if (skillSeasonStatsIndex?.players?.[key]) return true;
-  return false;
-}
-
-function canonicalCreativePlayerName(name) {
-  const raw = String(name || "").trim();
-  const key = normalizePersonName(raw);
-  if (!key) return raw;
-  const nflCandidates = nflPlayerIndex.get(key);
-  if (Array.isArray(nflCandidates) && nflCandidates.length) {
-    return nflCandidates.find((p) => String(p.status || "").toLowerCase() === "active")?.fullName
-      || nflCandidates[0]?.fullName
-      || raw;
-  }
-  if (accoladesIndex?.players?.[key]?.displayName) return accoladesIndex.players[key].displayName;
-  if (qbSeasonStatsIndex?.players?.[key]?.playerName) return qbSeasonStatsIndex.players[key].playerName;
-  if (skillSeasonStatsIndex?.players?.[key]?.playerName) return skillSeasonStatsIndex.players[key].playerName;
-  return raw;
-}
-
-async function extractBestCreativePlayerFromText(text) {
-  const known = await extractKnownNflNamesFromPrompt(text, 1);
-  if (known?.[0]?.name) {
-    return {
-      name: known[0].name,
-      resolved: true,
-    };
-  }
-
-  const fallbackNames = extractPlayerNamesFromPrompt(text, 1);
-  if (fallbackNames?.[0]) {
-    const canonical = canonicalCreativePlayerName(fallbackNames[0]);
-    return {
-      name: canonical,
-      resolved: isKnownCreativePlayerName(canonical),
-    };
-  }
-
-  const single = extractPlayerName(text);
-  if (single) {
-    const canonical = canonicalCreativePlayerName(single);
-    return {
-      name: canonical,
-      resolved: isKnownCreativePlayerName(canonical),
-    };
-  }
-
-  const normalized = normalizeEntityName(text);
-  for (const row of accoladesPlayerNameCatalog) {
-    if (normalized.includes(row.key)) {
-      return {
-        name: row.displayName,
-        resolved: true,
-      };
-    }
-  }
-
-  return null;
-}
-
-async function extractOrderedCreativePlayers(prompt, maxPlayers = 4) {
-  const raw = String(prompt || "");
-  const collected = [];
-  const seen = new Set();
-  const push = (name) => {
-    const canonical = canonicalCreativePlayerName(name);
-    const key = normalizePersonName(canonical);
-    if (!canonical || !key || seen.has(key)) return;
-    seen.add(key);
-    const idx = indexOfInsensitive(raw, canonical);
-    const last = getLastName(canonical);
-    const fallbackIdx = idx >= 0 ? idx : indexOfInsensitive(raw, last);
-    collected.push({
-      name: canonical,
-      resolved: isKnownCreativePlayerName(canonical),
-      idx: fallbackIdx >= 0 ? fallbackIdx : Number.MAX_SAFE_INTEGER,
-    });
-  };
-
-  const known = await extractKnownNflNamesFromPrompt(raw, maxPlayers * 2);
-  for (const row of Array.isArray(known) ? known : []) push(row.name);
-
-  for (const row of extractPlayerNamesFromPrompt(raw, maxPlayers * 2)) push(row);
-
-  const normalized = normalizeEntityName(raw);
-  for (const row of accoladesPlayerNameCatalog) {
-    if (collected.length >= maxPlayers * 2) break;
-    if (normalized.includes(row.key)) push(row.displayName);
-  }
-
-  return collected
-    .sort((a, b) => a.idx - b.idx)
-    .slice(0, maxPlayers);
-}
-
-async function extractComparisonPlayersFromPrompt(prompt) {
-  const raw = String(prompt || "");
-  const splitters = [
-    /\bthan\b/i,
-    /\bbeats?\b/i,
-    /\bout[-\s]?(?:throws?|passes?|rush(?:es|ing)?|gains?|catches?)\b/i,
-  ];
-
-  for (const splitter of splitters) {
-    if (!splitter.test(raw)) continue;
-    const parts = raw.split(splitter);
-    if (parts.length < 2) continue;
-    const left = await extractBestCreativePlayerFromText(parts[0]);
-    const right = await extractBestCreativePlayerFromText(parts.slice(1).join(" "));
-    if (left?.name && right?.name && normalizePersonName(left.name) !== normalizePersonName(right.name)) {
-      return [left, right];
-    }
-  }
-
-  const ordered = await extractOrderedCreativePlayers(raw, 4);
-  if (ordered.length >= 2) return ordered.slice(0, 2);
-  return [];
-}
-
-function detectComparisonStatMetric(prompt) {
-  const lower = normalizePrompt(numberWordsToDigits(prompt));
-  if (/\bsacks?\b/.test(lower)) return "sacks";
-  if (/\binterceptions?\b/.test(lower) && !/\bpassing\b/.test(lower)) return "interceptions";
-  if (/\breceptions?\b|\bcatches?\b/.test(lower)) return "receptions";
-
-  const hasTouchdowns = /\b(tds?|touchdowns?)\b/.test(lower);
-  if (hasTouchdowns) {
-    if (/\b(throw|throws|pass|passes|passing|out[-\s]?throws?|out[-\s]?passes?)\b/.test(lower)) return "passing_tds";
-    if (/\b(rush|rushes|rushing|outrush(?:es|ing)?)\b/.test(lower)) return "rushing_tds";
-    if (/\b(receiv|receiving|catch|catches)\b/.test(lower)) return "receiving_tds";
-    return "total_tds";
-  }
-
-  const hasYards = /\b(yards?|yds?)\b/.test(lower);
-  if (hasYards) {
-    if (/\b(throw|throws|pass|passes|passing|out[-\s]?throws?|out[-\s]?passes?)\b/.test(lower)) return "passing_yards";
-    if (/\b(rush|rushes|rushing|outrush(?:es|ing)?)\b/.test(lower)) return "rushing_yards";
-    if (/\b(receiv|receiving|catch|catches|out[-\s]?gains?)\b/.test(lower)) return "receiving_yards";
-  }
-
-  return "";
-}
-
-function detectCareerAchievementComparison(prompt) {
-  const lower = normalizePrompt(numberWordsToDigits(prompt));
-  const moreThan = /\bmore\b/.test(lower) && /\bthan\b/.test(lower);
-  const careerish = /\b(career|finishes?|ends?|retires?|retirement)\b/.test(lower);
-  if (!moreThan && !careerish && !/\bwins?\s+more\b/.test(lower)) return null;
-
-  if (/\b(rings?|super bowls?|championships?)\b/.test(lower)) {
-    return {
-      achievementKey: "super_bowl_wins",
-      singular: "ring",
-      plural: "rings",
-      label: "rings",
-    };
-  }
-  if (/\b(mvps?|most valuable players?)\b/.test(lower)) {
-    return {
-      achievementKey: "mvp_wins",
-      singular: "MVP",
-      plural: "MVPs",
-      label: "MVPs",
-    };
-  }
-  if (/\b(opoys?|offensive player of the year)\b/.test(lower)) {
-    return {
-      achievementKey: "opoy_wins",
-      singular: "OPOY",
-      plural: "OPOYs",
-      label: "OPOYs",
-    };
-  }
-  if (/\b(dpoys?|defensive player of the year)\b/.test(lower)) {
-    return {
-      achievementKey: "dpoy_wins",
-      singular: "DPOY",
-      plural: "DPOYs",
-      label: "DPOYs",
-    };
-  }
-  if (/\bpro bowls?\b/.test(lower)) {
-    return {
-      achievementKey: "pro_bowls",
-      singular: "Pro Bowl",
-      plural: "Pro Bowls",
-      label: "Pro Bowls",
-    };
-  }
-  if (/\ball[-\s]?pro(?: selections?)?\b/.test(lower)) {
-    return {
-      achievementKey: "all_pro_selections",
-      singular: "All-Pro selection",
-      plural: "All-Pro selections",
-      label: "All-Pro selections",
-    };
-  }
-  return null;
-}
-
-async function parsePlayerVsPlayerComparison(prompt) {
-  const lower = normalizePrompt(numberWordsToDigits(prompt));
-  const hasComparisonMarker =
-    /\bthan\b/.test(lower) ||
-    /\bbeats?\b/.test(lower) ||
-    /\bout[-\s]?(throws?|passes?|rush(?:es|ing)?|gains?|catches?)\b/.test(lower);
-  if (!hasComparisonMarker) return null;
-
-  await loadCreativeSeasonStats(false).catch(() => {});
-  if (!accoladesIndex) await loadAccoladesIndex().catch(() => {});
-  if (nflPlayerIndex.size === 0) await loadNflPlayerIndex(false).catch(() => {});
-
-  const players = await extractComparisonPlayersFromPrompt(prompt);
-  if (players.length < 2) return null;
-  const [a, b] = players;
-
-  const achievement = detectCareerAchievementComparison(prompt);
-  if (achievement) {
-    return {
-      kind: "career_achievement",
-      playerA: a.name,
-      playerB: b.name,
-      achievementKey: achievement.achievementKey,
-      achievementLabel: achievement.label,
-      singular: achievement.singular,
-      plural: achievement.plural,
-      timeHorizon: "career",
-      resolvedCount: Number(Boolean(a.resolved)) + Number(Boolean(b.resolved)),
-    };
-  }
-
-  const stat = detectComparisonStatMetric(prompt);
-  if (!stat) return null;
-  return {
-    kind: "season_stat",
-    playerA: a.name,
-    playerB: b.name,
-    stat,
-    timeHorizon: /\b(career|all time)\b/.test(lower) ? "career" : "season",
-    resolvedCount: Number(Boolean(a.resolved)) + Number(Boolean(b.resolved)),
-  };
-}
-
-function comparisonMetricLabel(metric) {
-  const labels = {
-    passing_tds: "passing touchdowns",
-    passing_yards: "passing yards",
-    rushing_yards: "rushing yards",
-    rushing_tds: "rushing touchdowns",
-    receiving_yards: "receiving yards",
-    receiving_tds: "receiving touchdowns",
-    receptions: "receptions",
-    total_tds: "total touchdowns",
-    sacks: "sacks",
-    interceptions: "interceptions",
-  };
-  return labels[String(metric || "")] || statMetricLabel(metric);
-}
-
-function comparisonMetricSigmaFloor(metric) {
-  const key = String(metric || "");
-  if (["passing_tds", "rushing_tds", "receiving_tds", "total_tds"].includes(key)) return 1;
-  if (["passing_yards", "rushing_yards", "receiving_yards"].includes(key)) return 50;
-  if (key === "receptions") return 5;
-  if (["sacks", "interceptions"].includes(key)) return 2;
-  return 1;
-}
-
-function comparisonMetricDisplayValue(metric, value) {
-  const n = Number(value || 0);
-  if (!Number.isFinite(n)) return "0";
-  if (["passing_yards", "rushing_yards", "receiving_yards"].includes(String(metric || ""))) {
-    return `${Math.round(n)}`;
-  }
-  return `${round1(n)}`;
-}
-
-function extractQbComparisonMetricValue(season, metric) {
-  if (metric === "passing_tds") return Number(season?.passingTds);
-  if (metric === "passing_yards") return Number(season?.passingYards);
-  if (metric === "rushing_yards") return Number(season?.rushingYards);
-  if (metric === "rushing_tds") return Number(season?.rushingTds);
-  if (metric === "total_tds") return Number(season?.passingTds || 0) + Number(season?.rushingTds || 0);
-  if (metric === "interceptions") return Number(season?.passingInts);
-  return null;
-}
-
-function extractSkillComparisonMetricValue(season, metric) {
-  if (metric === "rushing_yards") return Number(season?.rushing_yards);
-  if (metric === "rushing_tds") return Number(season?.rushing_tds);
-  if (metric === "receiving_yards") return Number(season?.receiving_yards);
-  if (metric === "receiving_tds") return Number(season?.receiving_tds);
-  if (metric === "receptions") return Number(season?.receptions);
-  if (metric === "total_tds") return Number(season?.rushing_tds || 0) + Number(season?.receiving_tds || 0);
-  return null;
-}
-
-function adjustedComparisonSeasonValues(seasons, valueGetter) {
-  return (Array.isArray(seasons) ? seasons : [])
-    .slice()
-    .sort((a, b) => Number(b?.season || 0) - Number(a?.season || 0))
-    .map((season) => {
-      const raw = valueGetter(season);
-      const games = Number(season?.games || 0);
-      if (!Number.isFinite(raw) || raw < 0) return null;
-      if (!Number.isFinite(games) || games <= 0) return raw;
-      if (games < 4) return null;
-      if (games < 12) return (raw / games) * 17;
-      return raw;
-    })
-    .filter((value) => Number.isFinite(value))
-    .slice(0, 3);
-}
-
-function weightedComparisonMean(values) {
-  if (!Array.isArray(values) || !values.length) return null;
-  const weights = [0.5, 0.3, 0.2];
-  let num = 0;
-  let den = 0;
-  for (let i = 0; i < Math.min(values.length, weights.length); i += 1) {
-    const v = Number(values[i]);
-    const w = weights[i];
-    if (!Number.isFinite(v) || !Number.isFinite(w)) continue;
-    num += v * w;
-    den += w;
-  }
-  if (!den) return null;
-  return num / den;
-}
-
-function standardDeviation(values) {
-  const rows = (Array.isArray(values) ? values : []).map((v) => Number(v)).filter((v) => Number.isFinite(v));
-  if (!rows.length) return 0;
-  const mean = rows.reduce((acc, v) => acc + v, 0) / rows.length;
-  const variance = rows.reduce((acc, v) => acc + ((v - mean) ** 2), 0) / rows.length;
-  return Math.sqrt(Math.max(variance, 0));
-}
-
-async function getComparisonProjection(playerName, metric) {
-  await loadCreativeSeasonStats(false).catch(() => {});
-  const key = normalizePersonName(playerName || "");
-  if (!key) {
-    return { playerName, knownEntity: false, unknownPlayer: true };
-  }
-
-  const qbRow = qbSeasonStatsIndex?.players?.[key] || null;
-  const skillRow = skillSeasonStatsIndex?.players?.[key] || null;
-  const qbSupported = ["passing_tds", "passing_yards", "rushing_yards", "rushing_tds", "total_tds", "interceptions"].includes(metric);
-  const skillSupported = ["rushing_yards", "rushing_tds", "receiving_yards", "receiving_tds", "receptions", "total_tds"].includes(metric);
-
-  let values = [];
-  let position = "";
-  if (qbRow && qbSupported) {
-    values = adjustedComparisonSeasonValues(qbRow.seasons, (season) => extractQbComparisonMetricValue(season, metric));
-    position = "QB";
-  } else if (skillRow && skillSupported) {
-    values = adjustedComparisonSeasonValues(skillRow.seasons, (season) => extractSkillComparisonMetricValue(season, metric));
-    position = String(skillRow?.seasons?.[0]?.position || "");
-  }
-
-  if (!values.length) {
-    return {
-      playerName: canonicalCreativePlayerName(playerName),
-      knownEntity: Boolean(qbRow || skillRow || isKnownCreativePlayerName(playerName)),
-      unknownPlayer: true,
-      metric,
-      position,
-    };
-  }
-
-  const mean = weightedComparisonMean(values);
-  if (!Number.isFinite(mean)) {
-    return {
-      playerName: canonicalCreativePlayerName(playerName),
-      knownEntity: true,
-      unknownPlayer: true,
-      metric,
-      position,
-    };
-  }
-
-  const sigma = Math.max(standardDeviation(values), comparisonMetricSigmaFloor(metric));
-  return {
-    playerName: canonicalCreativePlayerName(playerName),
-    knownEntity: true,
-    unknownPlayer: false,
-    metric,
-    position,
-    seasonsUsed: values.length,
-    values,
-    mean,
-    sd: sigma,
-  };
-}
-
-function buildComparisonSummaryLabel(playerA, playerB, metric, kind = "season_stat", achievementLabel = "") {
-  if (kind === "career_achievement") {
-    const noun = achievementLabel || "career honors";
-    return `${playerA} ends career with more ${noun} than ${playerB}`;
-  }
-  if (metric === "passing_tds" || metric === "passing_yards") return `${playerA} out-throws ${playerB} this season`;
-  if (metric === "rushing_yards") return `${playerA} outrushes ${playerB}`;
-  if (metric === "rushing_tds") return `${playerA} scores more rushing TDs than ${playerB}`;
-  if (metric === "receiving_yards") return `${playerA} out-gains ${playerB} in receiving yards`;
-  if (metric === "receiving_tds") return `${playerA} scores more receiving TDs than ${playerB}`;
-  if (metric === "receptions") return `${playerA} catches more passes than ${playerB}`;
-  if (metric === "total_tds") return `${playerA} scores more TDs than ${playerB}`;
-  if (metric === "sacks") return `${playerA} records more sacks than ${playerB}`;
-  if (metric === "interceptions") return `${playerA} records more interceptions than ${playerB}`;
-  return `${playerA} beats ${playerB} in ${comparisonMetricLabel(metric)}`;
-}
-
-function formatAchievementCount(count, singular, plural) {
-  const n = Number(count || 0);
-  return `${n} ${n === 1 ? singular : plural}`;
-}
-
-function buildArchetypeSummaryLabel(intent, prompt = "") {
-  if (!intent) return buildFallbackLabel(prompt);
-  const label = String(intent.label || "").trim() || "NFL archetype";
-  if (intent.action === "mvp") return `${label} wins NFL MVP`;
-  if (intent.action === "opoy") return `${label} wins Offensive Player of the Year`;
-  if (intent.action === "stat") {
-    const threshold = Number(intent.threshold || 0);
-    const thresholdLabel = threshold ? threshold.toLocaleString("en-US") : "";
-    if (intent.metric === "passing_yards" && threshold) return `${label} throws for ${thresholdLabel} yards this season`;
-    if (intent.metric === "passing_tds" && threshold) return `${label} throws ${thresholdLabel} TDs this season`;
-    if (intent.metric === "rushing_yards" && threshold) return `${label} rushes for ${thresholdLabel} yards this season`;
-    if (intent.metric === "rushing_tds" && threshold) return `${label} scores ${thresholdLabel} rushing TDs this season`;
-    if (intent.metric === "receiving_yards" && threshold) return `${label} posts ${thresholdLabel} receiving yards this season`;
-    if (intent.metric === "receiving_tds" && threshold) return `${label} scores ${thresholdLabel} receiving TDs this season`;
-    if (intent.metric === "receptions" && threshold) return `${label} catches ${thresholdLabel} passes this season`;
-    if (intent.metric === "total_tds" && threshold) return `${label} scores ${thresholdLabel} TDs this season`;
-  }
-  return buildFallbackLabel(prompt);
-}
-
-function buildBeforeAgeSummaryLabel(left, ageConstraint, prompt = "") {
-  if (!left || !ageConstraint?.phrase) return buildFallbackLabel(prompt);
-  const playerName = String(left.playerName || "").trim();
-  if (!playerName) return buildFallbackLabel(prompt);
-  if (left.type === "player_career_super_bowl") return `${playerName} wins a Super Bowl ${ageConstraint.phrase}`;
-  if (left.type === "player_retire") return `${playerName} retires ${ageConstraint.phrase}`;
-  const label = String(left.label || "");
-  if (/\bMVP\b/.test(label)) return `${playerName} wins MVP ${ageConstraint.phrase}`;
-  if (/\bOPOY\b/.test(label)) return `${playerName} wins OPOY ${ageConstraint.phrase}`;
-  if (/\bDPOY\b/.test(label)) return `${playerName} wins DPOY ${ageConstraint.phrase}`;
-  if (/\bSB MVP\b/.test(label)) return `${playerName} wins Super Bowl MVP ${ageConstraint.phrase}`;
-  return buildFallbackLabel(prompt);
-}
-
-function poibinDistribution(probabilities, maxCount = 20) {
-  const probs = Array.isArray(probabilities) ? probabilities : [];
-  const n = probs.length;
-  const dp = new Array(n + 1).fill(0);
-  dp[0] = 1;
-  for (const pRaw of probs) {
-    const p = clamp(Number(pRaw) || 0, 0, 1);
-    for (let j = n; j >= 1; j -= 1) {
-      dp[j] = dp[j] * (1 - p) + dp[j - 1] * p;
-    }
-    dp[0] *= 1 - p;
-  }
-  return dp.slice(0, Math.min(maxCount, dp.length)).map((probability, count) => ({
-    count,
-    probability: clamp(probability, 0, 1),
-  }));
-}
-
-function fixedCountDistribution(count) {
-  return [{ count: Number(count) || 0, probability: 1 }];
-}
-
-function shiftedCountDistribution(rows, offset = 0) {
-  return (Array.isArray(rows) ? rows : []).map((row) => ({
-    count: Number(row?.count || 0) + Number(offset || 0),
-    probability: clamp(Number(row?.probability || 0), 0, 1),
-  }));
-}
-
-function compareCountDistributions(aRows, bRows) {
-  let sum = 0;
-  for (const a of Array.isArray(aRows) ? aRows : []) {
-    for (const b of Array.isArray(bRows) ? bRows : []) {
-      if (Number(a?.count) > Number(b?.count)) {
-        sum += clamp(Number(a?.probability || 0), 0, 1) * clamp(Number(b?.probability || 0), 0, 1);
-      }
-    }
-  }
-  return clamp(sum, 0, 1);
-}
-
-function expectedCountFromDistribution(rows) {
-  return (Array.isArray(rows) ? rows : []).reduce(
-    (acc, row) => acc + Number(row?.count || 0) * clamp(Number(row?.probability || 0), 0, 1),
-    0
-  );
-}
-
-async function buildCareerSuperBowlCountDistribution(playerName, asOfDate) {
-  const existingCountRaw = knownCareerAccoladeCount(playerName, "super_bowl_wins");
-  let status = await getLocalNflPlayerStatus(playerName, "");
-  const preferQb =
-    getTopQbBoost(playerName) > 1.0 || /\b(qb|quarterback|passing|throws?|mvp)\b/i.test(String(playerName || ""));
-  const preferredPos = preferQb ? "QB" : "";
-  if (!status?.teamAbbr) {
-    status = await getLocalNflPlayerStatus(playerName, "", preferredPos);
-  }
-  if (!status?.teamAbbr) {
-    const profile = await resolveNflPlayerProfile(playerName, "");
-    if (profile?.teamAbbr) {
-      status = {
-        asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
-        status: profile.status || "active",
-        isSportsFigure: "yes",
-        teamAbbr: profile.teamAbbr,
-        fullName: profile.name || playerName,
-        note: `local_nfl_index:${profile.teamAbbr}:${profile.position || "NA"}:${profile.yearsExp ?? "NA"}:${profile.age ?? "NA"}:${profile.availability || "unknown"}`,
-      };
-    }
-  }
-
-  const existingCount = Number.isFinite(Number(existingCountRaw)) ? Number(existingCountRaw) : (isKnownCreativePlayerName(playerName) ? 0 : null);
-  if (!status?.teamAbbr) {
-    if (!Number.isFinite(existingCount)) return null;
-    return {
-      rows: fixedCountDistribution(existingCount),
-      currentCount: existingCount,
-      expectedTotal: existingCount,
-      liveChecked: false,
-      asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
-      sourceType: "model",
-      sourceLabel: "Career comparison fixed-count baseline",
-    };
-  }
-
-  const localHints = parseLocalIndexNote(status.note);
-  if (String(status.status || "").toLowerCase() === "retired" || String(status.status || "").toLowerCase() === "deceased") {
-    const fixed = Number.isFinite(existingCount) ? existingCount : 0;
-    return {
-      rows: fixedCountDistribution(fixed),
-      currentCount: fixed,
-      expectedTotal: fixed,
-      liveChecked: false,
-      asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
-      sourceType: "model",
-      sourceLabel: "Career comparison fixed-count baseline",
-    };
-  }
-
-  const posGroup = positionGroup(localHints.position);
-  const yearsRemaining = estimateCareerYearsRemaining(localHints);
-  const teamName = NFL_TEAM_DISPLAY[status.teamAbbr] || status.teamAbbr;
-  const sbRef = await getSportsbookReferenceByTeamAndMarket(teamName, "super_bowl_winner");
-  const teamSeasonPct = sbRef ? Number(String(sbRef.impliedProbability || "").replace("%", "")) : 4.5;
-  let playerShare = posGroup === "qb" ? 0.95 : 0.28;
-  playerShare *= getTopQbBoost(playerName);
-  if (posGroup === "qb" && Number(localHints.yearsExp || 0) <= 2) playerShare *= 0.92;
-  if (posGroup === "qb" && Number(localHints.yearsExp || 0) >= 4) playerShare *= 1.12;
-  const baseSeasonWinPct = clamp(teamSeasonPct * playerShare, 0.2, 35);
-  const perSeason = buildCareerSeasonCurve(baseSeasonWinPct, yearsRemaining, localHints.yearsExp, posGroup);
-  const future = poibinDistribution(perSeason, yearsRemaining + 1);
-  const offset = Number.isFinite(existingCount) ? existingCount : 0;
-  const rows = shiftedCountDistribution(future, offset);
-  return {
-    rows,
-    currentCount: offset,
-    expectedTotal: expectedCountFromDistribution(rows),
-    liveChecked: Boolean(sbRef),
-    asOfDate: sbRef?.asOfDate || asOfDate || new Date().toISOString().slice(0, 10),
-    sourceType: sbRef ? "hybrid_anchored" : "model",
-    sourceLabel: sbRef ? "Career comparison model with live SB anchor" : "Career comparison model",
-  };
-}
-
-async function buildCareerAwardCountDistribution(playerName, awardType, asOfDate) {
-  const accoladeKey = awardType === "mvp" ? "mvp_wins" : awardType === "opoy" ? "opoy_wins" : awardType === "dpoy" ? "dpoy_wins" : "";
-  if (!accoladeKey) return null;
-  const existingCountRaw = knownCareerAccoladeCount(playerName, accoladeKey);
-  let localStatus = await getLocalNflPlayerStatus(playerName, "");
-  if (!localStatus) {
-    const profile = await resolveNflPlayerProfile(playerName, "");
-    if (profile?.teamAbbr) {
-      localStatus = {
-        asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
-        status: profile.status || "active",
-        isSportsFigure: "yes",
-        teamAbbr: profile.teamAbbr,
-        fullName: profile.name || playerName,
-        note: `local_nfl_index:${profile.teamAbbr}:${profile.position || "NA"}:${profile.yearsExp ?? "NA"}:${profile.age ?? "NA"}:${profile.availability || "unknown"}`,
-      };
-    }
-  }
-
-  const existingCount = Number.isFinite(Number(existingCountRaw)) ? Number(existingCountRaw) : (isKnownCreativePlayerName(playerName) ? 0 : null);
-  if (!localStatus) {
-    if (!Number.isFinite(existingCount)) return null;
-    return {
-      rows: fixedCountDistribution(existingCount),
-      currentCount: existingCount,
-      expectedTotal: existingCount,
-      liveChecked: false,
-      asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
-      sourceType: "model",
-      sourceLabel: "Career comparison fixed-count baseline",
-    };
-  }
-
-  if (String(localStatus.status || "").toLowerCase() === "retired" || String(localStatus.status || "").toLowerCase() === "deceased") {
-    const fixed = Number.isFinite(existingCount) ? existingCount : 0;
-    return {
-      rows: fixedCountDistribution(fixed),
-      currentCount: fixed,
-      expectedTotal: fixed,
-      liveChecked: false,
-      asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
-      sourceType: "model",
-      sourceLabel: "Career comparison fixed-count baseline",
-    };
-  }
-
-  const hints = parseLocalIndexNote(localStatus.note);
-  const profile = {
-    name: playerName,
-    position: hints.position || "",
-    teamAbbr: localStatus.teamAbbr || hints.teamAbbr || "",
-    yearsExp: hints.yearsExp,
-    age: hints.age,
-    status: localStatus.status || "unknown",
-  };
-  const teamName = NFL_TEAM_DISPLAY[profile.teamAbbr] || profile.teamAbbr || "";
-  const sbRef = teamName ? await getSportsbookReferenceByTeamAndMarket(teamName, "super_bowl_winner") : null;
-  const teamSuperBowlPct = sbRef ? Number(String(sbRef.impliedProbability || "").replace("%", "")) : 0;
-  const outcomes = buildPlayerOutcomes(profile, {
-    teamSuperBowlPct,
-    asOfDate,
-    calibration: phase2Calibration || {},
-  });
-  const dist = outcomes?.awards?.[awardType];
-  if (!dist?.distribution) return null;
-
-  const baseRows = dist.distribution.flatMap((row) => {
-    const probability = clamp(Number(row?.probabilityPct || 0) / 100, 0, 1);
-    if (typeof row?.count === "number") return [{ count: row.count, probability }];
-    if (typeof row?.count === "string" && /\+$/.test(row.count)) {
-      const base = Number(String(row.count).replace("+", ""));
-      if (Number.isFinite(base)) return [{ count: base, probability }];
-    }
-    return [];
-  });
-  if (!baseRows.length) return null;
-
-  const offset = Number.isFinite(existingCount) ? existingCount : 0;
-  const rows = shiftedCountDistribution(baseRows, offset);
-  return {
-    rows,
-    currentCount: offset,
-    expectedTotal: expectedCountFromDistribution(rows),
-    liveChecked: Boolean(sbRef),
-    asOfDate: sbRef?.asOfDate || asOfDate || new Date().toISOString().slice(0, 10),
-    sourceType: sbRef ? "hybrid_anchored" : "model",
-    sourceLabel: sbRef ? "Career comparison model with team-market anchor" : "Career comparison model",
-  };
-}
-
-async function buildPlayerVsPlayerEstimate(prompt, asOfDate, parsed = null) {
-  const intent = parsed || await parsePlayerVsPlayerComparison(prompt);
-  if (!intent) return null;
-
-  if (intent.kind === "season_stat") {
-    await loadCreativeSeasonStats(false).catch(() => {});
-    const [aStatus, bStatus] = await Promise.all([
-      getLocalNflPlayerStatus(intent.playerA, ""),
-      getLocalNflPlayerStatus(intent.playerB, ""),
-    ]);
-    const retiredEntry = [
-      { name: intent.playerA, status: aStatus },
-      { name: intent.playerB, status: bStatus },
-    ].find(({ name, status }) => {
-      const value = String(status?.status || "").toLowerCase();
-      if (value === "retired" || value === "deceased") return true;
-      const nameLower = normalizePrompt(status?.fullName || name || "");
-      if (KNOWN_LONG_RETIRED_ATHLETES.some((entry) => nameLower.includes(entry))) return true;
-      const playerKey = normalizePersonName(status?.fullName || name || "");
-      const qbLatest = Number(qbSeasonStatsIndex?.players?.[playerKey]?.seasons?.[0]?.season || 0);
-      const skillLatest = Number(skillSeasonStatsIndex?.players?.[playerKey]?.seasons?.[0]?.season || 0);
-      const latestSeasonPlayed = Math.max(qbLatest, skillLatest);
-      const dataLatestSeason = Math.max(Number(qbSeasonStatsIndex?.latestSeason || 0), Number(skillSeasonStatsIndex?.latestSeason || 0));
-      const teamAbbr = String(status?.teamAbbr || "").toUpperCase();
-      return (!teamAbbr || teamAbbr === "FA") && latestSeasonPlayed > 0 && dataLatestSeason > 0 && latestSeasonPlayed <= dataLatestSeason - 2;
-    });
-    if (retiredEntry) {
-      const activePlayerName = retiredEntry.name === intent.playerA ? intent.playerB : intent.playerA;
-      const careerMetric =
-        intent.stat === "passing_tds" || intent.stat === "total_tds"
-          ? "touchdowns"
-          : comparisonMetricLabel(intent.stat);
-      const suggestion =
-        activePlayerName && activePlayerName !== retiredEntry.name
-          ? ` If you're looking for a career comparison, try something like "${activePlayerName} finishes career with more ${careerMetric} than ${retiredEntry.name}."`
-          : "";
-      return {
-        status: "ok",
-        odds: "+100000",
-        impliedProbability: "0.1%",
-        confidence: "High",
-        assumptions: [`${retiredEntry.name} is retired and not expected to play in the ${DEFAULT_NFL_SEASON} season.`],
-        rationale: `${retiredEntry.name} retired from the NFL, so this season-stat comparison isn't applicable.${suggestion}`,
-        summaryLabel: buildComparisonSummaryLabel(intent.playerA, intent.playerB, intent.stat),
-        playerName: intent.playerA,
-        secondaryPlayerName: intent.playerB,
-        headshotUrl: null,
-        secondaryHeadshotUrl: null,
-        liveChecked: false,
-        asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
-        sourceType: "constraint_model",
-        sourceLabel: "Constraint model",
-      };
-    }
-    const [aProj, bProj] = await Promise.all([
-      getComparisonProjection(intent.playerA, intent.stat),
-      getComparisonProjection(intent.playerB, intent.stat),
-    ]);
-    if (aProj?.unknownPlayer || bProj?.unknownPlayer) return null;
-    const variance = Math.sqrt((aProj.sd ** 2) + (bProj.sd ** 2));
-    if (!Number.isFinite(variance) || variance <= 0) return null;
-    const z = (aProj.mean - bProj.mean) / variance;
-    const probabilityPct = clamp(normalCdfApprox(z) * 100, 2, 95);
-    const favorite = probabilityPct >= 50 ? intent.playerA : intent.playerB;
-    const meanA = comparisonMetricDisplayValue(intent.stat, aProj.mean);
-    const meanB = comparisonMetricDisplayValue(intent.stat, bProj.mean);
-    return {
-      status: "ok",
-      odds: toAmericanOdds(probabilityPct),
-      impliedProbability: `${probabilityPct.toFixed(1)}%`,
-      confidence: probabilityPct > 70 || probabilityPct < 30 ? "Medium" : "Low",
-      assumptions: [
-        `Based on ${intent.playerA}'s recent ${comparisonMetricLabel(intent.stat)} projection of about ${meanA} per season.`,
-        `Compared to ${intent.playerB}'s recent projection of about ${meanB} per season.`,
-        "Season-to-season variance and durability-adjusted recent production are both included.",
-      ],
-      rationale: `${intent.playerA} projects to about ${meanA} ${comparisonMetricLabel(intent.stat)} per season, while ${intent.playerB} projects to about ${meanB}. ${favorite} has the edge based on recent production and year-to-year variance.`,
-      summaryLabel: buildComparisonSummaryLabel(intent.playerA, intent.playerB, intent.stat),
-      playerName: intent.playerA,
-      secondaryPlayerName: intent.playerB,
-      headshotUrl: null,
-      secondaryHeadshotUrl: null,
-      liveChecked: false,
-      asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
-      sourceType: "model",
-      sourceLabel: "Odds Gods comparison model",
-      trace: {
-        baselineEventKey: "player_vs_player_stat_comparison",
-        metric: intent.stat,
-        meanA: Number(aProj.mean.toFixed(3)),
-        meanB: Number(bProj.mean.toFixed(3)),
-        sdA: Number(aProj.sd.toFixed(3)),
-        sdB: Number(bProj.sd.toFixed(3)),
-        resolvedCount: intent.resolvedCount,
-      },
-    };
-  }
-
-  if (intent.kind === "career_achievement") {
-    let aDist = null;
-    let bDist = null;
-    if (intent.achievementKey === "super_bowl_wins") {
-      [aDist, bDist] = await Promise.all([
-        buildCareerSuperBowlCountDistribution(intent.playerA, asOfDate),
-        buildCareerSuperBowlCountDistribution(intent.playerB, asOfDate),
-      ]);
-    } else if (["mvp_wins", "opoy_wins", "dpoy_wins"].includes(intent.achievementKey)) {
-      const awardType = intent.achievementKey === "mvp_wins" ? "mvp" : intent.achievementKey === "opoy_wins" ? "opoy" : "dpoy";
-      [aDist, bDist] = await Promise.all([
-        buildCareerAwardCountDistribution(intent.playerA, awardType, asOfDate),
-        buildCareerAwardCountDistribution(intent.playerB, awardType, asOfDate),
-      ]);
-    } else {
-      return null;
-    }
-    if (!aDist?.rows || !bDist?.rows) return null;
-
-    const probabilityPct = clamp(compareCountDistributions(aDist.rows, bDist.rows) * 100, 0.2, 95);
-    const expectedA = expectedCountFromDistribution(aDist.rows);
-    const expectedB = expectedCountFromDistribution(bDist.rows);
-    const liveChecked = Boolean(aDist.liveChecked || bDist.liveChecked);
-    return {
-      status: "ok",
-      odds: toAmericanOdds(probabilityPct),
-      impliedProbability: `${probabilityPct.toFixed(1)}%`,
-      confidence: probabilityPct > 70 || probabilityPct < 30 ? "Medium" : "Low",
-      assumptions: [
-        `${intent.playerA} currently sits at ${formatAchievementCount(aDist.currentCount, intent.singular, intent.plural)}, with an expected career finish around ${round1(expectedA)}.`,
-        `${intent.playerB} currently sits at ${formatAchievementCount(bDist.currentCount, intent.singular, intent.plural)}, with an expected career finish around ${round1(expectedB)}.`,
-        "Career comparison is modeled from accolade counts plus projected future seasons where the player is still active.",
-      ],
-      rationale: `${intent.playerA} is currently credited with ${formatAchievementCount(aDist.currentCount, intent.singular, intent.plural)}, while ${intent.playerB} has ${formatAchievementCount(bDist.currentCount, intent.singular, intent.plural)}. Projecting the rest of both careers puts ${intent.playerA} around ${round1(expectedA)} and ${intent.playerB} around ${round1(expectedB)} on average, which drives the comparison probability.`,
-      summaryLabel: buildComparisonSummaryLabel(intent.playerA, intent.playerB, "", "career_achievement", intent.achievementLabel),
-      playerName: intent.playerA,
-      secondaryPlayerName: intent.playerB,
-      headshotUrl: null,
-      secondaryHeadshotUrl: null,
-      liveChecked,
-      asOfDate: aDist.asOfDate || bDist.asOfDate || asOfDate || new Date().toISOString().slice(0, 10),
-      sourceType: liveChecked ? "hybrid_anchored" : "model",
-      sourceLabel: liveChecked ? "Odds Gods career comparison model (anchored)" : "Odds Gods career comparison model",
-      trace: {
-        baselineEventKey: "career_achievement_comparison",
-        achievementKey: intent.achievementKey,
-        expectedA: Number(expectedA.toFixed(3)),
-        expectedB: Number(expectedB.toFixed(3)),
-        resolvedCount: intent.resolvedCount,
-      },
-    };
-  }
-
-  return null;
-}
-
-function parsePositionArchetypePrompt(prompt) {
-  const lower = normalizePrompt(numberWordsToDigits(prompt));
-  let archetype = "";
-  let articleLabel = "";
-
-  if (/\b(a|an)\s+rookie\s+(quarterback|qb)\b/.test(lower)) {
-    archetype = "rookie_qb";
-    articleLabel = "A rookie quarterback";
-  } else if (/\b(a|an)\s+rookie\b/.test(lower)) {
-    archetype = "rookie";
-    articleLabel = "A rookie";
-  } else if (/\b(a|an)\s+(undrafted free agent|undrafted player|udfa)\b/.test(lower)) {
-    archetype = "undrafted";
-    articleLabel = "An undrafted free agent";
-  } else if (/\b(a|an)\s+kicker\b/.test(lower)) {
-    archetype = "kicker";
-    articleLabel = "A kicker";
-  } else if (/\b(a|an)\s+punter\b/.test(lower)) {
-    archetype = "punter";
-    articleLabel = "A punter";
-  } else if (/\b(a|an)\s+long snapper\b/.test(lower)) {
-    archetype = "long_snapper";
-    articleLabel = "A long snapper";
-  } else if (/\b(a|an)\s+defensive player\b/.test(lower) || /\b(a|an)\s+(defensive end|linebacker|cornerback|safety)\b/.test(lower)) {
-    archetype = "defensive_player";
-    articleLabel = /\b(a|an)\s+defensive player\b/.test(lower) ? "A defensive player" : buildFallbackLabel(prompt);
-  } else if (/\b(a|an)\s+running back\b/.test(lower) || /\b(a|an)\s+fullback\b/.test(lower)) {
-    archetype = "running_back";
-    articleLabel = /\b(a|an)\s+fullback\b/.test(lower) ? "A fullback" : "A running back";
-  } else if (/\b(a|an)\s+(wide receiver|receiver)\b/.test(lower)) {
-    archetype = "wide_receiver";
-    articleLabel = "A wide receiver";
-  } else if (/\b(a|an)\s+tight end\b/.test(lower)) {
-    archetype = "tight_end";
-    articleLabel = "A tight end";
-  }
-
-  if (!archetype) return null;
-
-  if (/\b(mvp|most valuable player)\b/.test(lower)) {
-    return { archetype, action: "mvp", threshold: null, metric: "", label: articleLabel };
-  }
-  if (/\b(opoy|offensive player of the year)\b/.test(lower)) {
-    return { archetype, action: "opoy", threshold: null, metric: "", label: articleLabel };
-  }
-  const statIntent = parseSeasonStatIntent(prompt);
-  if (statIntent) {
-    return {
-      archetype,
-      action: "stat",
-      threshold: Number(statIntent.threshold || 0),
-      metric: String(statIntent.metric || ""),
-      label: articleLabel,
-    };
-  }
-  return { archetype, action: "other", threshold: null, metric: "", label: articleLabel };
-}
-
-function lookupArchetypeBaseline(parsed) {
-  if (!parsed) return null;
-  const { archetype, action, metric, threshold } = parsed;
-  if (action === "mvp") {
-    const keyMap = {
-      kicker: "kicker_mvp",
-      punter: "punter_mvp",
-      defensive_player: "defensive_player_mvp",
-      running_back: "running_back_mvp",
-      wide_receiver: "wide_receiver_mvp",
-      tight_end: "tight_end_mvp",
-      rookie_qb: "rookie_qb_mvp",
-      rookie: "rookie_mvp",
-    };
-    const key = keyMap[archetype];
-    if (!key) return null;
-    return { key, probabilityPct: ARCHETYPE_BASELINES[key] };
-  }
-  if (action === "opoy") {
-    const keyMap = {
-      undrafted: "undrafted_opoy",
-      kicker: "kicker_opoy",
-      rookie: "rookie_opoy",
-      rookie_qb: "rookie_opoy",
-    };
-    const key = keyMap[archetype];
-    if (!key) return null;
-    return { key, probabilityPct: ARCHETYPE_BASELINES[key] };
-  }
-  if (action === "stat" && archetype === "rookie_qb") {
-    if (metric === "passing_yards") {
-      if (threshold >= 5000) return { key: "rookie_qb_5000_yards", probabilityPct: ARCHETYPE_BASELINES.rookie_qb_5000_yards };
-      if (threshold >= 4500) return { key: "rookie_qb_4500_yards", probabilityPct: ARCHETYPE_BASELINES.rookie_qb_4500_yards };
-      if (threshold >= 4000) return { key: "rookie_qb_4000_yards", probabilityPct: ARCHETYPE_BASELINES.rookie_qb_4000_yards };
-    }
-    if (metric === "passing_tds") {
-      if (threshold >= 35) return { key: "rookie_qb_35_tds", probabilityPct: ARCHETYPE_BASELINES.rookie_qb_35_tds };
-      if (threshold >= 30) return { key: "rookie_qb_30_tds", probabilityPct: ARCHETYPE_BASELINES.rookie_qb_30_tds };
-    }
-  }
-  return null;
-}
-
-async function buildArchetypeEstimate(prompt, asOfDate, parsed = null) {
-  const intent = parsed || parsePositionArchetypePrompt(prompt);
-  if (!intent) return null;
-  const baseline = lookupArchetypeBaseline(intent);
-  if (!baseline) return null;
-  const probabilityPct = clamp(Number(baseline.probabilityPct || 0), 0.02, 95);
-  let rationale = "Historical baseline used for archetype-driven NFL scenario pricing.";
-  if (baseline.key === "kicker_mvp") {
-    rationale = "No kicker has ever won NFL MVP, so this sits in extreme-longshot territory even in a perfect storm season.";
-  } else if (baseline.key === "defensive_player_mvp") {
-    rationale = "A defensive MVP season is rare but not impossible; the last real precedent came generations ago, which keeps the price very long.";
-  } else if (baseline.key === "undrafted_opoy") {
-    rationale = "Undrafted OPOY seasons are extraordinarily rare because most winners arrive with elite draft capital and immediate volume roles.";
-  } else if (baseline.key.startsWith("rookie_qb_")) {
-    rationale = "Rookie quarterbacks almost never hit this kind of top-end passing threshold, even in aggressive modern offenses.";
-  } else if (baseline.key === "rookie_qb_mvp") {
-    rationale = "A rookie quarterback MVP season is possible, but history says the bar for that kind of immediate leap is extremely high.";
-  }
-  return {
-    status: "ok",
-    odds: toAmericanOdds(probabilityPct),
-    impliedProbability: `${probabilityPct.toFixed(1)}%`,
-    confidence: probabilityPct <= 5 ? "Medium" : "Low",
-    assumptions: [
-      "Archetype prompt priced from historical NFL precedent rather than a named-player projection.",
-      intent.action === "stat"
-        ? `${intent.label} is being compared against a rare-event threshold baseline for ${comparisonMetricLabel(intent.metric)}.`
-        : `${intent.label} is being compared against historical award precedent for that role.`,
-    ],
-    rationale,
-    playerName: null,
-    headshotUrl: null,
-    summaryLabel: buildArchetypeSummaryLabel(intent, prompt),
-    liveChecked: false,
-    asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
-    sourceType: "historical_model",
-    sourceLabel: "Archetype baseline model",
-    trace: {
-      baselineEventKey: "archetype_prompt",
-      archetype: intent.archetype,
-      action: intent.action,
-      metric: intent.metric || "",
-      threshold: Number(intent.threshold || 0) || null,
-      archetypeBaselineKey: baseline.key,
-    },
-  };
-}
-
-function parseBeforeAgeConstraint(prompt) {
-  const raw = String(prompt || "").trim();
-  const patterns = [
-    { re: /^(.*?)\s+before\s+turning\s+(\d{2})\b/i, phrase: (age) => `before turning ${age}` },
-    { re: /^(.*?)\s+before\s+age\s+(\d{2})\b/i, phrase: (age) => `before age ${age}` },
-    { re: /^(.*?)\s+before\s+(?:he's|he is|she's|she is|they're|they are)\s+(\d{2})\b/i, phrase: (age) => `before age ${age}` },
-    { re: /^(.*?)\s+by\s+age\s+(\d{2})\b/i, phrase: (age) => `by age ${age}` },
-    { re: /^(.*?)\s+by\s+the\s+time\s+(?:he's|he is|she's|she is|they're|they are)\s+(\d{2})\b/i, phrase: (age) => `by age ${age}` },
-  ];
-  for (const pattern of patterns) {
-    const match = raw.match(pattern.re);
-    if (!match) continue;
-    const leftText = String(match[1] || "").trim();
-    const targetAge = Number(match[2]);
-    if (!leftText || !Number.isFinite(targetAge) || targetAge < 18 || targetAge > 60) continue;
-    return {
-      leftText,
-      targetAge,
-      phrase: pattern.phrase(targetAge),
-    };
-  }
-  return null;
-}
-
-async function buildBeforeAgeEstimate(prompt, asOfDate, ageConstraint) {
-  if (!ageConstraint?.leftText || !Number.isFinite(ageConstraint.targetAge)) return null;
-  const leftResolved = await resolveBeforeRaceSide(ageConstraint.leftText, asOfDate);
-  const inferredPlayer = await inferPlayerFromTextTokens(ageConstraint.leftText);
-  const leftFallbackOutcome = parseOutcomeClause(ageConstraint.leftText, {
-    team: extractTeamName(ageConstraint.leftText) || "",
-    player: inferredPlayer || "",
-  });
-  const buildSideFromOutcome = async (outcome) => {
-    if (!outcome) return null;
-    const row = await estimateOutcomeProbabilityByType(outcome, asOfDate);
-    if (!row || !Number.isFinite(row.pct)) return null;
-    const years = 10;
-    const perSeason = Array.from({ length: years }, (_, i) =>
-      clamp((row.pct / 100) * Math.pow(0.96, i), 0.001, 0.85)
-    );
-    const playerName = outcome.player || outcome.playerName || "";
-    return {
-      type: outcome.type,
-      label: row.label || buildFallbackLabel(prompt),
-      summaryFragment: row.label || buildFallbackLabel(prompt),
-      playerName: playerName || null,
-      seasonPct: row.pct,
-      years,
-      perSeason,
-      anchoredOdds: null,
-    };
-  };
-  const left = leftResolved || await buildSideFromOutcome(leftFallbackOutcome);
-  if (!left || !Array.isArray(left.perSeason) || !left.playerName) return null;
-
-  const localStatus = await getLocalNflPlayerStatus(left.playerName, "");
-  const hints = parseLocalIndexNote(localStatus?.note);
-  const currentAge = Number(hints.age || 0);
-  if (!Number.isFinite(currentAge) || currentAge <= 0) return null;
-  const seasonsLeft = Math.floor(ageConstraint.targetAge - currentAge);
-  const summaryLabel = buildBeforeAgeSummaryLabel(left, ageConstraint, prompt);
-  if (seasonsLeft <= 0) {
-    return {
-      status: "ok",
-      odds: "+100000",
-      impliedProbability: "0.1%",
-      confidence: "High",
-      assumptions: [`${left.playerName} is already ${currentAge}, so that age window has already closed.`],
-      rationale: `${left.playerName} is currently ${currentAge}, so there is no remaining runway before age ${ageConstraint.targetAge}.`,
-      playerName: left.playerName,
-      headshotUrl: null,
-      summaryLabel,
-      liveChecked: false,
-      asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
-      sourceType: "constraint_model",
-      sourceLabel: "Age-window constraint",
-    };
-  }
-
-  const cappedYears = Math.min(seasonsLeft, left.perSeason.length || seasonsLeft);
-  const adjustedProb = 1 - left.perSeason.slice(0, cappedYears).reduce((acc, p) => acc * (1 - clamp(Number(p) || 0, 0, 0.999)), 1);
-  const probabilityPct = clamp(adjustedProb * 100, 0.5, 95);
-  return {
-    status: "ok",
-    odds: toAmericanOdds(probabilityPct),
-    impliedProbability: `${probabilityPct.toFixed(1)}%`,
-    confidence: left.anchoredOdds ? "High" : "Medium",
-    assumptions: [
-      "Age-bounded race model truncates the normal career window to the seasons remaining before the target age.",
-      `${left.playerName} is currently ${currentAge}, leaving about ${seasonsLeft} season${seasonsLeft === 1 ? "" : "s"} before age ${ageConstraint.targetAge}.`,
-    ],
-    rationale: `${left.playerName} is currently ${currentAge}, giving him about ${seasonsLeft} season${seasonsLeft === 1 ? "" : "s"} to complete this before turning ${ageConstraint.targetAge}. The price is the time-bounded version of the usual career event estimate, not the full-career number.`,
-    playerName: left.playerName,
-    headshotUrl: null,
-    summaryLabel,
-    liveChecked: Boolean(left.anchoredOdds),
-    asOfDate: asOfDate || new Date().toISOString().slice(0, 10),
-    sourceType: left.anchoredOdds ? "hybrid_anchored" : "historical_model",
-    sourceLabel: left.anchoredOdds ? "Age-bounded race model (anchored)" : "Age-bounded race model",
-    trace: {
-      baselineEventKey: "player_before_age_window",
-      currentAge,
-      targetAge: ageConstraint.targetAge,
-      seasonsLeft,
-      baseYears: left.years,
-    },
-  };
 }
 
 function sanitizeFeedbackResult(result) {
@@ -5808,20 +4392,9 @@ function getTopQbBoost(playerName) {
   return 1;
 }
 
-const KNOWN_ACCOLADE_COUNT_OVERRIDES = {
-  "tom brady": { super_bowl_wins: 7 },
-  "patrick mahomes": { super_bowl_wins: 3 },
-  "peyton manning": { super_bowl_wins: 2 },
-  "aaron rodgers": { super_bowl_wins: 1 },
-};
-
 function knownCareerAccoladeCount(playerName, accoladeKey) {
   const key = normalizePersonName(playerName);
   if (!key || !accoladesIndex?.players) return null;
-  const overrideValue = KNOWN_ACCOLADE_COUNT_OVERRIDES[key]?.[accoladeKey];
-  if (Number.isFinite(Number(overrideValue))) {
-    return Number(overrideValue);
-  }
   const row = accoladesIndex.players[key];
   if (row && Number.isFinite(Number(row[accoladeKey]))) {
     return Number(row[accoladeKey]);
@@ -6936,24 +5509,13 @@ function isEligibleForSeasonAwards(playerName, localStatus) {
 
 function detectAmbiguousBareThreshold(prompt) {
   const lower = normalizePrompt(prompt);
-  const normalizedForNumbers = lower.replace(/(\d),(\d{3})\b/g, "$1$2");
   if (!/\b(total touchdowns?|tds?|touchdowns?)\b/.test(lower)) return null;
   if (/\b(at least|exactly|over|under|more than|less than|\+)\b/.test(lower)) return null;
-  const match = normalizedForNumbers.match(/\b(\d{1,2})\b/);
+  const match = lower.match(/\b(\d{1,2})\b/);
   if (!match) return null;
   const value = Number(match[1]);
   if (!Number.isFinite(value)) return null;
   return { stat: "total touchdowns", value };
-}
-
-function rewriteAmbiguousBareThresholdPrompt(prompt, ambiguous) {
-  const raw = String(prompt || "");
-  const value = Number(ambiguous?.value);
-  if (!raw || !Number.isFinite(value)) return raw;
-  const statSpecificAtLeast =
-    /\b(throw|throws|passing|passes|rush|rushes|rushing|runs|catch|catches|receiv|receptions?)\b/i.test(raw);
-  const replacement = statSpecificAtLeast ? `${value}+` : `at least ${value}`;
-  return raw.replace(new RegExp(`\\b${value}\\b`), replacement);
 }
 
 function buildNflOnlySnarkResponse() {
@@ -9998,11 +8560,10 @@ app.use("/api/odds", (req, res, next) => {
   res.json = (payload) => {
     let out = payload;
     if (out && typeof out === "object" && !Array.isArray(out) && !out.odds && (out.status === "snark" || out.status === "refused")) {
-      const sentinelType = out.snarkType === "off_topic" ? "wrong_league" : out.snarkType || out.status;
       out = buildSentinelResult({
         prompt,
         reason: out.message || out.title || "Scenario cannot be priced reliably.",
-        type: sentinelType,
+        type: out.snarkType || out.status,
       });
     }
     if (out && typeof out === "object" && !Array.isArray(out) && out.odds && typeof out.odds === "string") {
@@ -10036,7 +8597,7 @@ app.use("/api/odds", (req, res, next) => {
       metrics.parseNormalized += 1;
     }
     const promptSeasonScoped = applyDefaultNflSeasonInterpretation(stripTrailingInstructionClauses(prompt));
-    let promptForParsing = normalizeInputForParsing(promptSeasonScoped);
+    const promptForParsing = normalizeInputForParsing(promptSeasonScoped);
     if (promptForParsing !== prompt) metrics.parseNormalized += 1;
     const intent = parseIntent(promptForParsing);
     intent.marketCategory = classifyMarketCategory(promptForParsing);
@@ -10106,22 +8667,8 @@ app.use("/api/odds", (req, res, next) => {
           }
         }
       }
-      if (isGenericArchetypeSubject(defaultPlayer)) {
-        defaultPlayer = "";
-      }
-      const defaultArchetype = parsePositionArchetypePrompt(promptForParsing);
-      const contextualizeArchetypeOutcome = (outcome) => {
-        if (!outcome || !defaultArchetype) return outcome;
-        if (defaultArchetype.archetype === "rookie_qb") {
-          if (outcome.type === "qb_mvp") return { type: "rookie_qb_mvp" };
-          if (outcome.type === "any_player_stat" && ["passing_yards", "passing_tds"].includes(String(outcome.metric || ""))) {
-            return { type: "any_rookie_qb_stat", metric: outcome.metric, threshold: outcome.threshold };
-          }
-        }
-        return outcome;
-      };
       const outcomes = clausesForParsing.map((clause) =>
-        contextualizeArchetypeOutcome(parseOutcomeClause(clause, { team: defaultTeam, player: defaultPlayer }))
+        parseOutcomeClause(clause, { team: defaultTeam, player: defaultPlayer })
       );
       let missingOutcome = false;
       for (let i = 0; i < outcomes.length; i += 1) {
@@ -10142,22 +8689,10 @@ app.use("/api/odds", (req, res, next) => {
         }
         const statFallback = parseSeasonStatIntent(`${clause} this season`);
         if (statFallback) {
-          let player = defaultPlayer || "";
-          if (!player) {
-            player = extractPlayerName(clause) || "";
-          }
+          let player = extractPlayerName(clause) || defaultPlayer || "";
           if (!player) {
             const inferred = await inferPlayerFromTextTokens(clause);
             if (inferred) player = inferred;
-          }
-          if (player && !isKnownCreativePlayerName(player) && defaultPlayer && isKnownCreativePlayerName(defaultPlayer)) {
-            player = defaultPlayer;
-          }
-          if (player && !isKnownCreativePlayerName(player) && defaultArchetype) {
-            player = "";
-          }
-          if (isGenericArchetypeSubject(player)) {
-            player = "";
           }
           if (player) {
             outcomes[i] = { type: "player_stat", player, metric: statFallback.metric, threshold: statFallback.threshold };
@@ -10165,14 +8700,6 @@ app.use("/api/odds", (req, res, next) => {
             const lowerClause = normalizePrompt(clause);
             if (/\b(rookie\s+qb|rookie\s+quarterback)\b/.test(lowerClause)) {
               outcomes[i] = { type: "any_rookie_qb_stat", metric: statFallback.metric, threshold: statFallback.threshold };
-            } else if (defaultArchetype?.archetype === "rookie_qb") {
-              outcomes[i] = { type: "any_rookie_qb_stat", metric: statFallback.metric, threshold: statFallback.threshold };
-            } else if (defaultArchetype?.archetype === "running_back") {
-              outcomes[i] = { type: "any_rusher_stat", metric: statFallback.metric, threshold: statFallback.threshold };
-            } else if (["wide_receiver", "tight_end"].includes(defaultArchetype?.archetype)) {
-              outcomes[i] = { type: "any_receiver_stat", metric: statFallback.metric, threshold: statFallback.threshold };
-            } else if (defaultArchetype?.archetype === "defensive_player" && statFallback.metric === "sacks") {
-              outcomes[i] = { type: "any_player_stat", metric: statFallback.metric, threshold: statFallback.threshold };
             } else if (/\b(qb|quarterback)\b/.test(lowerClause)) {
               outcomes[i] = { type: "any_qb_stat", metric: statFallback.metric, threshold: statFallback.threshold };
             } else if (/\b(rusher|rushing|rush)\b/.test(lowerClause)) {
@@ -10512,7 +9039,6 @@ app.use("/api/odds", (req, res, next) => {
     const comebackIntent = hasComebackIntent(promptForParsing);
     const retirementIntent = hasRetirementIntent(promptForParsing);
     const hallOfFameIntent = hasHallOfFameIntent(promptForParsing);
-    const archetypeIntent = parsePositionArchetypePrompt(promptForParsing);
     const conditionalPrompt = parseConditionalPrompt(promptForParsing);
     if (conditionalPrompt) {
       const conditionalEstimate = await buildConditionalEstimate(
@@ -10554,7 +9080,14 @@ app.use("/api/odds", (req, res, next) => {
 
     const ambiguous = detectAmbiguousBareThreshold(promptForParsing);
     if (ambiguous) {
-      promptForParsing = rewriteAmbiguousBareThresholdPrompt(promptForParsing, ambiguous);
+      metrics.snarks += 1;
+      const unit = ambiguous.value === 1 ? ambiguous.stat.replace(/s$/, "") : ambiguous.stat;
+      return res.json(
+        buildNeedsClarificationResponse(
+          `Did you mean “at least ${ambiguous.value} ${unit}” or “exactly ${ambiguous.value} ${unit}”?`,
+          `Try: “Drake Maye at least ${ambiguous.value} total touchdowns” or “Drake Maye exactly ${ambiguous.value} total touchdowns.”`
+        )
+      );
     }
 
     if (shouldRefuse(promptForParsing)) {
@@ -10566,7 +9099,7 @@ app.use("/api/odds", (req, res, next) => {
       });
     }
 
-    if (!teamHint && !playerHint && isLikelySportsHypothetical(promptForParsing) && !archetypeIntent) {
+    if (!teamHint && !playerHint && isLikelySportsHypothetical(promptForParsing)) {
       metrics.snarks += 1;
       const first = String(promptForParsing || "").trim().split(/\s+/)[0] || "that";
       return res.json(buildInvalidEntitySnarkResponse(first, promptForParsing));
@@ -10670,7 +9203,7 @@ app.use("/api/odds", (req, res, next) => {
     }
 
     const qbMvpIntent = parseQbMvpIntent(promptForParsing);
-    if (qbMvpIntent && archetypeIntent?.archetype !== "rookie_qb") {
+    if (qbMvpIntent) {
       const pct = 82.0;
       const value = {
         status: "ok",
@@ -10736,15 +9269,15 @@ app.use("/api/odds", (req, res, next) => {
       }
     }
 
-    if (!isSportsPrompt(promptForParsing) && !isLikelySportsHypothetical(promptForParsing)) {
-      metrics.snarks += 1;
-      return res.json(buildOffTopicSnarkResponse(promptForParsing));
-    }
-
     if ((playerHint || teamHint || isSportsPrompt(promptForParsing)) && !hasMeasurableOutcomeIntent(promptForParsing)) {
       metrics.snarks += 1;
       const label = playerHint || teamHint || "that";
       return res.json(buildNonsenseSportsSnarkResponse(label, promptForParsing));
+    }
+
+    if (!isSportsPrompt(promptForParsing) && !isLikelySportsHypothetical(promptForParsing)) {
+      metrics.snarks += 1;
+      return res.json(buildOffTopicSnarkResponse(promptForParsing));
     }
 
     if (!process.env.OPENAI_API_KEY) {
@@ -10963,63 +9496,6 @@ app.use("/api/odds", (req, res, next) => {
         promptForParsing,
         playerBeforeMvp,
         playerBeforeMvp.playerName || "",
-        "",
-        {
-          preferredTeamAbbr: "",
-          preferActive: true,
-        }
-      );
-      stable = applyConsistencyAndTrack({ prompt: promptForParsing, intent, result: stable });
-      stable = decorateForScenarioComplexity(stable, conditionalIntent, jointEventIntent);
-      if (FEATURE_ENABLE_TRACE) {
-        stable.trace = { ...(stable.trace || {}), intent, canonicalPromptKey: semanticKey, apiVersion: API_PUBLIC_VERSION };
-      }
-      oddsCache.set(normalizedPrompt, { ts: Date.now(), value: stable });
-      semanticOddsCache.set(normalizedPrompt, { ts: Date.now(), value: stable });
-      await storeStableIfLowVolatility(normalizedPrompt, promptForParsing, stable);
-      return res.json(stable);
-    }
-
-    const creativeComparisonIntent = await parsePlayerVsPlayerComparison(promptForParsing);
-    const playerVsPlayer = await buildPlayerVsPlayerEstimate(
-      promptForParsing,
-      new Date().toISOString().slice(0, 10),
-      creativeComparisonIntent
-    );
-    if (playerVsPlayer) {
-      metrics.baselineServed += 1;
-      let stable = await enrichEntityMedia(
-        promptForParsing,
-        playerVsPlayer,
-        playerVsPlayer.playerName || "",
-        "",
-        {
-          preferredTeamAbbr: "",
-          preferActive: true,
-        }
-      );
-      stable = applyConsistencyAndTrack({ prompt: promptForParsing, intent, result: stable });
-      stable = decorateForScenarioComplexity(stable, conditionalIntent, jointEventIntent);
-      if (FEATURE_ENABLE_TRACE) {
-        stable.trace = { ...(stable.trace || {}), intent, canonicalPromptKey: semanticKey, apiVersion: API_PUBLIC_VERSION };
-      }
-      oddsCache.set(normalizedPrompt, { ts: Date.now(), value: stable });
-      semanticOddsCache.set(normalizedPrompt, { ts: Date.now(), value: stable });
-      await storeStableIfLowVolatility(normalizedPrompt, promptForParsing, stable);
-      return res.json(stable);
-    }
-
-    const archetypeEstimate = await buildArchetypeEstimate(
-      promptForParsing,
-      new Date().toISOString().slice(0, 10),
-      archetypeIntent
-    );
-    if (archetypeEstimate) {
-      metrics.baselineServed += 1;
-      let stable = await enrichEntityMedia(
-        promptForParsing,
-        archetypeEstimate,
-        "",
         "",
         {
           preferredTeamAbbr: "",
@@ -11485,7 +9961,7 @@ app.use("/api/odds", (req, res, next) => {
           yearsExp: localIndexHints.yearsExp,
           age: localIndexHints.age,
         };
-        const seasonStatDeterministic = await buildPlayerSeasonStatEstimateWithPolish(
+        const seasonStatDeterministic = buildPlayerSeasonStatEstimate(
           promptForParsing,
           intent,
           profile,
@@ -11641,8 +10117,6 @@ app.use("/api/odds", (req, res, next) => {
         localPlayerStatus,
         playerStatus,
         referenceAnchors,
-        archetypePrompt: Boolean(archetypeIntent),
-        forceResolvedEntity: Boolean(creativeComparisonIntent?.resolvedCount >= 1),
       });
       if (!allowLlmBackstop) {
         const value = buildDeterministicDataSnarkResponse();
@@ -11676,7 +10150,7 @@ app.use("/api/odds", (req, res, next) => {
             {
               role: "system",
               content:
-                `You are the Odds Gods NFL hypothetical probability engine. Today is ${today}. Return JSON only. This product is for hypothetical entertainment, never betting advice. For sports hypotheticals, estimate probability in a coherent way using up-to-date context as of today. Account for real-world constraints (eligibility rules, ownership conflicts, retirement status, league rules) when relevant. Ensure internally that more extreme versions of the same event are not more likely than less extreme versions. If a specific athlete is clearly named in the scenario, set player_name to that exact name; otherwise set player_name to an empty string. If a specific team is clearly named, set team_name to that name; otherwise set team_name to an empty string. Also provide summary_label as a grammatically correct, concise label (target 45-75 chars) that reads as a natural English phrase. Format as "[Subject] [verb] [object/threshold]". Examples: "Ja'Marr Chase eclipses 1,400 receiving yards", "Drake Maye wins MVP before age 28", "Patriots win Super Bowl before Bills". Never include odds in the label. Never use telegraphic shorthand like "Chase receiving yards 1400" — always write complete, natural sentences.`,
+                `You are the Egomaniacs Fantasy Football hypothetical probability engine. Today is ${today}. Return JSON only. This product is for hypothetical entertainment, never betting advice. For sports hypotheticals, estimate probability in a coherent way using up-to-date context as of today. Account for real-world constraints (eligibility rules, ownership conflicts, retirement status, league rules) when relevant. Ensure internally that more extreme versions of the same event are not more likely than less extreme versions. If a specific athlete is clearly named in the scenario, set player_name to that exact name; otherwise set player_name to an empty string. If a specific team is clearly named, set team_name to that name; otherwise set team_name to an empty string. Also provide summary_label as a concise but complete label (target 45-75 chars), no odds included, and keep grammar intact (example: 'Diggs makes HOF and Nacua does not').`,
             },
             {
               role: "user",
@@ -12612,9 +11086,6 @@ app.listen(port, () => {
   });
   loadMvpPriorsIndex().catch(() => {
     // Non-fatal: MVP comparisons fall back to deterministic profile priors.
-  });
-  loadCreativeSeasonStats().catch(() => {
-    // Non-fatal: creative comparison prompts can still fall back to the LLM path.
   });
   if (STRICT_BOOT_SELFTEST) {
     setTimeout(async () => {

@@ -45,12 +45,9 @@ const feedbackQuestion = document.getElementById("feedback-question");
 const feedbackUpBtn = document.getElementById("feedback-up");
 const feedbackDownBtn = document.getElementById("feedback-down");
 const feedbackThanks = document.getElementById("feedback-thanks");
-const loadingEl = document.getElementById("wato-loading");
-const explanationEl = document.getElementById("wato-explanation-text");
-const sharePreview = document.getElementById("wato-share-preview");
 const PLACEHOLDER_ROTATE_MS = 3000;
 const EXAMPLE_REFRESH_MS = 12000;
-const CLIENT_API_VERSION = "2026.02.25.1";
+const CLIENT_API_VERSION = "2026.02.23.12";
 const FEEDBACK_RATED_MAP_KEY = "ewa_feedback_rated_map";
 const FEEDBACK_SESSION_ID_KEY = "ewa_feedback_session_id";
 const SHARE_IMAGE_PROXY_HOSTS = new Set([
@@ -712,28 +709,6 @@ function showResult(result, prompt) {
   const oddsMode = renderOddsDisplay(result.odds, result);
   applyResultCardState(oddsMode);
   probabilityOutput.textContent = result.impliedProbability;
-  const toggleBtn = document.getElementById("wato-odds-toggle");
-  const impliedSection = probabilityOutput ? probabilityOutput.closest(".implied-section") : null;
-  const impliedLabel = impliedSection ? impliedSection.querySelector(".implied-label") : null;
-  if (toggleBtn) {
-    toggleBtn.dataset.displayMode = "american";
-    toggleBtn.querySelectorAll(".wato-toggle-label").forEach((label) => {
-      label.classList.toggle("active", label.dataset.mode === "american");
-    });
-  }
-  if (impliedLabel) {
-    impliedLabel.textContent = "Implied Probability";
-  }
-  if (explanationEl) {
-    let explanationText = "";
-    if (result.rationale && typeof result.rationale === "string" && result.rationale.trim()) {
-      const sentences = result.rationale.split(/(?<=[.!?])\s+/).filter((s) => s.trim());
-      explanationText = sentences.slice(0, 3).join(" ");
-    } else if (result.assumptions && Array.isArray(result.assumptions) && result.assumptions.length > 0) {
-      explanationText = result.assumptions.slice(0, 3).join(" ");
-    }
-    explanationEl.textContent = explanationText;
-  }
   if (queryEcho) queryEcho.textContent = normalizePrompt(prompt);
   const displaySummary = getDisplaySummaryLabel(result.summaryLabel, prompt, result);
   promptSummary.textContent = displaySummary;
@@ -951,7 +926,6 @@ async function onSubmit(event) {
   }
 
   setBusy(true);
-  if (loadingEl) loadingEl.classList.remove("hidden");
   const seq = ++requestSequence;
 
   try {
@@ -999,14 +973,13 @@ async function onSubmit(event) {
   } finally {
     allowFeedbackForCurrentResult = false;
     setBusy(false);
-    if (loadingEl) loadingEl.classList.add("hidden");
   }
 }
 
 async function copyCurrentResult() {
   if (resultCard.classList.contains("hidden")) return;
   const source = freshnessLine.classList.contains("hidden") ? "Hypothetical estimate" : freshnessLine.textContent;
-  const payload = `${promptSummary.textContent} | ${oddsOutput.textContent} | ${probabilityOutput.textContent} implied | ${source} | Odds Gods - What Are the Odds?`;
+  const payload = `${promptSummary.textContent} | ${oddsOutput.textContent} | ${probabilityOutput.textContent} implied | ${source} | Egomaniacs Fantasy Football - What Are the Odds?`;
 
   try {
     await navigator.clipboard.writeText(payload);
@@ -1043,17 +1016,6 @@ function slugifyShare(str) {
 function openShareModal() {
   if (!shareModalOverlay) return;
   shareModalOverlay.classList.remove("hidden");
-  if (!sharePreview || !latestShareData) return;
-  sharePreview.innerHTML = "";
-  generateShareCard(latestShareData)
-    .then((canvas) => {
-      if (!sharePreview) return;
-      sharePreview.innerHTML = "";
-      sharePreview.appendChild(canvas);
-    })
-    .catch(() => {
-      if (sharePreview) sharePreview.innerHTML = "";
-    });
 }
 
 function closeShareModal() {
@@ -1882,123 +1844,3 @@ updateFlipVisibility();
 if (hasSharedPrompt) {
   form.requestSubmit();
 }
-
-// --- Odds format toggle ---
-(function initOddsToggle() {
-  const toggleBtn = document.getElementById("wato-odds-toggle");
-  if (!toggleBtn) return;
-
-  toggleBtn.dataset.displayMode = toggleBtn.dataset.displayMode || "american";
-
-  toggleBtn.addEventListener("click", function () {
-    const oddsEl = document.getElementById("odds-output");
-    const impliedEl = document.getElementById("probability-output");
-    const impliedSection = impliedEl ? impliedEl.closest(".implied-section") : null;
-    const impliedLabel = impliedSection ? impliedSection.querySelector(".implied-label") : null;
-
-    if (!oddsEl || !impliedEl) return;
-
-    const currentOddsText = oddsEl.textContent.trim();
-    const currentImpliedText = impliedEl.textContent.trim();
-    const currentMode = toggleBtn.dataset.displayMode || "american";
-
-    if (currentMode === "american") {
-      toggleBtn.dataset.displayMode = "implied";
-      oddsEl.textContent = currentImpliedText;
-      impliedEl.textContent = currentOddsText;
-      if (impliedLabel) impliedLabel.textContent = "American Odds";
-    } else {
-      toggleBtn.dataset.displayMode = "american";
-      oddsEl.textContent = currentImpliedText;
-      impliedEl.textContent = currentOddsText;
-      if (impliedLabel) impliedLabel.textContent = "Implied Probability";
-    }
-
-    const mode = toggleBtn.dataset.displayMode || "american";
-    toggleBtn.querySelectorAll(".wato-toggle-label").forEach(function (label) {
-      label.classList.toggle("active", label.dataset.mode === mode);
-    });
-  });
-})();
-
-// --- Mini history ---
-(function initHistory() {
-  const historyContainer = document.getElementById("wato-history");
-  const historyList = document.getElementById("wato-history-list");
-  const scenarioInputEl = document.getElementById("scenario-input");
-  if (!historyContainer || !historyList || !scenarioInputEl) return;
-
-  const MAX_HISTORY = 5;
-  let historyItems = [];
-  const resultCardEl = document.getElementById("result-card");
-  if (!resultCardEl) return;
-
-  const observer = new MutationObserver(function (mutations) {
-    mutations.forEach(function (mutation) {
-      if (mutation.attributeName !== "class" || resultCardEl.classList.contains("hidden")) return;
-      const oddsEl = document.getElementById("odds-output");
-      const prompt = scenarioInputEl.value.trim();
-      const odds = oddsEl ? oddsEl.textContent.trim() : "";
-
-      if (!prompt) return;
-
-      historyItems = historyItems.filter(function (item) {
-        return item.prompt.toLowerCase() !== prompt.toLowerCase();
-      });
-      historyItems.unshift({ prompt, odds });
-      if (historyItems.length > MAX_HISTORY) historyItems.pop();
-      renderHistory();
-    });
-  });
-
-  observer.observe(resultCardEl, { attributes: true, attributeFilter: ["class"] });
-
-  function renderHistory() {
-    if (historyItems.length === 0) {
-      historyContainer.classList.add("hidden");
-      historyList.innerHTML = "";
-      return;
-    }
-
-    historyContainer.classList.remove("hidden");
-    historyList.innerHTML = "";
-
-    historyItems.forEach(function (item) {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "wato-history-chip";
-
-      const truncated = item.prompt.length > 40 ? `${item.prompt.slice(0, 37)}…` : item.prompt;
-      chip.appendChild(document.createTextNode(truncated));
-      if (item.odds) {
-        const oddsSpan = document.createElement("span");
-        oddsSpan.className = "chip-odds";
-        oddsSpan.textContent = item.odds;
-        chip.appendChild(document.createTextNode(" "));
-        chip.appendChild(oddsSpan);
-      }
-
-      chip.addEventListener("click", function () {
-        scenarioInputEl.value = item.prompt;
-        scenarioInputEl.dispatchEvent(new Event("input", { bubbles: true }));
-        scenarioInputEl.focus();
-      });
-
-      historyList.appendChild(chip);
-    });
-  }
-})();
-
-// --- Trending chips ---
-(function initTrending() {
-  const scenarioInputEl = document.getElementById("scenario-input");
-  if (!scenarioInputEl) return;
-
-  document.querySelectorAll(".wato-trending-chip").forEach(function (chip) {
-    chip.addEventListener("click", function () {
-      scenarioInputEl.value = chip.dataset.prompt || chip.textContent || "";
-      scenarioInputEl.dispatchEvent(new Event("input", { bubbles: true }));
-      scenarioInputEl.focus();
-    });
-  });
-})();
