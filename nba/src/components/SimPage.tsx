@@ -180,6 +180,7 @@ export default function SimPage() {
                           <td className="left">
                             <span className={`seed-badge ${seedClass(s.seed)}`}>{s.seed}</span>
                             <span style={{ fontWeight:600 }}>{s.teamAbbr}</span>
+                            <span style={{ color:"var(--text2)", marginLeft:5, fontSize:"0.76rem" }}>{s.teamName}</span>
                           </td>
                           <td style={{ color:"var(--text2)" }}>
                             <span style={{ color:"var(--green)" }}>{s.wins}</span>-<span style={{ color:"var(--red)" }}>{s.losses}</span>
