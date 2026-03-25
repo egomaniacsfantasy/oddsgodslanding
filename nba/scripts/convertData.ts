@@ -12,14 +12,27 @@ const SRC_DATA   = path.join(ROOT, "src", "data");
 function r2(n: number) { return Math.round(n*100)/100; }
 function r4(n: number) { return Math.round(n*10000)/10000; }
 
+// Build abbr/name lookup from snapshot (mc_results may have empty team_abbr)
+function _snapshotAbbrMap(): Map<number, {abbr:string; name:string}> {
+  const p = path.join(DATA_DIR, "nba_snapshot.xlsx");
+  const out = new Map<number, {abbr:string; name:string}>();
+  if (!fs.existsSync(p)) return out;
+  const rows = XLSX.utils.sheet_to_json<Record<string,unknown>>(XLSX.readFile(p).Sheets[XLSX.readFile(p).SheetNames[0]]);
+  for (const r of rows) out.set(Number(r.team_id), {abbr: String(r.team_abbr??""), name: String(r.team_name??"")});
+  return out;
+}
+const _snapMap = _snapshotAbbrMap();
+function _abbr(teamId: number, fallback: string) { return _snapMap.get(teamId)?.abbr || fallback; }
+function _name(teamId: number, fallback: string) { return _snapMap.get(teamId)?.name || fallback; }
+
 function convertNbaMcResults(): void {
   const p = path.join(DATA_DIR, "nba_mc_results.xlsx");
   if (!fs.existsSync(p)) { console.warn("nba_mc_results.xlsx not found"); return; }
   const wb = XLSX.readFile(p);
   const rows = XLSX.utils.sheet_to_json<Record<string,unknown>>(wb.Sheets[wb.SheetNames[0]]);
   const data = rows.map((r) => ({
-    teamId: Number(r.team_id), teamName: String(r.team_name??""),
-    teamAbbr: String(r.team_abbr??""), conference: String(r.conference??""), division: String(r.division??""),
+    teamId: Number(r.team_id), teamName: _name(Number(r.team_id), String(r.team_name??"")),
+    teamAbbr: _abbr(Number(r.team_id), String(r.team_abbr??"")), conference: String(r.conference??""), division: String(r.division??""),
     expWins: Number(r.exp_wins), expWinsExact: Number(r.exp_wins_exact), expSeed: Number(r.exp_seed),
     pMakePlayoffs: Number(r.p_make_playoffs), pRound2: Number(r.p_round2),
     pConfFinals: Number(r.p_conf_finals), pFinals: Number(r.p_finals), pChampion: Number(r.p_champion),
@@ -57,7 +70,8 @@ function convertNbaStandings(): void {
   const sn = wb.SheetNames.includes("conference") ? "conference" : wb.SheetNames[0];
   const rows = XLSX.utils.sheet_to_json<Record<string,unknown>>(wb.Sheets[sn]);
   const data = rows.map((r) => ({
-    teamId:Number(r.team_id), teamName:String(r.team_name??""), teamAbbr:String(r.team_abbr??""),
+    teamId:Number(r.team_id), teamName:_name(Number(r.team_id),String(r.team_name??"")),
+    teamAbbr:_abbr(Number(r.team_id),String(r.team_abbr??"")),
     conference:String(r.conference??""), division:String(r.division??""),
     seed:Number(r.seed), wins:Number(r.wins), losses:Number(r.losses), winPct:r4(Number(r.win_pct)),
     confRecord:String(r.conf_record??""), gamesBack:r.games_back!=null?String(r.games_back):"-",

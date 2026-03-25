@@ -1,11 +1,31 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { NBA_SCHEDULE } from "../data/nbaSchedule";
 import { NBA_STANDINGS } from "../data/nbaStandings";
-import { NBA_MC_RESULTS } from "../data/nbaMcResults";
 import { NBA_PLAYOFF_SCHEDULE } from "../data/nbaPlayoffSchedule";
 import { runSim, type Override, type SimResult } from "../lib/simulation";
 
-const _abbrById = new Map(NBA_MC_RESULTS.map((t) => [t.teamId, t.teamAbbr]));
+// Build abbr lookup from schedule — guaranteed populated (visible in game picker)
+const _abbrById = (() => {
+  const m = new Map<number, string>();
+  for (const g of NBA_SCHEDULE) {
+    if (!m.has(g.homeTeamId)) m.set(g.homeTeamId, g.homeTeamAbbr);
+    if (!m.has(g.awayTeamId)) m.set(g.awayTeamId, g.awayTeamAbbr);
+  }
+  return m;
+})();
+
+// Playoff date schedule keyed by seriesId
+const _poGamesBySeries = (() => {
+  const m = new Map<string, typeof NBA_PLAYOFF_SCHEDULE>();
+  for (const g of NBA_PLAYOFF_SCHEDULE) {
+    if (!m.has(g.seriesId)) m.set(g.seriesId, []);
+    m.get(g.seriesId)!.push(g);
+  }
+  return m;
+})();
+
+// Games 1,2,5,7 at high seed home in best-of-7
+const _HS_HOME = new Set([1, 2, 5, 7]);
 
 function pFmt(v: number) {
   return v >= 99.5 ? ">99%" : v < 0.1 ? "<0.1%" : v.toFixed(1) + "%";
@@ -30,33 +50,69 @@ export default function SimPage() {
       const res = runSim(NBA_STANDINGS, NBA_SCHEDULE, overrides, 10000);
       setResults(res);
       setUpdating(false);
-    }, 30); // short debounce so UI can show "Updating..." before blocking
+    }, 30);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [overrides]);
 
   const filteredReg = useMemo(() => {
     if (!teamFilter) return NBA_SCHEDULE;
     const q = teamFilter.toUpperCase();
-    return NBA_SCHEDULE.filter(
-      (g) => g.homeTeamAbbr.includes(q) || g.awayTeamAbbr.includes(q)
-    );
+    return NBA_SCHEDULE.filter(g => g.homeTeamAbbr.includes(q) || g.awayTeamAbbr.includes(q));
   }, [teamFilter]);
 
-  // Playoff games grouped by series
-  const filteredPO = useMemo(() => {
-    if (!teamFilter) return NBA_PLAYOFF_SCHEDULE;
-    const q = teamFilter.toUpperCase();
-    return NBA_PLAYOFF_SCHEDULE.filter(
-      (g) => g.homeTeamAbbr.includes(q) || g.awayTeamAbbr.includes(q)
-    );
-  }, [teamFilter]);
-
-  const poSeriesIds = useMemo(() => {
-    const seen = new Set<string>();
-    const out: string[] = [];
-    for (const g of filteredPO) { if (!seen.has(g.seriesId)) { seen.add(g.seriesId); out.push(g.seriesId); } }
+  // Projected playoff seeds: top 10 per conf sorted by expWins (or current wins if no results)
+  const projectedSeeds = useMemo(() => {
+    const out: Record<string, Record<number, number>> = {East: {}, West: {}};
+    for (const conf of ["East", "West"]) {
+      NBA_STANDINGS
+        .filter(s => s.conference === conf)
+        .sort((a, b) => {
+          const wa = results?.[a.teamId]?.expWins ?? a.wins;
+          const wb = results?.[b.teamId]?.expWins ?? b.wins;
+          return wb !== wa ? wb - wa : b.winPct - a.winPct;
+        })
+        .forEach((s, i) => { out[conf][i + 1] = s.teamId; });
+    }
     return out;
-  }, [filteredPO]);
+  }, [results]);
+
+  // Build playoff series list with dynamic team assignments from projected seeds
+  const poSeries = useMemo(() => {
+    type PSeries = {
+      seriesId: string; conf: string; round: string;
+      hsSeed: number; lsSeed: number; hsId: number; lsId: number;
+      games: Array<{gameNum: number; gameDate: string; pHomeWins: number}>;
+    };
+    const all: PSeries[] = [];
+    const q = teamFilter.toUpperCase();
+    for (const conf of ["East", "West"] as const) {
+      const pfx = conf === "East" ? "east" : "west";
+      const seeds = projectedSeeds[conf];
+      // Play-in: 7v8, 9v10, then "final" (8th seed slot vs 9th seed slot)
+      for (const [hs, ls, key] of [[7,8,"7v8"],[9,10,"9v10"],[8,9,"final"]] as [number,number,string][]) {
+        const sid = `${pfx}_playin_${key}`;
+        const gs = _poGamesBySeries.get(sid);
+        if (!gs?.length) continue;
+        const hsId = seeds[hs] ?? 0, lsId = seeds[ls] ?? 0;
+        const abbH = _abbrById.get(hsId) ?? "", abbA = _abbrById.get(lsId) ?? "";
+        if (teamFilter && !abbH.includes(q) && !abbA.includes(q)) continue;
+        all.push({ seriesId: sid, conf, round: "Play-In", hsSeed: hs, lsSeed: ls, hsId, lsId,
+          games: gs.map(g => ({gameNum: g.gameNum, gameDate: g.gameDate, pHomeWins: g.pHomeWins})) });
+      }
+      // R1
+      for (const [hs, ls] of [[1,8],[2,7],[3,6],[4,5]] as [number,number][]) {
+        const sid = `${pfx}_r1_${hs}v${ls}`;
+        const gs = _poGamesBySeries.get(sid);
+        if (!gs?.length) continue;
+        const hsId = seeds[hs] ?? 0, lsId = seeds[ls] ?? 0;
+        const abbH = _abbrById.get(hsId) ?? "", abbA = _abbrById.get(lsId) ?? "";
+        if (teamFilter && !abbH.includes(q) && !abbA.includes(q)) continue;
+        all.push({ seriesId: sid, conf, round: "R1", hsSeed: hs, lsSeed: ls, hsId, lsId,
+          games: gs.map(g => ({gameNum: g.gameNum, gameDate: g.gameDate, pHomeWins: g.pHomeWins})) });
+      }
+    }
+    return all;
+  }, [projectedSeeds, teamFilter]);
 
   const overrideCount = useMemo(
     () => [...overrides.values()].length,
@@ -164,30 +220,35 @@ export default function SimPage() {
                 Showing 250 of {filteredReg.length} — filter by team above
               </div>
             )}
-            {/* Playoff games */}
-            {filteredPO.length > 0 && (
+            {/* Playoff games — teams derived from projected seeds */}
+            {poSeries.length > 0 && (
               <div style={{ padding:"0.35rem 0.65rem", background:"var(--bg3)", borderBottom:"1px solid var(--border)",
                 fontSize:"0.72rem", color:"var(--accent)", fontWeight:600, letterSpacing:"0.04em", textTransform:"uppercase" }}>
-                Playoffs · {poSeriesIds.length} series
+                Playoffs · {poSeries.length} series
               </div>
             )}
-            {poSeriesIds.map((sid) => {
-              const games = filteredPO.filter(g => g.seriesId === sid);
-              if (!games.length) return null;
-              const g0 = games[0];
-              const seriesLabel = `${g0.conf} ${g0.round} · ${g0.hsSeed} vs ${g0.lsSeed} · `
-                + `${g0.hsId === g0.homeTeamId ? g0.homeTeamAbbr : g0.awayTeamAbbr} `
-                + `vs ${g0.hsId === g0.homeTeamId ? g0.awayTeamAbbr : g0.homeTeamAbbr}`;
+            {poSeries.map(({ seriesId, conf, round, hsSeed, lsSeed, hsId, lsId, games }) => {
+              const hsAbbr = _abbrById.get(hsId) ?? `#${hsSeed}`;
+              const lsAbbr = _abbrById.get(lsId) ?? `#${lsSeed}`;
+              const seriesLabel = round === "Play-In"
+                ? (lsSeed === 9
+                    ? `${conf} Play-In Final · ${hsAbbr} vs ${lsAbbr}`
+                    : `${conf} Play-In · ${hsSeed} vs ${lsSeed} · ${hsAbbr} vs ${lsAbbr}`)
+                : `${conf} R1 · ${hsSeed} vs ${lsSeed} · ${hsAbbr} vs ${lsAbbr}`;
               return (
-                <div key={sid}>
+                <div key={seriesId}>
                   <div style={{ padding:"0.3rem 0.65rem", background:"rgba(240,180,40,0.05)",
                     borderBottom:"1px solid var(--border)", fontSize:"0.72rem", color:"var(--text2)" }}>
                     {seriesLabel}
                   </div>
-                  {games.map((g) => {
-                    const ovKey = `${g.seriesId}_g${g.gameNum}`;
+                  {games.map(({ gameNum, gameDate, pHomeWins }) => {
+                    const ovKey = `${seriesId}_g${gameNum}`;
                     const ov = overrides.get(ovKey) ?? "model";
-                    const pct = Math.round(g.pHomeWins * 100);
+                    const pct = Math.round(pHomeWins * 100);
+                    const homeId = _HS_HOME.has(gameNum) ? hsId : lsId;
+                    const awayId = homeId === hsId ? lsId : hsId;
+                    const homeAbbr = _abbrById.get(homeId) ?? "";
+                    const awayAbbr = _abbrById.get(awayId) ?? "";
                     return (
                       <div key={ovKey} style={{
                         display:"flex", alignItems:"center", justifyContent:"space-between",
@@ -195,12 +256,12 @@ export default function SimPage() {
                         background: ov !== "model" ? "rgba(255,255,255,0.03)" : undefined,
                       }}>
                         <div style={{ fontSize:"0.81rem", flex:1, minWidth:0 }}>
-                          <span style={{ color:"var(--text3)", fontSize:"0.7rem", marginRight:"0.4rem" }}>G{g.gameNum}</span>
-                          <span style={{ fontWeight:600 }}>{g.homeTeamAbbr}</span>
+                          <span style={{ color:"var(--text3)", fontSize:"0.7rem", marginRight:"0.4rem" }}>G{gameNum}</span>
+                          <span style={{ fontWeight:600 }}>{homeAbbr}</span>
                           <span style={{ color:"var(--text3)", margin:"0 0.25rem", fontSize:"0.72rem" }}>vs</span>
-                          <span>{g.awayTeamAbbr}</span>
+                          <span>{awayAbbr}</span>
                           <span style={{ color:"var(--text3)", fontSize:"0.7rem", marginLeft:"0.45rem" }}>
-                            {g.gameDate.slice(5).replace("-","/")}
+                            {gameDate.slice(5).replace("-","/")}
                           </span>
                         </div>
                         <div style={{ display:"flex", gap:2, flexShrink:0 }}>
@@ -215,7 +276,7 @@ export default function SimPage() {
                                   fontFamily:"var(--mono)", fontSize:"0.7rem",
                                   padding:"0.18rem 0.4rem", cursor:"pointer",
                                   fontWeight:active?700:400, minWidth:34, textAlign:"center" }}>
-                                {o==="model" ? `${pct}%` : o==="home" ? g.homeTeamAbbr : g.awayTeamAbbr}
+                                {o==="model" ? `${pct}%` : o==="home" ? homeAbbr : awayAbbr}
                               </button>
                             );
                           })}
@@ -232,15 +293,14 @@ export default function SimPage() {
         {/* ── Results ── */}
         <div style={{ opacity: updating ? 0.55 : 1, transition:"opacity 0.15s" }}>
           {["East","West"].map((conf) => {
-            const rows = results
-              ? NBA_STANDINGS
-                  .filter((s) => s.conference === conf)
-                  .map((s) => ({ s, r: results[s.teamId] }))
-                  .sort((a, b) => (b.r?.expWins ?? 0) - (a.r?.expWins ?? 0))  // sort by projected wins
-              : NBA_STANDINGS
-                  .filter((s) => s.conference === conf)
-                  .sort((a, b) => a.seed - b.seed)
-                  .map((s) => ({ s, r: undefined as SimResult[number] | undefined }));
+            // Build projected-rank lookup for this conference
+            const confSeeds = projectedSeeds[conf];
+            const projRankById: Record<number, number> = {};
+            for (const [rank, tid] of Object.entries(confSeeds)) projRankById[Number(tid)] = Number(rank);
+            const rows = NBA_STANDINGS
+              .filter(s => s.conference === conf)
+              .sort((a, b) => (projRankById[a.teamId] ?? 99) - (projRankById[b.teamId] ?? 99))
+              .map(s => ({ s, r: results?.[s.teamId], projRank: projRankById[s.teamId] ?? s.seed }));
             return (
               <div key={conf} className="conf-block">
                 <div className="section-title" style={{ fontSize:"0.88rem", marginBottom:"0.4rem" }}>
@@ -260,11 +320,11 @@ export default function SimPage() {
                       <th title="P(champion)" style={{ color:"var(--accent)" }}>Champ</th>
                     </tr></thead>
                     <tbody>
-                      {rows.map(({ s, r }, idx) => (
+                      {rows.map(({ s, r, projRank }) => (
                         <tr key={s.teamId}>
-                          <td className="left" style={{ minWidth:110 }}>
-                            <span className={`seed-badge ${seedClass(s.seed)}`}>{s.seed}</span>
-                            <span style={{ fontWeight:700, color:"#e8e8e8" }}>{_abbrById.get(s.teamId) ?? s.teamAbbr}</span>
+                          <td className="left" style={{ minWidth:120 }}>
+                            <span className={`seed-badge ${seedClass(projRank)}`}>{projRank}</span>
+                            <span style={{ fontWeight:700 }}>{_abbrById.get(s.teamId) ?? ""}</span>
                           </td>
                           <td style={{ color:"var(--text2)" }}>
                             <span style={{ color:"var(--green)" }}>{s.wins}</span>-<span style={{ color:"var(--red)" }}>{s.losses}</span>
