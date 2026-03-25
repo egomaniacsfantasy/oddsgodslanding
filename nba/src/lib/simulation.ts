@@ -10,6 +10,7 @@ export interface TeamSimResult {
   confFinals: number;
   finals: number;
   champion: number;
+  expWins: number;  // projected final win total
 }
 export type SimResult = Record<number, TeamSimResult>;
 
@@ -95,15 +96,17 @@ export function runSim(
   standings: NbaStanding[],
   schedule: NbaGame[],
   overrides: Map<string, Override>,
-  N = 5000
+  N = 10000
 ): SimResult {
   const counts: Record<number, _Counts> = {};
+  const winsSum: Record<number, number> = {};
   const baseWins: Record<number, number> = {};
   const confMap: Record<number, string> = {};
   const wpMap: Record<number, number> = {};
 
   for (const s of standings) {
     counts[s.teamId] = { po: 0, r2: 0, cf: 0, fin: 0, champ: 0 };
+    winsSum[s.teamId] = 0;
     baseWins[s.teamId] = s.wins;
     confMap[s.teamId] = s.conference;
     wpMap[s.teamId] = s.winPct;
@@ -121,6 +124,10 @@ export function runSim(
       if (hw) wins[g.homeTeamId]++;
       else wins[g.awayTeamId]++;
     }
+
+    // Accumulate projected win totals
+    for (const id of eastIds) winsSum[id] += wins[id];
+    for (const id of westIds) winsSum[id] += wins[id];
 
     function seeds(ids: number[]): number[] {
       return [...ids]
@@ -150,6 +157,7 @@ export function runSim(
       confFinals:   (c.cf / N) * 100,
       finals:       (c.fin / N) * 100,
       champion:     (c.champ / N) * 100,
+      expWins:      Math.round((winsSum[id] / N) * 10) / 10,
     };
   }
   return out;
