@@ -1,6 +1,7 @@
 import type { NbaStanding } from "../data/nbaStandings";
 import type { NbaGame } from "../data/nbaSchedule";
 import { NBA_MATCHUP_PROBS } from "../data/nbaMatchupProbs";
+// NBA_PLAYOFF_SCHEDULE imported only for typing; sim uses matchup probs directly
 
 export type Override = "model" | "home" | "away";
 
@@ -66,28 +67,64 @@ for (const m of NBA_MATCHUP_PROBS) {
 
 interface _Counts { po: number; r2: number; cf: number; fin: number; champ: number; }
 
-function _simConf(seeds: number[], counts: Record<number, _Counts>): number {
-  function match(higher: number, lower: number): number {
+// Game-level win prob from matchup data (no series context)
+function _gameProb(homeId: number, awayId: number): number {
+  const t1 = Math.min(homeId, awayId), t2 = Math.max(homeId, awayId);
+  const m = _matchupByKey.get(`${t1}:${t2}`);
+  if (!m) return 0.55;
+  return homeId === t1 ? m.t1WinT1Home : (1 - m.t1WinT2Home);
+}
+
+// Games 1,2,5,7 → high seed home; 3,4,6 → low seed home
+const _HS_HOME = new Set([1, 2, 5, 7]);
+
+// Simulate a series game-by-game, honoring per-game overrides
+// seriesId format: "east_r1_1v8" — override keys: "east_r1_1v8_g1" etc.
+function _simSeriesGames(
+  highSeedId: number,
+  lowSeedId: number,
+  seriesId: string,
+  overrides: Map<string, Override>
+): number {
+  let hsW = 0, lsW = 0;
+  for (let g = 1; g <= 7; g++) {
+    if (hsW === 4 || lsW === 4) break;
+    const hsHome = _HS_HOME.has(g);
+    const homeId = hsHome ? highSeedId : lowSeedId;
+    const awayId = hsHome ? lowSeedId : highSeedId;
+    const ov = overrides.get(`${seriesId}_g${g}`);
+    const homeWins = ov === "home" ? true : ov === "away" ? false : Math.random() < _gameProb(homeId, awayId);
+    if (homeWins) { if (hsHome) hsW++; else lsW++; }
+    else { if (hsHome) lsW++; else hsW++; }
+  }
+  return hsW === 4 ? highSeedId : lowSeedId;
+}
+
+const _R1_MATCHUPS = ["1v8", "2v7", "3v6", "4v5"] as const;
+const _R1_PAIRS: [number, number][] = [[0,7],[1,6],[2,5],[3,4]];
+
+function _simConf(seeds: number[], counts: Record<number, _Counts>, confKey: string, overrides: Map<string, Override>): number {
+  function matchSeries(higher: number, lower: number, sid?: string): number {
+    if (sid) return _simSeriesGames(higher, lower, sid, overrides);
     return Math.random() < _getSeriesProb(higher, lower) ? higher : lower;
   }
   function ranked(a: number, b: number): [number, number] {
     return seeds.indexOf(a) <= seeds.indexOf(b) ? [a, b] : [b, a];
   }
-  // Round 1: 1v8, 2v7, 3v6, 4v5
-  const w18 = match(seeds[0], seeds[7]);
-  const w27 = match(seeds[1], seeds[6]);
-  const w36 = match(seeds[2], seeds[5]);
-  const w45 = match(seeds[3], seeds[4]);
-  counts[w18].r2++; counts[w27].r2++; counts[w36].r2++; counts[w45].r2++;
-  // Semis: (1/8 winner vs 4/5 winner), (2/7 winner vs 3/6 winner)
-  const [s2ah, s2aa] = ranked(w18, w45);
-  const [s2bh, s2ba] = ranked(w27, w36);
-  const cf1 = match(s2ah, s2aa);
-  const cf2 = match(s2bh, s2ba);
+  // Round 1 — with game-level overrides
+  const r1W = _R1_PAIRS.map(([hi, lo], i) =>
+    matchSeries(seeds[hi], seeds[lo], `${confKey}_r1_${_R1_MATCHUPS[i]}`)
+  );
+  for (const w of r1W) counts[w].r2++;
+  // Round 2 — series win prob (teams TBD until R1 done)
+  const [s2ah, s2aa] = ranked(r1W[0], r1W[3]);
+  const [s2bh, s2ba] = ranked(r1W[1], r1W[2]);
+  const cf1 = matchSeries(s2ah, s2aa);
+  const cf2 = matchSeries(s2bh, s2ba);
   counts[cf1].cf++; counts[cf2].cf++;
   // Conference Finals
   const [cfh, cfa] = ranked(cf1, cf2);
-  const winner = match(cfh, cfa);
+  const winner = matchSeries(cfh, cfa);
   counts[winner].fin++;
   return winner;
 }
@@ -139,8 +176,8 @@ export function runSim(
     const west = seeds(westIds);
     for (const id of [...east, ...west]) counts[id].po++;
 
-    const ew = _simConf(east, counts);
-    const ww = _simConf(west, counts);
+    const ew = _simConf(east, counts, "east", overrides);
+    const ww = _simConf(west, counts, "west", overrides);
 
     const [fh, fa] = wins[ew] >= wins[ww] ? [ew, ww] : [ww, ew];
     const champ = Math.random() < _getSeriesProb(fh, fa) ? fh : fa;

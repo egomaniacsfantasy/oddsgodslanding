@@ -118,6 +118,36 @@ function convertNbaMatchupProbs(): void {
   ); console.log(`OK nbaMatchupProbs.ts (${data.length} matchups)`);
 }
 
+function convertNbaPlayoffSchedule(): void {
+  const p = path.join(DATA_DIR, "nba_playoff_schedule.xlsx");
+  if (!fs.existsSync(p)) { console.warn("nba_playoff_schedule.xlsx not found"); return; }
+  const wb = XLSX.readFile(p);
+  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0]]);
+  const games = rows.map((r) => ({
+    seriesId:      String(r["series_id"] ?? ""),
+    conf:          String(r["conf"] ?? ""),
+    round:         String(r["round"] ?? ""),
+    gameNum:       Number(r["game_num"]),
+    gameDate:      String(r["game_date"] ?? "").slice(0,10),
+    homeTeamId:    Number(r["home_team_id"]),
+    homeTeamAbbr:  String(r["home_team_abbr"] ?? ""),
+    homeTeamName:  String(r["home_team_name"] ?? ""),
+    awayTeamId:    Number(r["away_team_id"]),
+    awayTeamAbbr:  String(r["away_team_abbr"] ?? ""),
+    awayTeamName:  String(r["away_team_name"] ?? ""),
+    pHomeWins:     r4(Number(r["p_home_wins"])),
+    hsId:          Number(r["hs_id"]),
+    lsId:          Number(r["ls_id"]),
+    hsSeed:        Number(r["hs_seed"]),
+    lsSeed:        Number(r["ls_seed"]),
+  }));
+  fs.writeFileSync(path.join(SRC_DATA, "nbaPlayoffSchedule.ts"),
+    `// Auto-generated from nba_playoff_schedule.xlsx — do not edit manually\n\nexport interface NbaPlayoffGame {\n  seriesId: string; conf: string; round: string;\n  gameNum: number; gameDate: string;\n  homeTeamId: number; homeTeamAbbr: string; homeTeamName: string;\n  awayTeamId: number; awayTeamAbbr: string; awayTeamName: string;\n  pHomeWins: number;\n  hsId: number; lsId: number; hsSeed: number; lsSeed: number;\n}\n\nexport const NBA_PLAYOFF_SCHEDULE: NbaPlayoffGame[] = ${JSON.stringify(games)};\n`,
+    "utf-8"
+  );
+  console.log(`OK nbaPlayoffSchedule.ts (${games.length} games)`);
+}
+
 console.log("Converting NBA xlsx -> TypeScript...");
 convertNbaMcResults();
 convertNbaSchedule();
@@ -125,4 +155,5 @@ convertNbaStandings();
 convertNbaSnapshot();
 convertNbaRankings();
 convertNbaMatchupProbs();
+convertNbaPlayoffSchedule();
 console.log("Done!");
