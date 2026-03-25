@@ -87,9 +87,42 @@ function convertNbaSnapshot(): void {
   ); console.log(`OK nbaSnapshot.ts (${data.length} teams)`);
 }
 
+function convertNbaRankings(): void {
+  const p = path.join(DATA_DIR, "nba_rankings.xlsx");
+  if (!fs.existsSync(p)) { console.warn("nba_rankings.xlsx not found"); return; }
+  const wb = XLSX.readFile(p);
+  const rows = XLSX.utils.sheet_to_json<Record<string,unknown>>(wb.Sheets[wb.SheetNames[0]]);
+  const data = rows.map((r) => ({
+    teamId: Number(r.team_id), teamName: String(r.team_name??""), teamAbbr: String(r.team_abbr??""),
+    rank: Number(r.rank), markovScore: r4(Number(r.markov_score)), expWinPct: r2(Number(r.exp_win_pct)),
+  }));
+  fs.writeFileSync(path.join(SRC_DATA,"nbaRankings.ts"),
+    `// Auto-generated from nba_rankings.xlsx — do not edit manually\nexport interface NbaRanking { teamId:number; teamName:string; teamAbbr:string; rank:number; markovScore:number; expWinPct:number; }\nexport const NBA_RANKINGS: NbaRanking[] = ${JSON.stringify(data)};\n`
+  ); console.log(`OK nbaRankings.ts (${data.length} teams)`);
+}
+
+function convertNbaMatchupProbs(): void {
+  const p = path.join(DATA_DIR, "nba_matchup_probs.xlsx");
+  if (!fs.existsSync(p)) { console.warn("nba_matchup_probs.xlsx not found"); return; }
+  const wb = XLSX.readFile(p);
+  const rows = XLSX.utils.sheet_to_json<Record<string,unknown>>(wb.Sheets[wb.SheetNames[0]]);
+  const data = rows.map((r) => ({
+    t1Id: Number(r.t1_id), t1Abbr: String(r.t1_abbr??""),
+    t2Id: Number(r.t2_id), t2Abbr: String(r.t2_abbr??""),
+    t1WinT1Home: r4(Number(r.t1_win_t1home)),
+    t1WinT2Home: r4(Number(r.t1_win_t2home)),
+    t1WinAvg: r4(Number(r.t1_win_avg)),
+  }));
+  fs.writeFileSync(path.join(SRC_DATA,"nbaMatchupProbs.ts"),
+    `// Auto-generated from nba_matchup_probs.xlsx — do not edit manually\nexport interface NbaMatchup { t1Id:number; t1Abbr:string; t2Id:number; t2Abbr:string; t1WinT1Home:number; t1WinT2Home:number; t1WinAvg:number; }\nexport const NBA_MATCHUP_PROBS: NbaMatchup[] = ${JSON.stringify(data)};\n`
+  ); console.log(`OK nbaMatchupProbs.ts (${data.length} matchups)`);
+}
+
 console.log("Converting NBA xlsx -> TypeScript...");
 convertNbaMcResults();
 convertNbaSchedule();
 convertNbaStandings();
 convertNbaSnapshot();
+convertNbaRankings();
+convertNbaMatchupProbs();
 console.log("Done!");
