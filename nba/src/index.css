@@ -1,0 +1,15 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d0d0d; --bg2: #161616; --bg3: #1f1f1f;
+  --border: #2a2a2a; --border2: #333;
+  --text: #e8e8e8; --text2: #999; --text3: #666;
+  --accent: #f0b429; --green: #48bb78; --red: #fc8181; --blue: #63b3ed;
+  --mono: "IBM Plex Mono", monospace; --sans: "Space Grotesk", sans-serif;
+}
+html { font-size: 15px; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
