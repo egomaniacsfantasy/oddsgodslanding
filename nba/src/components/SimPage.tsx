@@ -1,8 +1,11 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { NBA_SCHEDULE } from "../data/nbaSchedule";
 import { NBA_STANDINGS } from "../data/nbaStandings";
+import { NBA_MC_RESULTS } from "../data/nbaMcResults";
 import { NBA_PLAYOFF_SCHEDULE } from "../data/nbaPlayoffSchedule";
 import { runSim, type Override, type SimResult } from "../lib/simulation";
+
+const _abbrById = new Map(NBA_MC_RESULTS.map((t) => [t.teamId, t.teamAbbr]));
 
 function pFmt(v: number) {
   return v >= 99.5 ? ">99%" : v < 0.1 ? "<0.1%" : v.toFixed(1) + "%";
@@ -261,7 +264,7 @@ export default function SimPage() {
                         <tr key={s.teamId}>
                           <td className="left" style={{ minWidth:110 }}>
                             <span className={`seed-badge ${seedClass(s.seed)}`}>{s.seed}</span>
-                            <span style={{ fontWeight:700, color:"#e8e8e8" }}>{s.teamAbbr}</span>
+                            <span style={{ fontWeight:700, color:"#e8e8e8" }}>{_abbrById.get(s.teamId) ?? s.teamAbbr}</span>
                           </td>
                           <td style={{ color:"var(--text2)" }}>
                             <span style={{ color:"var(--green)" }}>{s.wins}</span>-<span style={{ color:"var(--red)" }}>{s.losses}</span>
