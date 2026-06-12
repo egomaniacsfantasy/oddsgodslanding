@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>March Madness 2026: Initial Thoughts, Floors, and Ceilings | Odds Gods Blog</title>
   <meta name="description" content="Initial thoughts on the 2026 NCAA Tournament field, plus a floor and ceiling for every team in the bracket.">
-  <meta name="theme-color" content="#0C1210" />
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://blog.oddsgods.net/march-madness-2026-floors-and-ceilings">
   <meta property="og:title" content="March Madness 2026: Initial Thoughts, Floors, and Ceilings">
@@ -23,10 +22,9 @@
   <link rel="manifest" href="/site.webmanifest?v=20260315" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62.5..125,100..900&family=Bodoni+Moda:opsz,wght@6..96,400..900&family=Cinzel:wght@400..800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/olympus-tokens.css">
-  <link rel="stylesheet" href="/landing.css">
-  <link rel="stylesheet" href="/blog.css">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300..800&family=Schibsted+Grotesk:wght@400..700&family=Spline+Sans+Mono:wght@300..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./landing.css">
+  <link rel="stylesheet" href="./blog.css">
   <!-- Meta Pixel Code -->
   <script>
     !function(f,b,e,v,n,t,s)
@@ -41,12 +39,68 @@
     fbq('track', 'PageView');
   </script>
   <!-- End Meta Pixel Code -->
+  <style>
+    .section-header {
+      margin: 3rem 0 0.5rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(216,169,61,0.25);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(216,169,61,0.6);
+    }
+    .subsection-title {
+      margin: 2.5rem 0 0.6rem 0;
+      font-family: var(--font-ui);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text, #f0ede8);
+    }
+    .fc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0 3rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+    }
+    .fc-table th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(216,169,61,0.6);
+      border-bottom: 1px solid rgba(216,169,61,0.25);
+    }
+    .fc-table td {
+      padding: 0.45rem 0.75rem;
+      color: rgba(240,237,232,0.8);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      vertical-align: middle;
+    }
+    .fc-table tr:last-child td { border-bottom: none; }
+    .fc-table .ceiling-col { color: rgba(216,169,61,0.9); }
+    .fc-table .floor-col { color: rgba(240,237,232,0.45); }
+    .team-note {
+      margin: 1.75rem 0 0 0;
+      font-size: 0.93rem;
+      line-height: 1.68;
+      color: rgba(240,237,232,0.85);
+    }
+    .team-note strong {
+      color: var(--text, #f0ede8);
+      font-family: var(--font-ui);
+    }
+  </style>
 </head>
-<body class="blog-article-page">
+<body>
   <noscript><img height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=2017816795810446&ev=PageView&noscript=1"
   alt=""
   /></noscript>
+  <div class="grain" aria-hidden="true"></div>
+
   <header class="og-nav" id="site-nav">
     <div class="og-nav-inner">
       <a class="brand-lockup" href="https://oddsgods.net" aria-label="Odds Gods">
@@ -56,26 +110,35 @@
       </a>
       <button class="og-menu-btn" id="menu-btn" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
       <nav class="og-links" id="nav-links">
-        <a href="https://bracket.oddsgods.net">The Bracket Lab</a>
-        <a href="https://blog.oddsgods.net">Blog</a>
+        <div class="og-dropdown">
+          <button class="og-dropdown-toggle" type="button" aria-haspopup="menu">
+            College Basketball <span class="og-dropdown-caret" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="og-dropdown-menu" role="menu" aria-label="College basketball tools">
+            <a href="https://bracket.oddsgods.net/" role="menuitem">The Bracket Lab</a>
+            <a href="https://bracket.oddsgods.net/rankings" role="menuitem">Power Rankings</a>
+            <a href="https://bracket.oddsgods.net/predictor" role="menuitem">Matchup Predictor</a>
+          </div>
+        </div>
+        <a href="https://blog.oddsgods.net" style="color: var(--text);">Blog</a>
       </nav>
     </div>
   </header>
 
-  <article class="blog-article blog-article-shell">
-    <a href="/" class="blog-article-back">Back to the blog</a>
+  <article class="blog-article">
+    <a href="/" class="blog-back">Back to Blog</a>
 
     <header class="blog-article-header">
-      <div class="inscription inscription--light blog-article-inscription"><span>March Madness Analysis</span></div>
+      <span class="blog-article-category">March Madness Analysis</span>
       <h1 class="blog-article-title">March Madness 2026: Initial Thoughts, Floors, and Ceilings</h1>
       <div class="blog-article-meta">
-        <span>Franco Castagliuolo</span>
-        <span class="blog-meta-separator">/</span>
-        <span>B.S. Data Analytics and Mathematical Sciences, Bentley University</span>
-        <span class="blog-meta-separator">/</span>
-        <span>March 16, 2026</span>
-        <span class="blog-meta-separator">/</span>
-        <span>10 min read</span>
+        <span class="blog-article-author">Franco Castagliuolo</span>
+        <span class="blog-article-credential">B.S. Data Analytics and Mathematical Sciences, Bentley University</span>
+        <div class="blog-article-dateline">
+          <span>March 16, 2026</span>
+          <span class="blog-article-meta-dot"></span>
+          <span>10 min read</span>
+        </div>
       </div>
     </header>
 
@@ -87,17 +150,17 @@
 
       <p>Duke and Arizona are neck-and-neck according to OddsGods. Arizona leads Duke by the narrowest of margins in our overall rankings, and holds an equally slim edge in championship win probability. Most bracket challenges and sportsbooks will list Duke and Michigan as the two clear favorites, but the analysts at OddsGods see it differently: Duke and Arizona are statistically identical, with Michigan a clear step behind as the third member of the big three.</p>
 
-      <p>Arizona sits nearly 100 Elo points ahead of Duke in our ratings, largely due to their sustained dominance against upper-echelon competition in the Big 12. Duke&rsquo;s r&eacute;sum&eacute; is impressive, but down the stretch Arizona has defeated elite team after elite team, Houston twice, Iowa State twice, and Kansas, while Duke has been running it up against a weaker ACC. The bottom line is that there is near-zero separation between Duke and Arizona, who are clearly a tier above Michigan in our analytics. Arizona is a strong value pick in any bracket challenge, precisely because the overwhelming majority of the field will default to Duke or Michigan.</p>
+      <p style="margin-top: 0.85rem;">Arizona sits nearly 100 Elo points ahead of Duke in our ratings, largely due to their sustained dominance against upper-echelon competition in the Big 12. Duke&rsquo;s r&eacute;sum&eacute; is impressive, but down the stretch Arizona has defeated elite team after elite team &mdash; Houston twice, Iowa State twice, Kansas &mdash; while Duke has been running it up against a weaker ACC. The bottom line is that there is near-zero separation between Duke and Arizona, who are clearly a tier above Michigan in our analytics. Arizona is a strong value pick in any bracket challenge, precisely because the overwhelming majority of the field will default to Duke or Michigan.</p>
 
       <h2 class="subsection-title">UConn Is Fraudulent</h2>
 
-      <p>I am personally picking UCLA over UConn in the second round. UCLA was the strongest of the 7-seeds, and that matchup significantly caps UConn&rsquo;s ceiling. Among the 2-seeds, UConn has by far the lowest probability of reaching the Sweet 16: Houston at 72%, Iowa State and Purdue at 73%, and UConn at just 59%. A hypothetical UConn&ndash;UCLA second-round game has UConn as only a &minus;135 favorite, and they would be an underdog against Michigan State in the Sweet 16. There is real value in fading them early in a bracket pool.</p>
+      <p>I am personally picking UCLA over UConn in the second round. UCLA was the strongest of the 7-seeds, and that matchup significantly caps UConn&rsquo;s ceiling. Among the 2-seeds, UConn has by far the lowest probability of reaching the Sweet 16: Houston at 72%, Iowa State and Purdue at 73%, and UConn at just 59%. A hypothetical UConn&ndash;UCLA second-round game has UConn as only a &minus;135 favorite &mdash; and they would be an underdog against Michigan State in the Sweet 16. There is real value in fading them early in a bracket pool.</p>
 
       <h2 class="subsection-title">Best Cinderella: Akron to the Sweet 16</h2>
 
-      <p>Akron holds the highest first-round upset probability among all 12-seeds at 30% against Texas Tech, which is arguably the weakest of the 5-seeds. Akron ranks 7th in the country in raw offensive rating and 15th in raw net rating, so they have the explosiveness and firepower to beat anyone on a given night. They also carry the highest Sweet 16 probability of any 12-seed at 11%, and a potential second-round matchup with Alabama, another offensively volatile team, would see Akron enter at 27%, not dissimilar to their odds against Texas Tech.</p>
+      <p>Akron holds the highest first-round upset probability among all 12-seeds at 30% against Texas Tech, which is arguably the weakest of the 5-seeds. Akron ranks 7th in the country in raw offensive rating and 15th in raw net rating &mdash; they have the explosiveness and firepower to beat anyone on a given night. They also carry the highest Sweet 16 probability of any 12-seed at 11%, and a potential second-round matchup with Alabama &mdash; another offensively volatile team &mdash; would see Akron enter at 27%, not dissimilar to their odds against Texas Tech.</p>
 
-      <p class="section-header">Floors and Ceilings</p>
+      <p class="section-header" style="margin-top: 3.5rem;">Floors and Ceilings</p>
 
       <table class="fc-table">
         <thead>
@@ -154,37 +217,37 @@
         </tbody>
       </table>
 
-      <p class="team-note"><strong>Duke:</strong> The only realistic Sweet 16 threat is St. John&rsquo;s, against whom Duke would be nearly a &minus;300 favorite. Floor is Elite Eight.</p>
+      <p class="team-note"><strong>Duke &mdash;</strong> The only realistic Sweet 16 threat is St. John&rsquo;s, against whom Duke would be nearly a &minus;300 favorite. Floor is Elite Eight.</p>
 
-      <p class="team-note"><strong>Arizona:</strong> The hottest team in the country. Arkansas or Wisconsin could theoretically eliminate them in the Sweet 16, but Arizona would be approximately a &minus;300 favorite over Arkansas and &minus;330 over Wisconsin. Floor is controversially Elite Eight.</p>
+      <p class="team-note"><strong>Arizona &mdash;</strong> The hottest team in the country. Arkansas or Wisconsin could theoretically eliminate them in the Sweet 16, but Arizona would be approximately a &minus;300 favorite over Arkansas and &minus;330 over Wisconsin. Floor is controversially Elite Eight.</p>
 
-      <p class="team-note"><strong>Florida:</strong> The sole legitimate threat in Florida&rsquo;s half of the South bracket is Vanderbilt, who would enter as +200 underdogs. That is within the realm of possibility, which keeps the floor at Sweet Sixteen.</p>
+      <p class="team-note"><strong>Florida &mdash;</strong> The sole legitimate threat in Florida&rsquo;s half of the South bracket is Vanderbilt, who would enter as +200 underdogs. That is within the realm of possibility, which keeps the floor at Sweet Sixteen.</p>
 
-      <p class="team-note"><strong>Michigan:</strong> Nearly identical to Florida. Would roll through every opponent except Alabama, whose explosive offense makes for a dangerous Sweet 16 matchup. Michigan would be around a &minus;175 favorite.</p>
+      <p class="team-note"><strong>Michigan &mdash;</strong> Nearly identical to Florida. Would roll through every opponent except Alabama, whose explosive offense makes for a dangerous Sweet 16 matchup. Michigan would be around a &minus;175 favorite.</p>
 
-      <p class="team-note"><strong>UConn:</strong> Ceiling is Elite Eight, where they run into Duke. This team will not make the Final Four. They have stumbled badly down the stretch, losing to a bad Marquette squad and getting embarrassed by St. John&rsquo;s, and drew a brutal first bracket with what I consider the best 7-seed in the field. Floor is second round.</p>
+      <p class="team-note"><strong>UConn &mdash;</strong> Ceiling is Elite Eight, where they run into Duke. This team will not make the Final Four. They have stumbled badly down the stretch &mdash; losing to a bad Marquette squad and getting embarrassed by St. John&rsquo;s &mdash; and drew a brutal first bracket with what I consider the best 7-seed in the field. Floor is second round.</p>
 
-      <p class="team-note"><strong>Purdue:</strong> Quickly turned around what looked like a sputtering season with a dominant Big Ten Tournament run. The momentum is real, but they are too inconsistent to project as a title contender. Floor is Sweet Sixteen.</p>
+      <p class="team-note"><strong>Purdue &mdash;</strong> Quickly turned around what looked like a sputtering season with a dominant Big Ten Tournament run. The momentum is real, but they are too inconsistent to project as a title contender. Floor is Sweet Sixteen.</p>
 
-      <p class="team-note"><strong>Houston:</strong> Sitting fourth in national title odds despite being a 2-seed. Structurally elite defensively (4th in raw defensive rating) and 4th in our overall rankings. They would be a slight favorite over Florida in an Elite Eight matchup and a narrow +125 underdog against Arizona or Duke. A potential Sweet 16 matchup with Illinois, one of the country&rsquo;s most explosive offensive teams, is where they are most vulnerable, entering as a narrow &minus;125 favorite.</p>
+      <p class="team-note"><strong>Houston &mdash;</strong> Sitting fourth in national title odds despite being a 2-seed. Structurally elite defensively (4th in raw defensive rating) and 4th in our overall rankings. They would be a slight favorite over Florida in an Elite Eight matchup and a narrow +125 underdog against Arizona or Duke. A potential Sweet 16 matchup with Illinois &mdash; one of the country&rsquo;s most explosive offensive teams &mdash; is where they are most vulnerable, entering as a narrow &minus;125 favorite.</p>
 
-      <p class="team-note"><strong>Iowa State:</strong> 5th in our rankings, 3rd in raw defensive rating nationally. Looked capable of beating anyone when they went toe-to-toe with Arizona in the Big 12 Tournament. Would be around a &minus;200 favorite over Tennessee or Virginia in the Sweet 16, which is not comfortable enough to lock in an Elite Eight floor.</p>
+      <p class="team-note"><strong>Iowa State &mdash;</strong> 5th in our rankings, 3rd in raw defensive rating nationally. Looked capable of beating anyone when they went toe-to-toe with Arizona in the Big 12 Tournament. Would be around a &minus;200 favorite over Tennessee or Virginia in the Sweet 16, which is not comfortable enough to lock in an Elite Eight floor.</p>
 
-      <p class="team-note"><strong>Michigan State:</strong> Louisville potentially awaits in the second round, and many analytical systems, including ours, still rate Louisville highly. MSU would be only a &minus;135 favorite in that game. They are the only team in the East that could remotely challenge Duke, but I would not take them further than the Final Four in any bracket.</p>
+      <p class="team-note"><strong>Michigan State &mdash;</strong> Louisville potentially awaits in the second round, and many analytical systems, including ours, still rate Louisville highly. MSU would be only a &minus;135 favorite in that game. They are the only team in the East that could remotely challenge Duke, but I would not take them further than the Final Four in any bracket.</p>
 
-      <p class="team-note"><strong>Gonzaga:</strong> The Gonzaga doubters will point to their loss to Portland and their weak conference. We disagree. Gonzaga ranks 9th in our overall standings and 5th in Elo, even after accounting for their soft schedule. Their non-conference SOS, if extrapolated across a full season, would project to roughly 30th in the country. They have Final Four upside, but I cannot in good conscience project them as a national title contender given the conference they play in.</p>
+      <p class="team-note"><strong>Gonzaga &mdash;</strong> The Gonzaga doubters will point to their loss to Portland and their weak conference. We disagree. Gonzaga ranks 9th in our overall standings and 5th in Elo, even after accounting for their soft schedule. Their non-conference SOS, if extrapolated across a full season, would project to roughly 30th in the country. They have Final Four upside, but I cannot in good conscience project them as a national title contender given the conference they play in.</p>
 
-      <p class="team-note"><strong>Illinois:</strong> A fantastic draw for the Illini. Best offense in the country, 8th in our overall rankings. Penn poses no real threat, and they match up well with Houston and Florida, but they will not advance past a potential Duke semifinal.</p>
+      <p class="team-note"><strong>Illinois &mdash;</strong> A fantastic draw for the Illini. Best offense in the country, 8th in our overall rankings. Penn poses no real threat, and they match up well with Houston and Florida &mdash; but they will not advance past a potential Duke semifinal.</p>
 
-      <p class="team-note"><strong>Virginia:</strong> Just cannot beat a top seed. Michigan, Duke, and Arizona are a full tier above Virginia. Their absolute ceiling is defeating Iowa State in the Sweet 16, which is even generous given a projected line around +210.</p>
+      <p class="team-note"><strong>Virginia &mdash;</strong> Just cannot beat a top seed. Michigan, Duke, Arizona &mdash; Virginia is a full tier below all of them. Their absolute ceiling is defeating Iowa State in the Sweet 16, which is even generous given a projected line around +210.</p>
 
-      <p class="team-note"><strong>Kansas:</strong> Do not like Kansas analytically or on film. Darryn Peterson has floated in and out of the lineup all season, and the team lacks cohesion. For a 4-seed, ranking 25th in our system is mediocre. Their line against Cal Baptist is surprisingly close for a 4-seed. Cannot envision them beating Duke in the Sweet 16.</p>
+      <p class="team-note"><strong>Kansas &mdash;</strong> Do not like Kansas analytically or on film. Darryn Peterson has floated in and out of the lineup all season, and the team lacks cohesion. For a 4-seed, ranking 25th in our system is mediocre. Their line against Cal Baptist is surprisingly close for a 4-seed. Cannot envision them beating Duke in the Sweet 16.</p>
 
-      <p class="team-note"><strong>Arkansas:</strong> Will win at least one game and would face a dangerous Wisconsin in the second round. It is not impossible that they beat Arizona in the Sweet 16, but projecting them further is unnecessary risk in any bracket.</p>
+      <p class="team-note"><strong>Arkansas &mdash;</strong> Will win at least one game and would face a dangerous Wisconsin in the second round. It is not impossible that they beat Arizona in the Sweet 16, but projecting them further is unnecessary risk in any bracket.</p>
 
-      <p class="team-note"><strong>Nebraska:</strong> Not high on Nebraska. Weak non-conference schedule, sliding seed lines late in the season, and gifted a favorable 13-seed in Troy. Maybe they beat Vanderbilt in the second round as underdogs, but Florida ends their run in the Sweet 16.</p>
+      <p class="team-note"><strong>Nebraska &mdash;</strong> Not high on Nebraska. Weak non-conference schedule, sliding seed lines late in the season, and gifted a favorable 13-seed in Troy. Maybe they beat Vanderbilt in the second round as underdogs, but Florida ends their run in the Sweet 16.</p>
 
-      <p class="team-note"><strong>Alabama:</strong> That 8th-ranked raw offense can carry this team a long way. Favorable draw as well. Michigan would be around a &minus;175 favorite in the Sweet 16, and that is an eminently winnable game for Alabama. Iowa State or Illinois in the Elite Eight would be similarly close. Cannot see them getting past Duke or Arizona, however.</p>
+      <p class="team-note"><strong>Alabama &mdash;</strong> That 8th-ranked raw offense can carry this team a long way. Favorable draw as well. Michigan would be around a &minus;175 favorite in the Sweet 16 &mdash; that is an eminently winnable game for Alabama. Iowa State or Illinois in the Elite Eight would be similarly close. Cannot see them getting past Duke or Arizona, however.</p>
 
     </div>
   </article>
@@ -198,17 +261,16 @@
   </script>
 
   <footer class="og-footer">
-    <div class="footer-left">
-      <img src="/logo-icon.png?v=20260225" class="footer-logo-icon" alt="Odds Gods" />
-      <a class="footer-wordmark" href="https://oddsgods.net">Odds Gods</a>
+    <div class="footer-brand">
+      <img src="/logo-icon.png" class="footer-logo-icon" alt="Odds Gods" />
+      <a class="footer-wordmark" href="https://oddsgods.net"><span>ODDS</span> <strong>GODS</strong></a>
     </div>
-    <nav class="footer-tool-links">
+    <p class="footer-meta">&copy; 2026 Odds Gods &middot; For entertainment purposes only.</p>
+    <div class="footer-links">
       <a href="https://bracket.oddsgods.net">The Bracket Lab</a>
+      <a href="https://bracket.oddsgods.net/rankings">Power Rankings</a>
+      <a href="https://bracket.oddsgods.net/predictor">Matchup Predictor</a>
       <a href="https://blog.oddsgods.net">Blog</a>
-      <a href="https://instagram.com/realoddsgods/" target="_blank" rel="noopener">Instagram</a>
-    </nav>
-    <div class="footer-right">
-      <p class="footer-meta">&copy; 2026 Odds Gods</p>
     </div>
   </footer>
 </body>

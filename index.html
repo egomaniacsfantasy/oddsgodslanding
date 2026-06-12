@@ -1,296 +1,439 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Odds Gods</title>
-  <meta name="description" content="Fantasy football, priced like a sportsbook." />
-  <meta name="theme-color" content="#0C1210" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://oddsgods.net" />
-  <meta property="og:title" content="Odds Gods" />
-  <meta property="og:description" content="Fantasy football, priced like a sportsbook." />
-  <meta property="og:image" content="https://oddsgods.net/og-image.png" />
-  <meta property="og:site_name" content="Odds Gods" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Odds Gods" />
-  <meta name="twitter:description" content="Fantasy football, priced like a sportsbook." />
-  <meta name="twitter:image" content="https://oddsgods.net/og-image.png" />
-  <link rel="icon" href="/favicon.ico?v=20260315" sizes="any" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=20260315" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=20260315" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20260315" />
-  <link rel="manifest" href="/site.webmanifest?v=20260315" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62.5..125,100..900&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,800&family=Cinzel:wght@400..800&display=swap"
-    rel="stylesheet"
-  />
-  <link rel="stylesheet" href="/olympus-tokens.css" />
-  <link rel="stylesheet" href="/landing.css" />
-  <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '2017816795810446');
-    fbq('track', 'PageView');
-  </script>
-</head>
-<body>
-  <noscript><img height="1" width="1" style="display:none"
-  src="https://www.facebook.com/tr?id=2017816795810446&ev=PageView&noscript=1"
-  alt=""
-  /></noscript>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Odds Gods &middot; Sports betting intelligence &middot; Fantasy football priced like a sportsbook</title>
+    <meta
+      name="description"
+      content="Fantasy football, priced like a sportsbook. Every start, sit, and trade priced as American odds. The bracket that thinks back, now for the NFL season. Kickoff September 2026."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://oddsgods.net" />
+    <meta property="og:title" content="Odds Gods &middot; Sports betting intelligence &middot; Fantasy football priced like a sportsbook" />
+    <meta property="og:description" content="Fantasy football, priced like a sportsbook. Every start, sit, and trade priced as American odds. The bracket that thinks back, now for the NFL season. Kickoff September 2026." />
+    <meta property="og:image" content="https://oddsgods.net/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Odds Gods" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Odds Gods &middot; Sports betting intelligence &middot; Fantasy football priced like a sportsbook" />
+    <meta name="twitter:description" content="Fantasy football, priced like a sportsbook. Every start, sit, and trade priced as American odds. The bracket that thinks back, now for the NFL season. Kickoff September 2026." />
+    <meta name="twitter:image" content="https://oddsgods.net/og-image.png" />
+    <link rel="icon" href="/favicon.ico?v=20260315" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=20260315" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=20260315" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20260315" />
+    <link rel="manifest" href="/site.webmanifest?v=20260315" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300..800&family=Schibsted+Grotesk:wght@400..700&family=Spline+Sans+Mono:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./landing.css" />
+    <link rel="stylesheet" href="./blog.css" />
+    <!-- Meta Pixel Code -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '2017816795810446');
+      fbq('track', 'PageView');
+    </script>
+    <!-- End Meta Pixel Code -->
+  </head>
+  <body>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=2017816795810446&ev=PageView&noscript=1"
+    alt=""
+    /></noscript>
+    <canvas id="lightning-ambient" aria-hidden="true"></canvas>
+    <canvas id="lightning-text" aria-hidden="true"></canvas>
+    <canvas id="lightning-bolts" aria-hidden="true"></canvas>
+    <div class="grain" aria-hidden="true"></div>
 
-  <div class="site-shell">
     <header class="og-nav" id="site-nav">
       <div class="og-nav-inner">
-        <a class="brand-lockup" href="https://oddsgods.net" aria-label="Odds Gods">
+        <a class="brand-lockup" href="#top" aria-label="Odds Gods">
           <img class="brand-logo" src="/logo-icon.png?v=20260225" alt="Odds Gods" width="24" height="24" />
           <span class="og-wordmark">Odds Gods</span>
           <span class="beta-badge">BETA</span>
         </a>
         <button class="og-menu-btn" id="menu-btn" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
         <nav class="og-links" id="nav-links">
-          <a href="#board">See the board</a>
           <a href="https://bracket.oddsgods.net">The Bracket Lab</a>
           <a href="https://blog.oddsgods.net">Blog</a>
         </nav>
       </div>
     </header>
 
+    <!-- ── $100 contest promo bar ── -->
+    <div class="promo-bar">
+      <div class="promo-bar-inner">
+        <span class="promo-bar-badge">KICKOFF SEPTEMBER 2026</span>
+        <p class="promo-bar-text">Fantasy football, priced like a sportsbook.</p>
+        <div class="promo-bar-link promo-bar-link--passive">The line moves with your lineup.</div>
+      </div>
+    </div>
+
     <main>
-      <section class="hero">
-        <div class="hero__grid">
-          <div class="hero__copy" data-reveal>
-            <h1 class="hero__title">Fantasy football, priced like a sportsbook.</h1>
-            <p>Odds Gods runs 10,000 Monte Carlo simulations on every roster in your league and posts a live line that moves with every start, sit, and trade you make.</p>
-            <p>Kickoff Sunday, September 7, 2026. The product ships September 2026.</p>
-            <a class="hero__cta" href="#board">See the board</a>
+
+      <!-- ━━ HERO ━━ -->
+      <section class="hero hero--football section-reveal" id="top">
+        <div class="hero-ambient-glow" aria-hidden="true"></div>
+        <svg class="hero-lightning" viewBox="0 0 700 520" aria-hidden="true">
+          <path d="M458 72 L396 210 L462 210 L404 356" />
+          <path d="M536 118 L492 216 L540 216 L500 320" />
+          <path d="M338 136 L304 214 L342 214 L310 286" />
+        </svg>
+        <svg class="hero-halo-arcs" viewBox="0 0 620 620" aria-hidden="true">
+          <circle cx="310" cy="310" r="182" />
+          <circle cx="310" cy="310" r="210" />
+          <path d="M128 310h34M458 310h34M310 128v34M310 458v34" />
+        </svg>
+        <div class="hero-starfield" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <svg class="hero-classical-figure" viewBox="0 0 480 480" aria-hidden="true">
+          <circle cx="240" cy="240" r="208" />
+          <circle cx="240" cy="240" r="186" />
+          <path d="M140 288c12-30 35-56 65-70 32-16 70-18 104-7" />
+          <path d="M176 194c8-30 33-52 64-55 33-3 64 17 76 47" />
+          <path d="M168 260c30-8 62-7 92 2 20 6 38 18 52 33" />
+          <path d="M233 170c14-8 31-8 45 0 14 9 22 26 19 42-3 18-18 32-36 36-18 4-38-4-48-20-10-15-8-38 6-52 4-3 9-6 14-6z" />
+          <path d="M216 244c6 24 9 48 9 72" />
+          <path d="M264 242c2 30 0 59-7 88" />
+          <path d="M205 326c22 8 48 9 71 3" />
+          <path d="M152 126h176M158 356h164" />
+        </svg>
+
+        <div class="hero__inner hero-copy-col">
+          <div class="hero__kicker">
+            <span class="kicker-dot"></span>
+            NFL 2026
           </div>
-          <div class="hero__stage" data-reveal>
-            <div class="engraving-stage">
-              <svg class="hero-engraving" viewBox="0 0 560 420" aria-hidden="true">
-                <path d="M74 278c36-14 79-22 126-22 54 0 105 12 153 37" />
-                <path d="M130 194c18-30 42-52 74-68 31-15 65-22 103-21" />
-                <path d="M214 126c25 10 46 30 62 60" />
-                <path d="M329 110c22 12 40 34 54 67" />
-                <ellipse cx="155" cy="306" rx="18" ry="13" />
-                <ellipse cx="216" cy="286" rx="18" ry="13" />
-                <ellipse cx="281" cy="262" rx="18" ry="13" />
-                <ellipse cx="352" cy="230" rx="18" ry="13" />
-              </svg>
-            </div>
-            <div class="board-stack">
-              <div class="sample-note">SAMPLE (NOT A REAL GAME)</div>
-              <div class="board-row">
-                <span class="board-row__market">matchup</span>
-                <span class="board-row__description">
-                  <span class="board-row__description-text">YOU 142.6 / THEM 128.4</span>
-                  <span class="board-row__leader" aria-hidden="true"></span>
-                </span>
-                <span class="board-row__line">-145</span>
-                <span class="board-row__movement board-row__movement--up"><span class="flip-slot is-hot"><span class="flip-slot__value">-220</span></span></span>
+
+          <h1 class="hero__headline">
+            Fantasy football,<br />
+            <em class="hero__headline-em">priced like a sportsbook.</em>
+          </h1>
+
+          <p class="hero__sub">
+            Every start, sit, and trade you make gets repriced live, all season. Your league becomes a market.
+          </p>
+
+          <div class="hero__cta-row">
+            <a href="#mechanic-demo" class="btn btn-primary cta-primary hero__cta">See how it works</a>
+            <span class="hero__cta-meta">Kickoff Sunday, September 7, 2026</span>
+          </div>
+
+          <div class="hero__receipts">
+            <span class="hero__receipt-label">Already shipped:</span>
+            <a href="#bracket-lab-proof" class="hero__receipt-link">The Bracket Lab, March Madness 2026</a>
+          </div>
+        </div>
+
+        <aside class="hero__mockup hero-preview-wrap" aria-label="Sample matchup priced as a sportsbook line">
+          <div class="hero__mockup-frame">
+            <div class="hero__mockup-kicker">YOUR MATCHUP &middot; WEEK 1 PREVIEW</div>
+            <div class="hero__mockup-title">Your Team <span class="hero__mockup-vs">vs</span> The Opponent</div>
+
+            <div class="hero__mockup-grid">
+              <div class="hero__mockup-side">
+                <div class="hero__mockup-side-label">YOU</div>
+                <div class="hero__mockup-side-points">142.6</div>
+                <div class="hero__mockup-side-meta">PROJECTED POINTS</div>
               </div>
-              <div class="board-row">
-                <span class="board-row__market">win rate</span>
-                <span class="board-row__description">
-                  <span class="board-row__description-text">starting WR1 over flex</span>
-                  <span class="board-row__leader" aria-hidden="true"></span>
-                </span>
-                <span class="board-row__line">59.2%</span>
-                <span class="board-row__movement board-row__movement--up"><span class="flip-slot is-hot"><span class="flip-slot__value">68.8%</span></span></span>
+              <div class="hero__mockup-side">
+                <div class="hero__mockup-side-label">THEM</div>
+                <div class="hero__mockup-side-points">128.4</div>
+                <div class="hero__mockup-side-meta">PROJECTED POINTS</div>
               </div>
             </div>
+
+            <div class="hero__mockup-line">
+              <div class="hero__mockup-line-bar">
+                <div class="hero__mockup-line-fill" style="width: 68.8%"></div>
+              </div>
+              <div class="hero__mockup-line-stats">
+                <div class="hero__mockup-line-side hero__mockup-line-side--fav">
+                  <div class="hero__mockup-line-odds">&minus;220</div>
+                  <div class="hero__mockup-line-pct">68.8%</div>
+                </div>
+                <div class="hero__mockup-line-side">
+                  <div class="hero__mockup-line-odds">+180</div>
+                  <div class="hero__mockup-line-pct">31.2%</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hero__mockup-foot">
+              <div class="hero__mockup-foot-cell">
+                <div class="hero__mockup-foot-label">SPREAD</div>
+                <div class="hero__mockup-foot-val">You &minus;14.2</div>
+              </div>
+              <div class="hero__mockup-foot-cell">
+                <div class="hero__mockup-foot-label">TOTAL</div>
+                <div class="hero__mockup-foot-val">271.0</div>
+              </div>
+            </div>
+
+            <div class="hero__mockup-flag">
+              <span class="hero__mockup-flag-tag">SAMPLE</span>
+              Brand mockup. Not a real game.
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- ━━ MECHANIC DEMO ━━ -->
+      <section class="mechanic-demo section-reveal" id="mechanic-demo">
+        <div class="mechanic-demo__kicker">
+          <span class="kicker-dot"></span>
+          THE MECHANIC
+        </div>
+
+        <h2 class="mechanic-demo__headline">
+          Make one swap and<br />
+          <em>watch the season move.</em>
+        </h2>
+
+        <p class="mechanic-demo__sub">
+          We run 10,000 Monte Carlo simulations on every roster in your league.
+          Start the WR1 over the flex, trade for a top-5 QB, or bench the wrong guy, and the board reprices in real time.
+        </p>
+
+        <div class="mechanic-demo__strip" aria-label="Sample line movement on a single roster decision">
+          <div class="mechanic-demo__step">
+            <div class="mechanic-demo__step-label">BASELINE</div>
+            <div class="mechanic-demo__step-odds">&minus;145</div>
+            <div class="mechanic-demo__step-meta">59.2% to win</div>
+          </div>
+
+          <div class="mechanic-demo__arrow">
+            <div class="mechanic-demo__arrow-decision">START YOUR WR1 OVER YOUR FLEX</div>
+            <div class="mechanic-demo__arrow-line"></div>
+          </div>
+
+          <div class="mechanic-demo__step mechanic-demo__step--after">
+            <div class="mechanic-demo__step-label">NEW LINE</div>
+            <div class="mechanic-demo__step-odds mechanic-demo__step-odds--hot">&minus;220</div>
+            <div class="mechanic-demo__step-meta mechanic-demo__step-meta--hot"><span class="movement-old">59.2%</span> <span class="movement-new movement-new--up">68.8%</span> to win</div>
+          </div>
+        </div>
+
+        <div class="mechanic-demo__caption">
+          Every Sunday decision gets priced in the language sports fans already speak.
+        </div>
+      </section>
+
+      <!-- ━━ HOW IT WORKS ━━ -->
+      <section class="how-single section-reveal">
+        <p class="how-kicker">HOW IT WORKS</p>
+        <h3>One engine runs through<br />three pricing layers.</h3>
+        <div class="step-grid stagger-container">
+          <div class="step stagger-item">
+            <p class="step-num">I</p>
+            <p class="step-title">PRICE EVERY MATCHUP</p>
+            <p>We project every player on both rosters and price the matchup as American odds: spread, total, moneyline.</p>
+          </div>
+          <div class="step stagger-item">
+            <p class="step-num">II</p>
+            <p class="step-title">PRICE EVERY DECISION</p>
+            <p>Every starter is evaluated against your bench. Every swap moves the line in real time. Start the WR1 over the flex? Watch the line jump from &minus;145 to &minus;220.</p>
+          </div>
+          <div class="step stagger-item">
+            <p class="step-num">III</p>
+            <p class="step-title">PRICE THE WHOLE SEASON</p>
+            <p>Each weekly decision cascades into playoff probability and championship odds. The same conditional repricing that powered the Bracket Lab now runs through a 17-week season.</p>
           </div>
         </div>
       </section>
 
-      <section class="mechanic section-rule">
-        <div class="section-shell section-grid">
-          <div class="section-copy" data-reveal>
-            <div class="inscription"><span>the mechanic</span></div>
-            <h2 class="section-title">One lineup change is enough to move the board.</h2>
-            <p>Start WR1 over your flex, and the price shortens immediately. The board does not wait for kickoff.</p>
-          </div>
-          <div class="mechanic-board" data-reveal>
-            <div class="board-row">
-              <span class="board-row__market">baseline</span>
-              <span class="board-row__description">
-                <span class="board-row__description-text">before the swap</span>
-                <span class="board-row__leader" aria-hidden="true"></span>
-              </span>
-              <span class="board-row__line">-145</span>
-              <span class="board-row__movement">59.2%</span>
+      <!-- ━━ SCROLLING LINE-MOVEMENT GRID ━━ -->
+      <section class="how-single section-reveal">
+        <section class="examples" aria-label="Example outcomes">
+          <div class="examples-mask">
+            <div class="examples-track">
+              <article class="example-card example-bracket"><p>IF YOU START YOUR WR1 OVER YOUR FLEX</p><p>Win prob this week</p><strong><span class="movement-old">59.2%</span> <span class="movement-new movement-new--up">68.8%</span></strong></article>
+              <article class="example-card example-bracket"><p>IF YOU SWAP IN YOUR HANDCUFF RB</p><p>Win prob this week</p><strong><span class="movement-old">51.4%</span> <span class="movement-new movement-new--up">56.4%</span></strong></article>
+              <article class="example-card example-bracket"><p>IF YOU TRADE FOR A TOP-5 QB</p><p>Title odds</p><strong><span class="movement-old">+520</span> <span class="movement-new movement-new--up">+380</span></strong></article>
+              <article class="example-card example-bracket"><p>IF YOU LOSE YOUR WR1 TO A SOFT-TISSUE INJURY</p><p>Title odds</p><strong><span class="movement-old">+450</span> <span class="movement-new movement-new--down">+800</span></strong></article>
+              <article class="example-card example-bracket"><p>IF YOUR TOP RB GETS BENCHED IN A BLOWOUT</p><p>Win prob this week</p><strong><span class="movement-old">64.2%</span> <span class="movement-new movement-new--down">51.8%</span></strong></article>
+              <article class="example-card example-bracket"><p>IF YOU PIVOT YOUR FLEX TO THE HIGHER-TOTAL GAME</p><p>Win prob this week</p><strong><span class="movement-old">55.7%</span> <span class="movement-new movement-new--up">61.2%</span></strong></article>
+              <article class="example-card example-bracket"><p>IF YOU FINISH WEEK 9 AT 6-3</p><p>Playoff probability</p><strong><span class="movement-old">58.1%</span> <span class="movement-new movement-new--up">78.4%</span></strong></article>
+              <article class="example-card example-bracket"><p>IF YOU LOSE TWO IN A ROW IN OCTOBER</p><p>Playoff probability</p><strong><span class="movement-old">71.0%</span> <span class="movement-new movement-new--down">49.3%</span></strong></article>
+              <article class="example-card example-bracket"><p>IF YOUR LEAGUEMATE TRADES FOR THE WR1 YOU WANTED</p><p>Your playoff odds</p><strong><span class="movement-old">64.0%</span> <span class="movement-new movement-new--down">57.5%</span></strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF YOU START YOUR WR1 OVER YOUR FLEX</p><p>Win prob this week</p><strong><span class="movement-old">59.2%</span> <span class="movement-new movement-new--up">68.8%</span></strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF YOU SWAP IN YOUR HANDCUFF RB</p><p>Win prob this week</p><strong><span class="movement-old">51.4%</span> <span class="movement-new movement-new--up">56.4%</span></strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF YOU TRADE FOR A TOP-5 QB</p><p>Title odds</p><strong><span class="movement-old">+520</span> <span class="movement-new movement-new--up">+380</span></strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF YOU LOSE YOUR WR1 TO A SOFT-TISSUE INJURY</p><p>Title odds</p><strong><span class="movement-old">+450</span> <span class="movement-new movement-new--down">+800</span></strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF YOUR TOP RB GETS BENCHED IN A BLOWOUT</p><p>Win prob this week</p><strong><span class="movement-old">64.2%</span> <span class="movement-new movement-new--down">51.8%</span></strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF YOU PIVOT YOUR FLEX TO THE HIGHER-TOTAL GAME</p><p>Win prob this week</p><strong><span class="movement-old">55.7%</span> <span class="movement-new movement-new--up">61.2%</span></strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF YOU FINISH WEEK 9 AT 6-3</p><p>Playoff probability</p><strong><span class="movement-old">58.1%</span> <span class="movement-new movement-new--up">78.4%</span></strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF YOU LOSE TWO IN A ROW IN OCTOBER</p><p>Playoff probability</p><strong><span class="movement-old">71.0%</span> <span class="movement-new movement-new--down">49.3%</span></strong></article>
+              <article class="example-card example-bracket" aria-hidden="true"><p>IF YOUR LEAGUEMATE TRADES FOR THE WR1 YOU WANTED</p><p>Your playoff odds</p><strong><span class="movement-old">64.0%</span> <span class="movement-new movement-new--down">57.5%</span></strong></article>
             </div>
-            <div class="board-row">
-              <span class="board-row__market">new line</span>
-              <span class="board-row__description">
-                <span class="board-row__description-text">after WR1 enters the lineup</span>
-                <span class="board-row__leader" aria-hidden="true"></span>
-              </span>
-              <span class="board-row__line"><span class="flip-slot is-hot"><span class="flip-slot__value">-220</span></span></span>
-              <span class="board-row__movement board-row__movement--up">68.8%</span>
+          </div>
+        </section>
+      </section>
+
+      <!-- ━━ BRACKET LAB CREDIBILITY ━━ -->
+      <section class="proof section-reveal" id="bracket-lab-proof">
+        <div class="proof__kicker">
+          <span class="kicker-dot proof__kicker-dot--shipped"></span>
+          ALREADY SHIPPED
+        </div>
+
+        <h2 class="proof__headline">
+          We built this for<br />
+          <em>March Madness.</em>
+        </h2>
+
+        <p class="proof__sub">
+          The Bracket Lab is the first product on the Odds Gods stack: a real-time conditional pricing engine
+          for the NCAA tournament. Every locked pick repriced downstream matchups and championship probability
+          across the whole field. <a href="https://bracket.oddsgods.net" target="_blank" rel="noopener" class="proof__inline-link">Still live</a>
+        </p>
+
+        <div class="proof__grid">
+          <div class="proof__stats-row">
+            <div class="proof__stats-item">
+              <span class="proof__stats-value">10,000</span>
+              <span class="proof__stats-label">Monte Carlo simulations per bracket</span>
+            </div>
+            <div class="proof__stats-item">
+              <span class="proof__stats-value">63</span>
+              <span class="proof__stats-label">Games priced conditionally, in real time</span>
+            </div>
+            <div class="proof__stats-item">
+              <span class="proof__stats-value">350+</span>
+              <span class="proof__stats-label">D1 teams ranked by our model</span>
+            </div>
+          </div>
+          <div class="proof__card proof__card--cite">
+            <div class="proof__card-cite-label">FEATURED ON</div>
+            <a href="https://masseyratings.com/ranks" target="_blank" rel="noopener" class="proof__card-cite-link">
+              Massey Ratings
+            </a>
+          </div>
+        </div>
+
+        <div class="proof__quote">The same engine that priced 63 college games in real time is now pricing every fantasy football decision across a 17-week season.</div>
+      </section>
+
+      <!-- ━━ PERSONAS ━━ -->
+      <section class="personas section-reveal">
+        <h3>Built for anyone with a take.</h3>
+        <p class="personas-sub">No model required if you care enough to have a take.</p>
+        <div class="persona-grid stagger-container">
+          <article class="persona-card persona-row stagger-item">
+            <p class="persona-title">THE NERD</p>
+            <p class="persona-copy">You already have a model. This is what it looks like when it talks back in prices.</p>
+          </article>
+          <article class="persona-card persona-row stagger-item">
+            <p class="persona-title">THE DEGENERATE</p>
+            <p class="persona-copy">You live on the edge. This tells you when the math is on your side.</p>
+          </article>
+          <article class="persona-card persona-row stagger-item">
+            <p class="persona-title">THE PURIST</p>
+            <p class="persona-copy">You&apos;ve watched every game. Now see if the numbers agree.</p>
+          </article>
+          <article class="persona-card persona-row stagger-item">
+            <p class="persona-title">THE CASUAL</p>
+            <p class="persona-copy">One league a year. The line tells you when you&apos;re actually winning.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ━━ CLOSING CTA ━━ -->
+      <section class="closer section-reveal">
+        <h2 class="closer__headline">
+          Be there when<br />
+          <em>the board opens in September.</em>
+        </h2>
+
+        <p class="closer__sub">
+          Football kicks off in September. The prices will be up before then.
+        </p>
+
+        <div class="closer__footnote">
+          Football, priced like a sportsbook. Coming September 2026.
+        </div>
+      </section>
+
+      <!-- ━━ ROADMAP ━━ -->
+      <section class="roadmap section-reveal">
+        <div class="roadmap__kicker">WHAT&apos;S NEXT</div>
+
+        <h2 class="roadmap__headline">
+          One engine is moving into football,<br />
+          <em>with more books on deck.</em>
+        </h2>
+
+        <p class="roadmap__sub">
+          Every Odds Gods product is built on the same conditional pricing engine. The one that powered the Bracket Lab is now moving into football.
+        </p>
+
+        <div class="roadmap__grid">
+          <div class="roadmap__card roadmap__card--shipped">
+            <div class="roadmap__card-status">SHIPPED MARCH 2026</div>
+            <div class="roadmap__card-title">The Bracket Lab</div>
+            <div class="roadmap__card-desc">
+              NCAA March Madness. Conditional pricing across 63 games. Featured on Massey Ratings.
+            </div>
+            <a href="https://bracket.oddsgods.net" class="roadmap__card-link" target="_blank" rel="noopener">
+              Visit
+            </a>
+          </div>
+
+          <div class="roadmap__card roadmap__card--coming">
+            <div class="roadmap__card-status">SHIPPING SEPTEMBER 2026</div>
+            <div class="roadmap__card-title">Fantasy football, priced.</div>
+            <div class="roadmap__card-desc">
+              Your league as a sportsbook. Every start, sit, and trade priced as American odds. 17-week season-long product.
+            </div>
+            <div class="roadmap__card-badge">In development</div>
+          </div>
+
+          <div class="roadmap__card roadmap__card--horizon">
+            <div class="roadmap__card-status">2027</div>
+            <div class="roadmap__card-title">More sports.</div>
+            <div class="roadmap__card-desc">
+              College football. NBA. The PGA majors. Anywhere a fan already speaks the language of odds.
             </div>
           </div>
         </div>
       </section>
 
-      <section class="layers section-rule">
-        <div class="section-shell section-grid">
-          <div class="section-copy" data-reveal>
-            <div class="inscription"><span>pricing layers</span></div>
-            <h2 class="section-title">Three layers carry the price from roster to season.</h2>
-          </div>
-          <div class="layers-ledger" data-reveal>
-            <article class="ledger-entry">
-              <div class="ledger-entry__head"><span class="ledger-entry__roman">I</span><h3>Roster state</h3></div>
-              <p>Each team begins with a projected score profile built from its roster, bench, and weekly structure.</p>
-            </article>
-            <article class="ledger-entry">
-              <div class="ledger-entry__head"><span class="ledger-entry__roman">II</span><h3>Head-to-head line</h3></div>
-              <p>That roster state becomes an American odds board: spread, total, and moneyline for every matchup.</p>
-            </article>
-            <article class="ledger-entry">
-              <div class="ledger-entry__head"><span class="ledger-entry__roman">III</span><h3>Conditional season book</h3></div>
-              <p>Every start, sit, and trade flows into the live futures market for the rest of the season.</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="board-section section-rule" id="board">
-        <div class="section-shell">
-          <div class="inscription"><span>the board</span></div>
-          <div class="board-stack" data-reveal>
-            <div class="board-row">
-              <span class="board-row__market">trade</span>
-              <span class="board-row__description"><span class="board-row__description-text">trade for a top-5 QB</span><span class="board-row__leader" aria-hidden="true"></span></span>
-              <span class="board-row__line">+520</span>
-              <span class="board-row__movement board-row__movement--up">+380</span>
-            </div>
-            <div class="board-row">
-              <span class="board-row__market">lineup</span>
-              <span class="board-row__description"><span class="board-row__description-text">start WR1 over flex</span><span class="board-row__leader" aria-hidden="true"></span></span>
-              <span class="board-row__line">-145</span>
-              <span class="board-row__movement board-row__movement--up">-220</span>
-            </div>
-            <div class="board-row">
-              <span class="board-row__market">odds</span>
-              <span class="board-row__description"><span class="board-row__description-text">win probability after the swap</span><span class="board-row__leader" aria-hidden="true"></span></span>
-              <span class="board-row__line">59.2%</span>
-              <span class="board-row__movement board-row__movement--up">68.8%</span>
-            </div>
-            <div class="board-row">
-              <span class="board-row__market">market</span>
-              <span class="board-row__description"><span class="board-row__description-text">American odds are the house language</span><span class="board-row__leader" aria-hidden="true"></span></span>
-              <span class="board-row__line">spread</span>
-              <span class="board-row__movement">moneyline</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="proof light-section section-rule">
-        <div class="section-shell proof-grid">
-          <div class="proof-copy" data-reveal>
-            <div class="inscription inscription--light"><span>proof</span></div>
-            <h2 class="proof-title">The model is already posting tournament numbers.</h2>
-            <p>The Bracket Lab shipped March 2026 and remains live at <a href="https://bracket.oddsgods.net">bracket.oddsgods.net</a>.</p>
-            <p>It runs 10,000 Monte Carlo simulations per bracket, prices 63 games conditionally in real time, and keeps 350+ D1 teams ranked.</p>
-            <p>Odds Gods rankings are featured on <a href="https://masseyratings.com/cb/compare.htm" target="_blank" rel="noopener">Massey Ratings</a>.</p>
-          </div>
-          <div class="board-stack" data-reveal>
-            <div class="board-row">
-              <span class="board-row__market">simulation</span>
-              <span class="board-row__description"><span class="board-row__description-text">Monte Carlo runs per roster or bracket</span><span class="board-row__leader" aria-hidden="true"></span></span>
-              <span class="board-row__line">10,000</span>
-              <span class="board-row__movement">posted</span>
-            </div>
-            <div class="board-row">
-              <span class="board-row__market">conditional</span>
-              <span class="board-row__description"><span class="board-row__description-text">games repriced in real time</span><span class="board-row__leader" aria-hidden="true"></span></span>
-              <span class="board-row__line">63</span>
-              <span class="board-row__movement">live</span>
-            </div>
-            <div class="board-row">
-              <span class="board-row__market">rankings</span>
-              <span class="board-row__description"><span class="board-row__description-text">Division I teams tracked</span><span class="board-row__leader" aria-hidden="true"></span></span>
-              <span class="board-row__line">350+</span>
-              <span class="board-row__movement">ranked</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="roadmap section-rule">
-        <div class="section-shell section-grid">
-          <div class="section-copy" data-reveal>
-            <div class="inscription"><span>the stack</span></div>
-            <h2 class="section-title">One conditional pricing engine, posted sport by sport.</h2>
-            <p>Bracket Lab came first. Fantasy football is next. More sports follow once the book is ready for them.</p>
-          </div>
-          <div class="roadmap-ledger" data-reveal>
-            <div class="board-row">
-              <span class="board-row__market">Bracket Lab</span>
-              <span class="board-row__description"><span class="board-row__description-text">conditional tournament pricing</span><span class="board-row__leader" aria-hidden="true"></span></span>
-              <span class="board-row__status board-row__status--posted">posted</span>
-              <span class="board-row__movement">March 2026</span>
-            </div>
-            <div class="board-row">
-              <span class="board-row__market">Fantasy Football</span>
-              <span class="board-row__description"><span class="board-row__description-text">roster-by-roster season book</span><span class="board-row__leader" aria-hidden="true"></span></span>
-              <span class="board-row__status board-row__status--prep">in preparation</span>
-              <span class="board-row__movement">September 2026</span>
-            </div>
-            <div class="board-row">
-              <span class="board-row__market">More Sports</span>
-              <span class="board-row__description"><span class="board-row__description-text">CFB, NBA, PGA majors</span><span class="board-row__leader" aria-hidden="true"></span></span>
-              <span class="board-row__status board-row__status--future">future book</span>
-              <span class="board-row__movement">2027</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="closer section-rule">
-        <div class="closer-shell" data-reveal>
-          <h2 class="closer-title">The board opens in September and the house is already posting numbers.</h2>
-          <form class="waitlist-form" data-waitlist-form>
-            <label class="sr-only" for="waitlist-email">Email</label>
-            <input id="waitlist-email" type="email" placeholder="Enter your email" />
-            <button type="submit">Join the list</button>
-          </form>
-          <p class="waitlist-note">Kickoff Sunday, September 7, 2026.</p>
-          <p class="waitlist-status" data-waitlist-status></p>
-        </div>
-      </section>
     </main>
 
-    <footer class="site-footer">
-      <div class="site-footer__row">
-        <a class="brand-lockup" href="https://oddsgods.net">
-          <img class="brand-logo" src="/logo-icon.png?v=20260225" alt="Odds Gods" width="24" height="24" />
-          <span class="og-wordmark">Odds Gods</span>
-        </a>
-        <div class="footer-tool-links">
-          <a href="https://bracket.oddsgods.net">The Bracket Lab</a>
-          <a href="https://blog.oddsgods.net">Blog</a>
-          <a href="https://www.instagram.com/oddsgods/" target="_blank" rel="noopener">Instagram</a>
-        </div>
+    <footer class="og-footer">
+      <div class="footer-left">
+        <img src="/logo-icon.png?v=20260225" class="footer-logo-icon" alt="Odds Gods" />
+        <p class="footer-wordmark footer-wordmark--brand">Odds Gods</p>
+      </div>
+      <nav class="footer-tool-links">
+        <a href="https://bracket.oddsgods.net/">The Bracket Lab</a>
+        <a href="https://blog.oddsgods.net">Blog</a>
+      </nav>
+      <div class="footer-right">
+        <p class="footer-coming">Fantasy football September 2026</p>
+        <p class="footer-meta-links">
+          <a href="https://www.instagram.com/realoddsgods/" target="_blank" rel="noopener">Instagram</a>
+        </p>
         <p class="footer-meta">&copy; 2026 Odds Gods</p>
       </div>
     </footer>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/landing.js"></script>
-  <script src="/blog.js"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./blog.js"></script>
+    <script src="./landing.js"></script>
+  </body>
 </html>

@@ -1,96 +1,1472 @@
-(function () {
-  const menuBtn = document.getElementById("menu-btn");
-  const navLinks = document.getElementById("nav-links");
-  const nav = document.getElementById("site-nav");
+const pathname = window.location.pathname || "/";
+const isBlogRoute =
+  pathname === "/blog" ||
+  pathname === "/blog/" ||
+  pathname.startsWith("/blog/") ||
+  pathname === "/admin/blog" ||
+  pathname === "/admin/blog/" ||
+  pathname.startsWith("/admin/blog/");
 
-  if (menuBtn && navLinks) {
-    menuBtn.addEventListener("click", () => {
-      const isOpen = navLinks.classList.toggle("is-open");
-      menuBtn.setAttribute("aria-expanded", String(isOpen));
-    });
-  }
+const nav = document.getElementById("site-nav");
+const menuBtn = document.getElementById("menu-btn");
+const navLinks = document.getElementById("nav-links");
 
-  if (nav) {
-    const onScroll = () => {
-      nav.classList.toggle("is-scrolled", window.scrollY > 8);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-  }
+const heroFavOdds = document.getElementById("hero-fav-odds");
+const heroDogOdds = document.getElementById("hero-dog-odds");
+const heroBracketNote = document.getElementById("hero-bracket-note");
+const heroTyped = document.getElementById("hero-typed");
+const heroOddsResult = document.getElementById("hero-odds-result");
+const heroImpliedResult = document.getElementById("hero-implied-result");
 
-  const revealTargets = Array.from(document.querySelectorAll("[data-reveal]"));
-  if ("IntersectionObserver" in window && revealTargets.length) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add("is-visible");
-          observer.unobserve(entry.target);
-        });
-      },
-      { threshold: 0.14 }
-    );
+const bracketButtons = Array.from(document.querySelectorAll(".team-chip"));
+const chipFavInline = document.getElementById("chip-fav-inline");
+const chipDogInline = document.getElementById("chip-dog-inline");
+const futuresArizona = document.getElementById("futures-arizona");
+const futuresHouston = document.getElementById("futures-houston");
+const futuresDuke = document.getElementById("futures-duke");
+const futuresMichigan = document.getElementById("futures-michigan");
 
-    revealTargets.forEach((target) => {
-      target.classList.add("reveal-on-scroll");
-      observer.observe(target);
-    });
-  } else {
-    revealTargets.forEach((target) => target.classList.add("is-visible"));
-  }
+const miniOddsForm = document.getElementById("mini-odds-form");
+const miniInput = document.getElementById("mini-odds-input");
+const miniSubmit = document.getElementById("mini-submit");
+const miniStatus = document.getElementById("mini-status");
+const miniLine = document.getElementById("mini-line");
+const miniReason = document.getElementById("mini-reason");
+const demoWidget = document.getElementById("bracket-demo-widget");
+const demoLabel = document.getElementById("demo-label");
+const demoGame = document.getElementById("demo-game");
+const demoUnderdogRow = document.getElementById("demo-underdog-row");
+const demoTable = document.getElementById("demo-table");
+const demoFooter = document.getElementById("demo-footer");
+const demoGameMeta = document.getElementById("demo-game-meta");
+const demoUnderdogSeed = document.getElementById("demo-underdog-seed");
+const demoUnderdogName = document.getElementById("demo-underdog-name");
+const demoUnderdogOdds = document.getElementById("demo-underdog-odds");
+const demoFavoriteSeed = document.getElementById("demo-favorite-seed");
+const demoFavoriteName = document.getElementById("demo-favorite-name");
+const demoFavoriteOdds = document.getElementById("demo-favorite-odds");
+const demoUnderdogLogo = document.getElementById("demo-underdog-logo");
+const demoFavoriteLogo = document.getElementById("demo-favorite-logo");
+const demoWato = document.getElementById("demo-wato");
+const demoWatoQuery = document.getElementById("demo-wato-query");
+const demoWatoOdds = document.getElementById("demo-wato-odds");
+const demoWatoImplied = document.getElementById("demo-wato-implied");
+const demoWatoFooter = document.getElementById("demo-wato-footer");
+const watoDemoInput = document.getElementById("wato-demo-input");
+const watoDemoAskBtn = document.getElementById("wato-demo-ask-btn");
+const watoDemoExamples = document.getElementById("wato-demo-examples");
+const watoDemoResult = document.getElementById("wato-demo-result");
+const watoDemoLoading = document.getElementById("wato-demo-loading");
+const watoDemoError = document.getElementById("wato-demo-error");
+const watoResultQuery = document.getElementById("wato-result-query");
+const watoResultOdds = document.getElementById("wato-result-odds");
+const watoResultImplied = document.getElementById("wato-result-implied");
+const watoResultEntity = document.getElementById("wato-result-entity");
+const watoResultEntityImage = document.getElementById("wato-result-entity-image");
+const watoResultEntityName = document.getElementById("wato-result-entity-name");
 
-  const flipSlots = Array.from(document.querySelectorAll(".flip-slot"));
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const heroPromptExamples = [
+  {
+    prompt: "Arizona wins the national championship",
+    odds: "+502",
+    implied: "16.6% implied",
+  },
+  {
+    prompt: "A 12-seed makes the Elite Eight",
+    odds: "+280",
+    implied: "26.3% implied",
+  },
+  { prompt: "Drake Maye wins NFL MVP before turning 25", odds: "+260" },
+  { prompt: "Josh Allen wins a Super Bowl before he retires", odds: "-210" },
+  { prompt: "Kenneth Walker III wins a second Super Bowl MVP", odds: "+5000" },
+  { prompt: "Bijan Robinson rushes for 2,000 yards in a single season", odds: "+360" },
+  { prompt: "A kicker wins Super Bowl MVP before 2035", odds: "+4500" },
+  { prompt: "Myles Garrett wins back-to-back Defensive Player of the Year awards", odds: "+260" },
+  { prompt: "Kyler Murray is traded before the 2026 season", odds: "-230" },
+  { prompt: "A.J. Brown is traded to the Patriots before the 2027 season", odds: "+175" },
+  { prompt: "An NFL team goes 0-17 before 2035", odds: "+3300" },
+  { prompt: "George Pickens wins a Super Bowl before age 28", odds: "+480" },
+  { prompt: "Maxx Crosby wins a Super Bowl before he retires", odds: "+350" },
+  { prompt: "Sam Darnold wins a second Super Bowl", odds: "+420" },
+  { prompt: "The Dallas Cowboys win a Super Bowl in the next 10 years", odds: "+215" },
+  { prompt: "The Detroit Lions win their first Super Bowl before 2030", odds: "+310" },
+  { prompt: "Lamar Jackson wins a Super Bowl before Josh Allen does", odds: "+115" },
+  { prompt: "A kicker wins Super Bowl MVP before 2033", odds: "+3800" },
+  { prompt: "The Cleveland Browns win a Super Bowl in the next 10 years", odds: "+750" },
+  { prompt: "A running back wins NFL MVP before 2033", odds: "+1400" },
+  { prompt: "Sean Payton wins a Super Bowl with the Broncos", odds: "+580" },
+  { prompt: "The New England Patriots win a Super Bowl with Drake Maye before 2031", odds: "+130" },
+  { prompt: "Josh Allen and Lamar Jackson both retire without a Super Bowl ring", odds: "+480" },
+  { prompt: "An NFL team wins a Super Bowl with a rookie starting QB in the next 20 years", odds: "+1800" },
+  { prompt: "The AFC wins 10 straight Super Bowls at any point", odds: "+1600" },
+  { prompt: "Chiefs three-peat", odds: "+650" },
+  { prompt: "Bills win Super Bowl LX", odds: "+700" },
+  { prompt: "Ravens win the AFC", odds: "+550" },
+  { prompt: "49ers miss the playoffs", odds: "+220" },
+  { prompt: "Patrick Mahomes wins MVP", odds: "+750" },
+  { prompt: "Justin Jefferson leads the NFL in receiving yards", odds: "+650" },
+  { prompt: "Aidan Hutchinson records 15+ sacks", odds: "+650" },
+];
 
-  const runFlip = (slot) => {
-    if (!(slot instanceof HTMLElement)) return;
-    if (prefersReducedMotion) return;
-    slot.classList.remove("is-flipping");
-    void slot.offsetWidth;
-    slot.classList.add("is-flipping");
-    window.setTimeout(() => slot.classList.remove("is-flipping"), 380);
-  };
+const miniPlaceholders = [
+  "Arizona wins the national title",
+  "A 5-seed makes the Final Four",
+  "Lamar Jackson wins back-to-back MVPs",
+  "A team goes 19-0 before 2030",
+  "Bills win the Super Bowl before the Chiefs do",
+  "A kicker wins Super Bowl MVP",
+];
 
-  flipSlots.forEach((slot) => {
-    runFlip(slot);
-    if (!("IntersectionObserver" in window)) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          runFlip(slot);
-        });
-      },
-      { threshold: 0.5 }
-    );
-    observer.observe(slot);
+const WATO_EXAMPLES = [
+  "Chiefs three-peat",
+  "A kicker wins Super Bowl MVP",
+  "Josh Allen rushes for 1,000 yards",
+  "Bills win the Super Bowl before the Chiefs do",
+  "Lamar Jackson wins back-to-back MVPs",
+  "Saquon rushes for 2,000 yards",
+  "A running back wins the Heisman",
+  "Patrick Mahomes wins 5 MVPs",
+];
+
+const heroBracketFrames = [
+  {
+    favOdds: "-1986",
+    dogOdds: "+1986",
+    note: "West region · model baseline",
+  },
+  {
+    favOdds: "-2096",
+    dogOdds: "+2096",
+    note: "Futures shift · path repriced",
+  },
+  {
+    favOdds: "-1931",
+    dogOdds: "+1931",
+    note: "Bracket weight settles after rerun",
+  },
+];
+
+let apiVersion = "2026.02.23.12";
+let heroPromptIndex = 0;
+let heroFrameIndex = 0;
+let placeholderIndex = 0;
+
+function setScrolledNav() {
+  if (!nav) return;
+  nav.classList.toggle("is-scrolled", window.scrollY > 24);
+}
+
+function setupMobileNav() {
+  if (!menuBtn || !navLinks) return;
+  menuBtn.addEventListener("click", () => {
+    const open = navLinks.classList.toggle("open");
+    menuBtn.setAttribute("aria-expanded", String(open));
   });
 
-  const waitlistForm = document.querySelector("[data-waitlist-form]");
-  const waitlistStatus = document.querySelector("[data-waitlist-status]");
+  navLinks.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      navLinks.classList.remove("open");
+      menuBtn.setAttribute("aria-expanded", "false");
+    });
+  });
+}
 
-  if (waitlistForm instanceof HTMLFormElement && waitlistStatus instanceof HTMLElement) {
-    waitlistForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const emailInput = waitlistForm.querySelector('input[type="email"]');
-      const email = emailInput instanceof HTMLInputElement ? emailInput.value.trim() : "";
+function revealOnScroll() {
+  const sections = document.querySelectorAll(".section-reveal");
+  if (!sections.length || !("IntersectionObserver" in window)) {
+    sections.forEach((el) => el.classList.add("in-view"));
+    return;
+  }
 
-      if (!email) {
-        waitlistStatus.textContent = "Enter an email address to hold your place.";
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("in-view");
+        observer.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.15 }
+  );
+
+  sections.forEach((el) => observer.observe(el));
+}
+
+function animateHeroBracket() {
+  if (!heroFavOdds || !heroDogOdds || !heroBracketNote) return;
+  window.setInterval(() => {
+    heroFrameIndex = (heroFrameIndex + 1) % heroBracketFrames.length;
+    const frame = heroBracketFrames[heroFrameIndex];
+    heroFavOdds.textContent = frame.favOdds;
+    heroDogOdds.textContent = frame.dogOdds;
+    heroBracketNote.textContent = frame.note;
+  }, 3400);
+}
+
+function typeText(el, text, speed = 30) {
+  return new Promise((resolve) => {
+    let i = 0;
+    const tick = () => {
+      el.textContent = text.slice(0, i);
+      i += 1;
+      if (i <= text.length) {
+        window.setTimeout(tick, speed);
+      } else {
+        resolve();
+      }
+    };
+    tick();
+  });
+}
+
+function formatImpliedFromAmerican(oddsText) {
+  const odds = Number.parseInt(String(oddsText || "").trim(), 10);
+  if (!Number.isFinite(odds) || odds === 0) return "";
+  const implied = odds > 0 ? 100 / (odds + 100) : Math.abs(odds) / (Math.abs(odds) + 100);
+  return `${(implied * 100).toFixed(1)}% implied`;
+}
+
+async function animateHeroPrompt() {
+  if (!heroTyped || !heroOddsResult || !heroImpliedResult) return;
+
+  while (true) {
+    const frame = heroPromptExamples[heroPromptIndex];
+    heroTyped.textContent = "";
+    await typeText(heroTyped, frame.prompt, 24);
+    heroOddsResult.textContent = frame.odds;
+    heroImpliedResult.textContent = frame.implied || formatImpliedFromAmerican(frame.odds);
+    await new Promise((resolve) => window.setTimeout(resolve, 1800));
+    heroTyped.textContent = "";
+    heroPromptIndex = (heroPromptIndex + 1) % heroPromptExamples.length;
+  }
+}
+
+function setupBracketInline() {
+  if (
+    !bracketButtons.length ||
+    !chipFavInline ||
+    !chipDogInline ||
+    !futuresArizona ||
+    !futuresDuke ||
+    !futuresMichigan ||
+    !futuresHouston
+  ) {
+    return;
+  }
+
+  const neutral = {
+    favOdds: "-1986",
+    dogOdds: "+1986",
+    arizona: "16.6%",
+    duke: "16.1%",
+    michigan: "11.7%",
+    houston: "8.8%",
+  };
+  const outcomes = {
+    duke: {
+      favOdds: "-5200",
+      dogOdds: "+5200",
+      arizona: "16.4%",
+      duke: "16.9%",
+      michigan: "11.6%",
+      houston: "8.7%",
+      deltas: { arizona: -0.2, duke: 0.8, michigan: -0.1, houston: -0.1 },
+    },
+    siena: {
+      favOdds: "+2900",
+      dogOdds: "-2900",
+      arizona: "19.8%",
+      duke: "0.0%",
+      michigan: "13.9%",
+      houston: "10.5%",
+      deltas: { arizona: 3.2, duke: -16.1, michigan: 2.2, houston: 1.7 },
+    },
+  };
+
+  function applyState(state, deltas) {
+    chipFavInline.textContent = state.favOdds;
+    chipDogInline.textContent = state.dogOdds;
+    futuresArizona.textContent = state.arizona;
+    futuresHouston.textContent = state.houston;
+    futuresDuke.textContent = state.duke;
+    futuresMichigan.textContent = state.michigan;
+
+    [futuresArizona, futuresHouston, futuresDuke, futuresMichigan].forEach((el) => {
+      el.classList.remove("is-up", "is-down");
+    });
+
+    if (deltas) {
+      const map = [
+        [futuresArizona, deltas.arizona],
+        [futuresHouston, deltas.houston],
+        [futuresDuke, deltas.duke],
+        [futuresMichigan, deltas.michigan],
+      ];
+      map.forEach(([el, v]) => {
+        if (v > 0) el.classList.add("is-up");
+        if (v < 0) el.classList.add("is-down");
+      });
+    }
+  }
+
+  applyState(neutral);
+
+  bracketButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const team = btn.dataset.team;
+      const alreadyActive = btn.classList.contains("active");
+      bracketButtons.forEach((b) => b.classList.remove("active"));
+
+      if (alreadyActive || !team || !outcomes[team]) {
+        applyState(neutral);
         return;
       }
 
-      const stored = JSON.parse(localStorage.getItem("oddsgods_waitlist_preview") || "[]");
-      const next = Array.isArray(stored) ? stored : [];
-      next.push({ email, savedAt: new Date().toISOString() });
-      localStorage.setItem("oddsgods_waitlist_preview", JSON.stringify(next));
+      btn.classList.add("active");
+      const state = outcomes[team];
+      applyState(state, state.deltas);
+    });
+  });
+}
 
-      waitlistStatus.textContent =
-        "Saved in this browser for preview review. Connect the live capture endpoint before launch.";
+function setRotatingPlaceholder() {
+  if (!miniInput) return;
+  window.setInterval(() => {
+    if (document.activeElement === miniInput) return;
+    placeholderIndex = (placeholderIndex + 1) % miniPlaceholders.length;
+    miniInput.placeholder = miniPlaceholders[placeholderIndex];
+  }, 3000);
+}
 
-      if (emailInput instanceof HTMLInputElement) {
-        emailInput.value = "";
+async function loadApiVersion() {
+  try {
+    const response = await fetch("/api/health");
+    if (!response.ok) return;
+    const payload = await response.json();
+    if (payload && typeof payload.apiVersion === "string" && payload.apiVersion.trim()) {
+      apiVersion = payload.apiVersion.trim();
+    }
+  } catch (_error) {
+    // Keep default fallback.
+  }
+}
+
+async function fetchMiniOdds(prompt) {
+  const response = await fetch("/api/odds", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-ewa-client-version": apiVersion,
+    },
+    body: JSON.stringify({ prompt }),
+  });
+
+  const payload = await response.json();
+  if (!response.ok) {
+    const message = payload?.error || payload?.message || "Unable to estimate right now.";
+    throw new Error(message);
+  }
+
+  return payload;
+}
+
+function setupMiniOddsForm() {
+  if (!miniOddsForm || !miniInput || !miniSubmit || !miniStatus || !miniLine || !miniReason) return;
+
+  miniOddsForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const prompt = String(miniInput.value || "").trim();
+    if (!prompt) {
+      miniStatus.textContent = "Enter an NFL scenario.";
+      miniLine.textContent = "";
+      miniReason.textContent = "";
+      return;
+    }
+
+    miniSubmit.setAttribute("disabled", "disabled");
+    miniStatus.textContent = "Estimating...";
+    miniLine.textContent = "";
+    miniReason.textContent = "";
+
+    try {
+      const payload = await fetchMiniOdds(prompt);
+      if (payload.status === "ok") {
+        miniStatus.textContent = "Estimated.";
+        miniLine.textContent = `${payload.odds || "n/a"} | ${payload.impliedProbability || "n/a"} implied`;
+        miniReason.textContent =
+          Array.isArray(payload.assumptions) && payload.assumptions.length
+            ? payload.assumptions[0]
+            : payload.sourceLabel || "Model estimate returned.";
+      } else {
+        miniStatus.textContent = payload.title || "Unable to price this prompt.";
+        miniLine.textContent = "";
+        miniReason.textContent = payload.message || "Try a different NFL scenario.";
       }
+    } catch (error) {
+      miniStatus.textContent = "Estimator unavailable.";
+      miniLine.textContent = "";
+      miniReason.textContent = error?.message || "Try again in a moment.";
+    } finally {
+      miniSubmit.removeAttribute("disabled");
+    }
+  });
+}
+
+function setupWatoDemoWidget() {
+  if (
+    !watoDemoInput ||
+    !watoDemoAskBtn ||
+    !watoDemoExamples ||
+    !watoDemoResult ||
+    !watoDemoLoading ||
+    !watoDemoError ||
+    !watoResultQuery ||
+    !watoResultOdds ||
+    !watoResultImplied ||
+    !watoResultEntity ||
+    !watoResultEntityImage ||
+    !watoResultEntityName
+  ) {
+    return;
+  }
+
+  let visibleExamples = [];
+  const canonicalOddsByPrompt = new Map(heroPromptExamples.map((entry) => [entry.prompt.toLowerCase(), entry.odds]));
+  const headshotByEntity = new Map([
+    ["patrick mahomes", "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png"],
+    ["josh allen", "https://a.espncdn.com/i/headshots/nfl/players/full/3918298.png"],
+    ["lamar jackson", "https://a.espncdn.com/i/headshots/nfl/players/full/3916387.png"],
+    ["drake maye", "https://a.espncdn.com/i/headshots/nfl/players/full/4430807.png"],
+    ["bijan robinson", "https://a.espncdn.com/i/headshots/nfl/players/full/4429795.png"],
+    ["myles garrett", "https://a.espncdn.com/i/headshots/nfl/players/full/3122130.png"],
+    ["kyler murray", "https://a.espncdn.com/i/headshots/nfl/players/full/3917315.png"],
+    ["a.j. brown", "https://a.espncdn.com/i/headshots/nfl/players/full/4047646.png"],
+    ["george pickens", "https://a.espncdn.com/i/headshots/nfl/players/full/4362107.png"],
+    ["maxx crosby", "https://a.espncdn.com/i/headshots/nfl/players/full/4035676.png"],
+    ["sam darnold", "https://a.espncdn.com/i/headshots/nfl/players/full/3912547.png"],
+    ["sean payton", "https://a.espncdn.com/i/headshots/nfl/players/full/11254.png"],
+    ["justin jefferson", "https://a.espncdn.com/i/headshots/nfl/players/full/4262921.png"],
+    ["aidan hutchinson", "https://a.espncdn.com/i/headshots/nfl/players/full/4426339.png"],
+    ["kenneth walker iii", "https://a.espncdn.com/i/headshots/nfl/players/full/4427366.png"],
+  ]);
+
+  const extractEntityFromPrompt = (prompt) => {
+    const text = String(prompt || "").toLowerCase();
+    const known = Array.from(headshotByEntity.keys()).find((name) => text.includes(name));
+    if (!known) return null;
+    return known
+      .split(" ")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  };
+
+  const parseAmericanOdds = (value) => {
+    const text = String(value ?? "").trim();
+    if (!/^[+-]\d+$/.test(text)) return null;
+    const n = Number.parseInt(text, 10);
+    return Number.isFinite(n) && n !== 0 ? n : null;
+  };
+
+  const impliedFromAmerican = (oddsText) => {
+    const v = parseAmericanOdds(oddsText);
+    if (v === null) return null;
+    if (v > 0) return 100 / (v + 100);
+    const abs = Math.abs(v);
+    return abs / (abs + 100);
+  };
+  const pickExamples = () => {
+    const copy = [...WATO_EXAMPLES];
+    const picked = [];
+    while (copy.length && picked.length < 3) {
+      const idx = Math.floor(Math.random() * copy.length);
+      picked.push(copy[idx]);
+      copy.splice(idx, 1);
+    }
+    return picked;
+  };
+
+  const renderExamples = () => {
+    visibleExamples = pickExamples();
+    watoDemoExamples.innerHTML = visibleExamples
+      .map((example) => `<button class="wato-example-chip" type="button">${example}</button>`)
+      .join("");
+
+    const buttons = watoDemoExamples.querySelectorAll(".wato-example-chip");
+    buttons.forEach((button, idx) => {
+      button.addEventListener("click", () => {
+        const prompt = visibleExamples[idx];
+        watoDemoInput.value = prompt;
+        handleAsk(prompt);
+      });
+    });
+  };
+
+  const formatImplied = (oddsText) => {
+    const implied = impliedFromAmerican(oddsText);
+    if (implied === null) return "N/A";
+    return `${(implied * 100).toFixed(1)}%`;
+  };
+
+  const setLoading = (loading) => {
+    watoDemoAskBtn.disabled = loading;
+    watoDemoLoading.hidden = !loading;
+  };
+
+  const hideOutputs = () => {
+    watoDemoResult.hidden = true;
+    watoDemoError.hidden = true;
+    watoResultEntity.hidden = true;
+  };
+
+  const handleAsk = async (nextPrompt) => {
+    const prompt = String(nextPrompt ?? watoDemoInput.value ?? "").trim();
+    if (!prompt) return;
+
+    hideOutputs();
+    setLoading(true);
+
+    try {
+      const payload = await fetchMiniOdds(prompt);
+      if (payload.status !== "ok") {
+        throw new Error(payload.message || "No result");
+      }
+
+      const rawOdds = String(payload.odds || payload.price || "").trim();
+      const canonical = canonicalOddsByPrompt.get(prompt.toLowerCase()) || "";
+      const odds = parseAmericanOdds(rawOdds) !== null ? rawOdds : canonical;
+      if (!odds) throw new Error("Missing American odds");
+
+      const implied = formatImplied(odds);
+      const extractedEntity = extractEntityFromPrompt(prompt);
+      const entity = payload.entity || payload.playerName || extractedEntity || "";
+      const providedEntityImage = payload.entityImage || payload.headshot || payload.playerHeadshot || "";
+      const fallbackEntityImage = entity ? headshotByEntity.get(entity.toLowerCase()) || "" : "";
+      const entityImage = providedEntityImage || fallbackEntityImage;
+
+      watoResultQuery.textContent = "";
+      watoResultOdds.textContent = odds;
+      watoResultOdds.classList.toggle("positive", odds.startsWith("+"));
+      watoResultOdds.classList.toggle("negative", odds.startsWith("-"));
+      watoResultImplied.textContent = implied || "N/A";
+
+      if (entity && entityImage) {
+        watoResultEntityName.textContent = entity;
+        watoResultEntityImage.src = entityImage;
+        watoResultEntityImage.alt = entity;
+        watoResultEntityImage.hidden = false;
+        watoResultEntity.hidden = false;
+      } else {
+        watoResultEntityImage.hidden = true;
+        watoResultEntityImage.removeAttribute("src");
+        watoResultEntityImage.alt = "";
+        watoResultEntity.hidden = true;
+      }
+
+      watoDemoResult.hidden = false;
+    } catch (_error) {
+      watoDemoError.hidden = false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  watoDemoAskBtn.addEventListener("click", () => handleAsk());
+  watoDemoInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleAsk();
+    }
+  });
+
+  renderExamples();
+  window.setInterval(renderExamples, 8000);
+}
+
+function runBracketDemo() {
+  if (
+    !demoWidget ||
+    !demoLabel ||
+    !demoGame ||
+    !demoUnderdogRow ||
+    !demoTable ||
+    !demoFooter ||
+    !demoGameMeta ||
+    !demoUnderdogSeed ||
+    !demoUnderdogName ||
+    !demoUnderdogOdds ||
+    !demoFavoriteSeed ||
+    !demoFavoriteName ||
+    !demoFavoriteOdds
+  ) {
+    return;
+  }
+
+  const upsetScenarios = [
+    {
+      region: "West",
+      underdogSeed: 16,
+      underdog: "LIU Brooklyn",
+      underdogLogo: 112358,
+      underdogOdds: "+1986",
+      favoriteSeed: 1,
+      favorite: "Arizona",
+      favoriteLogo: 12,
+      favoriteOdds: "-1986",
+      rows: [
+        { name: "Arizona", seed: 1, pct: 16.6, target: 0, delta: null, moving: false, featured: true, eliminated: false },
+        { name: "Duke", pct: 16.1, target: 19.3, delta: "+3.2", moving: true, featured: false, eliminated: false },
+        { name: "Michigan", pct: 11.7, target: 14.0, delta: "+2.3", moving: true, featured: false, eliminated: false },
+        { name: "Houston", pct: 8.8, target: 10.6, delta: "+1.8", moving: true, featured: false, eliminated: false },
+        { name: "Florida", pct: 7.9, target: 9.5, delta: "+1.6", moving: true, featured: false, eliminated: false },
+        { name: "Iowa St", pct: 7.1, target: 8.5, delta: "+1.4", moving: true, featured: false, eliminated: false },
+      ],
+    },
+    {
+      region: "East",
+      underdogSeed: 16,
+      underdog: "Siena",
+      underdogLogo: 2561,
+      underdogOdds: "+1986",
+      favoriteSeed: 1,
+      favorite: "Duke",
+      favoriteLogo: 150,
+      favoriteOdds: "-1986",
+      rows: [
+        { name: "Duke", seed: 1, pct: 16.1, target: 0, delta: null, moving: false, featured: true, eliminated: false },
+        { name: "Arizona", pct: 16.6, target: 19.8, delta: "+3.2", moving: true, featured: false, eliminated: false },
+        { name: "Michigan", pct: 11.7, target: 13.9, delta: "+2.2", moving: true, featured: false, eliminated: false },
+        { name: "Houston", pct: 8.8, target: 10.5, delta: "+1.7", moving: true, featured: false, eliminated: false },
+        { name: "Florida", pct: 7.9, target: 9.4, delta: "+1.5", moving: true, featured: false, eliminated: false },
+        { name: "Iowa St", pct: 7.1, target: 8.5, delta: "+1.4", moving: true, featured: false, eliminated: false },
+      ],
+    },
+    {
+      region: "South",
+      underdogSeed: 16,
+      underdog: "Prairie View",
+      underdogLogo: 2504,
+      underdogOdds: "+3425",
+      favoriteSeed: 1,
+      favorite: "Florida",
+      favoriteLogo: 57,
+      favoriteOdds: "-3425",
+      rows: [
+        { name: "Florida", seed: 1, pct: 7.9, target: 0, delta: null, moving: false, featured: true, eliminated: false },
+        { name: "Arizona", pct: 16.6, target: 18.0, delta: "+1.4", moving: true, featured: false, eliminated: false },
+        { name: "Duke", pct: 16.1, target: 17.5, delta: "+1.4", moving: true, featured: false, eliminated: false },
+        { name: "Michigan", pct: 11.7, target: 12.7, delta: "+1.0", moving: true, featured: false, eliminated: false },
+        { name: "Houston", pct: 8.8, target: 9.6, delta: "+0.8", moving: true, featured: false, eliminated: false },
+        { name: "Iowa St", pct: 7.1, target: 7.7, delta: "+0.6", moving: true, featured: false, eliminated: false },
+      ],
+    },
+  ];
+
+  let scenarioIndex = 0;
+  let cycleTimers = [];
+  let frameId = 0;
+
+  function clearCycleTimers() {
+    cycleTimers.forEach((timerId) => window.clearTimeout(timerId));
+    cycleTimers = [];
+    if (frameId) {
+      window.cancelAnimationFrame(frameId);
+      frameId = 0;
+    }
+  }
+
+  function wait(ms) {
+    return new Promise((resolve) => {
+      const id = window.setTimeout(() => {
+        cycleTimers = cycleTimers.filter((timerId) => timerId !== id);
+        resolve();
+      }, ms);
+      cycleTimers.push(id);
     });
   }
-})();
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function formatPct(value) {
+    return `${value.toFixed(1)}%`;
+  }
+
+  function renderRows(rows, showDeltas = false) {
+    let rankCounter = 1;
+    demoTable.innerHTML = rows
+      .map((row) => {
+        const movingClass = row.moving ? " moving-up" : "";
+        const eliminatedClass = row.eliminated ? " eliminated" : "";
+        const deltaVisible = showDeltas && row.delta ? " visible" : "";
+        const featuredClass = row.featured ? " featured-scenario" : "";
+        const rankValue = row.featured ? (row.seed === 1 ? "1" : "") : String(rankCounter++);
+        const rankEmptyClass = rankValue ? "" : " rank-empty";
+        return `
+          <div class="demo-table-row${eliminatedClass}${featuredClass}">
+            <span class="demo-rank${rankEmptyClass}">${rankValue}</span>
+            <span class="demo-name">${row.name}</span>
+            <span class="demo-pct${movingClass}">${formatPct(row.pct)}</span>
+            <span class="demo-delta${deltaVisible}">${row.delta || ""}</span>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  function buildScenarioRows(scenario) {
+    return scenario.rows.map((row) => ({ ...row }));
+  }
+
+  function applyScenarioToGameCard(scenario) {
+    demoGameMeta.textContent = `R64  ${scenario.underdog}  ${scenario.underdogOdds}  vs  ${scenario.favorite}  ${scenario.favoriteOdds}`;
+    demoUnderdogSeed.textContent = String(scenario.underdogSeed);
+    demoUnderdogName.textContent = scenario.underdog;
+    demoUnderdogOdds.textContent = scenario.underdogOdds;
+    demoFavoriteSeed.textContent = String(scenario.favoriteSeed);
+    demoFavoriteName.textContent = scenario.favorite;
+    demoFavoriteOdds.textContent = scenario.favoriteOdds;
+    if (demoUnderdogLogo) {
+      demoUnderdogLogo.src = `https://a.espncdn.com/i/teamlogos/ncaa/500/${scenario.underdogLogo}.png`;
+      demoUnderdogLogo.alt = scenario.underdog;
+    }
+    if (demoFavoriteLogo) {
+      demoFavoriteLogo.src = `https://a.espncdn.com/i/teamlogos/ncaa/500/${scenario.favoriteLogo}.png`;
+      demoFavoriteLogo.alt = scenario.favorite;
+    }
+  }
+
+  function resetBaseline(rows) {
+    demoWidget.classList.remove("fading");
+    demoLabel.textContent = "TITLE ODDS · BASELINE";
+    demoGame.classList.remove("visible");
+    demoUnderdogRow.classList.remove("beckoning", "locked-upset");
+    demoFooter.classList.remove("visible");
+    renderRows(rows.map((row) => ({ ...row, eliminated: false, moving: false })), false);
+  }
+
+  function animateAfterState(rows) {
+    const favoriteName = rows[0].name;
+    const ordered = [...rows.slice(1), rows[0]].map((row) => ({
+      ...row,
+      start: row.pct,
+      moving: row.name !== favoriteName,
+      eliminated: false,
+    }));
+
+    return new Promise((resolve) => {
+      const startTime = performance.now();
+      const duration = 1200;
+
+      function tick(now) {
+        const progress = Math.min(1, (now - startTime) / duration);
+        const eased = easeOutCubic(progress);
+
+        ordered.forEach((row) => {
+          if (row.name === favoriteName) {
+            row.pct = progress < 1 ? row.start * (1 - eased) : 0;
+            row.eliminated = progress >= 1;
+            return;
+          }
+          row.pct = row.start + (row.target - row.start) * eased;
+        });
+
+        renderRows(ordered, progress >= 1);
+
+        if (progress < 1) {
+          frameId = window.requestAnimationFrame(tick);
+        } else {
+          ordered.forEach((row) => {
+            row.pct = row.target;
+            row.moving = false;
+            if (row.name === favoriteName) {
+              row.eliminated = true;
+            }
+          });
+          renderRows(ordered, true);
+          resolve();
+        }
+      }
+
+      frameId = window.requestAnimationFrame(tick);
+    });
+  }
+
+  async function runBracketPhase() {
+    const scenario = upsetScenarios[scenarioIndex % upsetScenarios.length];
+    const scenarioRows = buildScenarioRows(scenario);
+    applyScenarioToGameCard(scenario);
+    resetBaseline(scenarioRows);
+    scenarioIndex += 1;
+
+    await wait(2200);
+    demoGame.classList.add("visible");
+
+    await wait(2000);
+    demoUnderdogRow.classList.add("beckoning");
+
+    await wait(2000);
+    demoUnderdogRow.classList.remove("beckoning");
+    demoUnderdogRow.classList.add("locked-upset");
+
+    await wait(1400);
+    demoLabel.textContent = `TITLE ODDS · AFTER ${scenario.underdog.toUpperCase()} WIN`;
+    await animateAfterState(scenarioRows);
+
+    await wait(3000);
+    demoFooter.classList.add("visible");
+
+    await wait(3000);
+  }
+
+  async function loop() {
+    await runBracketPhase();
+
+    while (true) {
+      demoWidget.classList.add("fading");
+      await wait(420);
+      demoWidget.classList.remove("fading");
+      await runBracketPhase();
+    }
+  }
+
+  clearCycleTimers();
+  loop();
+}
+
+function setupLightningBackground() {
+  const ambientCanvas = document.getElementById("lightning-ambient");
+  const textCanvas = document.getElementById("lightning-text");
+  const boltCanvas = document.getElementById("lightning-bolts");
+  if (
+    !(ambientCanvas instanceof HTMLCanvasElement) ||
+    !(textCanvas instanceof HTMLCanvasElement) ||
+    !(boltCanvas instanceof HTMLCanvasElement)
+  ) {
+    return;
+  }
+
+  const ambientCtx = ambientCanvas.getContext("2d");
+  const textCtx = textCanvas.getContext("2d");
+  const boltCtx = boltCanvas.getContext("2d");
+  if (!ambientCtx || !textCtx || !boltCtx) return;
+
+  const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let reducedMotion = reducedMotionQuery.matches;
+  let width = 0;
+  let height = 0;
+  let dpr = 1;
+  let noiseTime = 0;
+  let lastTs = 0;
+  let running = false;
+  let ambientRafId = 0;
+  let textRafId = 0;
+  let boltRafId = 0;
+  let boltTimeoutId = 0;
+  let resizeTimeoutId = 0;
+  const FIXED_SEED = 31337;
+
+  let activeBolt = null;
+  let fragments = [];
+  let safeZones = [];
+  let textNeedsRender = true;
+  let illuminationActive = false;
+
+  const categoryPools = {
+    odds: [
+      "-110", "+3300", "-450", "+220", "-175", "+550", "EVEN", "-3040", "+1400",
+      "-800", "+290", "-115", "+6500", "-2200", "+380", "-330", "+4500", "-650",
+      "+105", "-190", "+180", "-240", "+3300", "-1800",
+    ],
+    lines: [
+      "NE ML -110", "KC -450", "BUF +220", "LAR O/U 48.5",
+      "PHI -3.5", "SF ML -175", "DAL +7", "MIA O55.5",
+      "HOU -3300", "DEN +14.5", "ATL ML +310", "LV O/U 42",
+      "IND +6.5", "TEN ML -140", "GB -2.5 -115", "CLE +3 -108",
+      "NYG +380", "BAL -6.5", "SEA +240", "MIN -1.5",
+    ],
+    implied: [
+      "45.3 WIN%", "61.2%", "28.6% IMP", "73.4%", "19.2% IMP",
+      "50.0%", "88.1%", "33.3%", "12.8% TITLE", "67.9%",
+      "7.4% IMP", "94.2%", "22.4% IMP", "15.1%", "8.3% CHAMP",
+    ],
+    baseball: [
+      ".344 AVG", "1.43 ERA", ".387 OBP", ".612 SLG", "142 wRC+",
+      "3.21 FIP", "0.98 WHIP", "34.2 K%", ".301/.388/.534",
+      "2.88 xFIP", "58.1 GB%", "11.4 K/9", "2.1 BB/9", "186 OPS+",
+      ".278 BABIP", "4.8 WAR", ".412 wOBA", "96.2 EV", "47.3 LA",
+    ],
+    basketball: [
+      "KP #4", "AdjEM 28.4", "AdjO 118.2", "AdjD 89.4", "BPI 94.3",
+      "67.8 eFG%", "38.4 3P%", "NET #12", "SEED 1", "T-Rank 8",
+      "Barttorvik 3", "ELO 1842", "SOS .614", "72.4 PPG", "58.2 OPP",
+      "+14.2 NET", "31.8 PACE", "103.4 ORTG", "22-6 SU", "18-10 ATS",
+      "BARTHAG .942", "WAB +4.2", "LUCK +0.038",
+    ],
+    football: [
+      "4,832 YDS", "38 TD", "118.4 RTG", "71.2 CMP%", "8.4 Y/A",
+      "QBR 84.2", "2,066 RYD", "6.3 YPC", "14.2 YPR", "DVOA +24.8",
+      "EPA/P 0.24", "CPOE +4.1", "ANY/A 8.3", "3rd 48.2%",
+      "RZ TD 84%", "SR 52.3%", "TPRK 4", "PROE +3.8", "WPA 4.22",
+    ],
+    roman: [
+      "XIV", "XLVIII", "IX", "MMXXV", "XCIX", "IV", "LXIII",
+      "LVII", "XXXII", "XVI", "XLII", "LI", "VII", "XCVIII",
+      "MMXXIV", "LXVI", "XLIV", "LXXXVIII",
+    ],
+    greek: ["Σ", "Δ", "μ", "σ", "π", "Ω", "β", "λ", "φ", "θ"],
+    latin: [
+      "ALEA IACTA EST", "SORS", "EVENTUS", "PROBABILITAS", "CALCULUS", "FATA",
+      "FORTES FORTUNA", "FATA VIAM INVENIENT", "SORS IMMANIS", "RATIO", "NUMERUS",
+      "VINCULUM", "CASUS", "FORTUNA AUDACES IUVAT",
+    ],
+  };
+
+  const categoryStyle = {
+    greek: { font: "serif", min: 28, max: 36, base: 0.055, maxOpacity: 0.09 },
+    odds: { font: "mono", min: 8, max: 15, base: 0.05, maxOpacity: 0.085 },
+    roman: { font: "serif", min: 12, max: 34, base: 0.045, maxOpacity: 0.08 },
+    implied: { font: "mono", min: 8, max: 13, base: 0.045, maxOpacity: 0.075 },
+    lines: { font: "mono", min: 8, max: 12, base: 0.04, maxOpacity: 0.07 },
+    baseball: { font: "mono", min: 8, max: 11, base: 0.038, maxOpacity: 0.068 },
+    basketball: { font: "mono", min: 8, max: 11, base: 0.038, maxOpacity: 0.068 },
+    football: { font: "mono", min: 8, max: 11, base: 0.038, maxOpacity: 0.068 },
+    latin: { font: "serif", min: 7, max: 13, base: 0.035, maxOpacity: 0.06 },
+  };
+
+  function seededRng(seed) {
+    let s = seed % 2147483647;
+    if (s <= 0) s += 2147483646;
+    return () => {
+      s = (s * 16807) % 2147483647;
+      return (s - 1) / 2147483646;
+    };
+  }
+
+  function hash2d(x, y) {
+    const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453123;
+    return n - Math.floor(n);
+  }
+
+  function smoothstep(v) {
+    return v * v * (3 - 2 * v);
+  }
+
+  function valueNoise2d(x, y) {
+    const x0 = Math.floor(x);
+    const y0 = Math.floor(y);
+    const xf = x - x0;
+    const yf = y - y0;
+
+    const v00 = hash2d(x0, y0);
+    const v10 = hash2d(x0 + 1, y0);
+    const v01 = hash2d(x0, y0 + 1);
+    const v11 = hash2d(x0 + 1, y0 + 1);
+
+    const u = smoothstep(xf);
+    const v = smoothstep(yf);
+    const xa = v00 * (1 - u) + v10 * u;
+    const xb = v01 * (1 - u) + v11 * u;
+    return xa * (1 - v) + xb * v;
+  }
+
+  function noise2d(x, y) {
+    return valueNoise2d(x, y) * 2 - 1;
+  }
+
+  function resizeCanvases() {
+    dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    width = window.innerWidth;
+    height = window.innerHeight;
+
+    [ambientCanvas, textCanvas, boltCanvas].forEach((canvas) => {
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+    });
+
+    ambientCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    textCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    boltCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    safeZones = buildSafeZones();
+    fragments = createFragments();
+    textNeedsRender = true;
+  }
+
+  function clearBoltLayer() {
+    boltCtx.clearRect(0, 0, width, height);
+  }
+
+  function clearTextLayer() {
+    textCtx.clearRect(0, 0, width, height);
+  }
+
+  function buildSafeZones() {
+    const selector = ".hero-copy-col, .tool-card, .hero-preview-card, nav, footer, h1, h2, h3, p, button, .btn, .inline-demo";
+    const zones = [];
+    document.querySelectorAll(selector).forEach((el) => {
+      const r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2) return;
+      zones.push({
+        x: r.left - 20,
+        y: r.top - 12,
+        w: r.width + 40,
+        h: r.height + 24,
+      });
+    });
+    zones.push({ x: 0, y: height * 0.2, w: width * 0.55, h: height * 0.6 });
+    zones.push({ x: width * 0.55, y: height * 0.1, w: width * 0.43, h: height * 0.8 });
+    return zones;
+  }
+
+  function overlapsAny(rect, occupied) {
+    return occupied.some((o) => !(rect.x + rect.w < o.x || o.x + o.w < rect.x || rect.y + rect.h < o.y || o.y + o.h < rect.y));
+  }
+
+  function inSafeZone(rect) {
+    return safeZones.some((zone) => overlapsAny(rect, [zone]));
+  }
+
+  function pickBucket(rand) {
+    if (rand < 0.22) return "left";
+    if (rand < 0.44) return "right";
+    if (rand < 0.59) return "top";
+    if (rand < 0.74) return "bottom";
+    return "middle";
+  }
+
+  function pickPointInBucket(bucket, rng) {
+    if (bucket === "left") return { x: width * (0 + rng() * 0.12), y: height * rng() };
+    if (bucket === "right") return { x: width * (0.88 + rng() * 0.12), y: height * rng() };
+    if (bucket === "top") return { x: width * rng(), y: height * (0 + rng() * 0.12) };
+    if (bucket === "bottom") return { x: width * rng(), y: height * (0.88 + rng() * 0.12) };
+    return { x: width * (0.12 + rng() * 0.76), y: height * (0.12 + rng() * 0.76) };
+  }
+
+  function measureFragmentRect(fragment) {
+    const fontFamily =
+      fragment.fontType === "mono"
+        ? '"Spline Sans Mono", "SFMono-Regular", Menlo, monospace'
+        : '"Newsreader", Georgia, serif';
+    textCtx.save();
+    textCtx.font = `${fragment.size}px ${fontFamily}`;
+    const m = textCtx.measureText(fragment.text);
+    textCtx.restore();
+    const widthPx = m.width + 5;
+    const heightPx = fragment.size + 3;
+    return {
+      x: fragment.x - 2,
+      y: fragment.y - heightPx + 2,
+      w: widthPx + 5,
+      h: heightPx + 3,
+    };
+  }
+
+  function buildCategorySequence(count, rng) {
+    const weighted = [
+      "odds", "odds", "lines", "lines", "implied", "implied",
+      "baseball", "basketball", "football", "roman", "greek", "latin",
+    ];
+    const out = [];
+    for (let i = 0; i < count; i += 1) {
+      out.push(weighted[Math.floor(rng() * weighted.length)]);
+    }
+    return out;
+  }
+
+  function fragmentCountForViewport() {
+    if (width < 768) return 30 + Math.floor(width % 11);
+    if (width < 1200) return 55 + Math.floor(width % 16);
+    return 80 + Math.floor(width % 21);
+  }
+
+  function createFragments() {
+    const rng = seededRng(FIXED_SEED + width * 31 + height * 17);
+    const count = fragmentCountForViewport();
+    const sequence = buildCategorySequence(count, rng);
+    const occupied = [];
+    const out = [];
+
+    let greekCount = 0;
+    let romanLargeCount = 0;
+    let latinPhraseCount = 0;
+
+    for (let i = 0; i < sequence.length; i += 1) {
+      const category = sequence[i];
+      const style = categoryStyle[category];
+      if (!style) continue;
+
+      if (category === "greek" && greekCount >= 4) continue;
+      if (category === "latin" && latinPhraseCount >= 5) continue;
+
+      let placed = false;
+      for (let attempt = 0; attempt < 180; attempt += 1) {
+        const bucket = pickBucket(rng());
+        const point = pickPointInBucket(bucket, rng);
+        const text = categoryPools[category][Math.floor(rng() * categoryPools[category].length)];
+        const size = style.min + rng() * (style.max - style.min);
+        const baseOpacity = Math.min(style.maxOpacity, style.base + rng() * 0.025);
+        const rotation = -3 + rng() * 6;
+        const fragment = {
+          category,
+          text,
+          x: point.x,
+          y: point.y,
+          size,
+          baseOpacity,
+          currentOpacity: baseOpacity,
+          maxOpacity: style.maxOpacity,
+          fontType: style.font,
+          rotation,
+          litUntil: 0,
+        };
+        const rect = measureFragmentRect(fragment);
+        if (rect.x < 0 || rect.y < 0 || rect.x + rect.w > width || rect.y + rect.h > height) continue;
+        if (inSafeZone(rect) || overlapsAny(rect, occupied)) continue;
+
+        occupied.push(rect);
+        out.push(fragment);
+        placed = true;
+        if (category === "greek") greekCount += 1;
+        if (category === "latin" && /\s/.test(text)) latinPhraseCount += 1;
+        if (category === "roman" && size >= 28) romanLargeCount += 1;
+        if (category === "roman" && romanLargeCount > 4) {
+          out.pop();
+          occupied.pop();
+          romanLargeCount -= 1;
+          placed = false;
+          continue;
+        }
+        break;
+      }
+      if (!placed) continue;
+    }
+
+    return out;
+  }
+
+  function renderTextLayer() {
+    clearTextLayer();
+    if (!fragments.length) return;
+
+    fragments.forEach((fragment) => {
+      const fontFamily =
+        fragment.fontType === "mono"
+          ? '"Spline Sans Mono", "SFMono-Regular", Menlo, monospace'
+          : '"Newsreader", Georgia, serif';
+      textCtx.save();
+      textCtx.translate(fragment.x, fragment.y);
+      textCtx.rotate((fragment.rotation * Math.PI) / 180);
+      textCtx.globalAlpha = fragment.currentOpacity;
+      textCtx.fillStyle = "#f0e6d0";
+      textCtx.font = `${fragment.size}px ${fontFamily}`;
+      textCtx.textBaseline = "alphabetic";
+
+      if (fragment.fontType === "serif") {
+        const chars = fragment.text.split("");
+        let cursor = 0;
+        const spacing = fragment.size * 0.18;
+        for (let i = 0; i < chars.length; i += 1) {
+          const ch = chars[i];
+          textCtx.fillText(ch, cursor, 0);
+          cursor += textCtx.measureText(ch).width + spacing;
+        }
+      } else {
+        textCtx.fillText(fragment.text, 0, 0);
+      }
+      textCtx.restore();
+    });
+    textNeedsRender = false;
+  }
+
+  function drawAmbient(ts) {
+    if (!running) return;
+    if (lastTs === 0) lastTs = ts;
+    const delta = Math.min(64, ts - lastTs);
+    lastTs = ts;
+    noiseTime += delta;
+
+    ambientCtx.clearRect(0, 0, width, height);
+    const layers = reducedMotion ? 3 : 4;
+
+    for (let i = 0; i < layers; i += 1) {
+      const x = width * (0.3 + 0.4 * noise2d(i * 10.3, noiseTime * 0.0003));
+      const y = height * (0.2 + 0.6 * noise2d(i * 10.3 + 100, noiseTime * 0.0002));
+      const radius = 300 + 150 * noise2d(i * 10.3 + 200, noiseTime * 0.0004);
+      const gradient = ambientCtx.createRadialGradient(x, y, 0, x, y, radius);
+      const baseA = reducedMotion ? 0.02 : 0.04;
+      const midA = reducedMotion ? 0.01 : 0.02;
+      gradient.addColorStop(0, `rgba(180, 140, 40, ${baseA})`);
+      gradient.addColorStop(0.4, `rgba(160, 120, 20, ${midA})`);
+      gradient.addColorStop(1, "rgba(0,0,0,0)");
+
+      ambientCtx.fillStyle = gradient;
+      ambientCtx.beginPath();
+      ambientCtx.ellipse(x, y, radius, radius * 0.6, 0, 0, Math.PI * 2);
+      ambientCtx.fill();
+    }
+
+    ambientRafId = window.requestAnimationFrame(drawAmbient);
+  }
+
+  function stepTextIllumination() {
+    if (!running || !illuminationActive) return;
+    const now = performance.now();
+    let stillActive = false;
+    for (let i = 0; i < fragments.length; i += 1) {
+      const fragment = fragments[i];
+      if (fragment.currentOpacity > fragment.baseOpacity) {
+        if (now > fragment.litUntil) {
+          fragment.currentOpacity *= 0.92;
+          if (fragment.currentOpacity < fragment.baseOpacity) {
+            fragment.currentOpacity = fragment.baseOpacity;
+          } else {
+            stillActive = true;
+          }
+        } else {
+          stillActive = true;
+        }
+      }
+    }
+    textNeedsRender = true;
+    renderTextLayer();
+    illuminationActive = stillActive;
+    if (illuminationActive) {
+      textRafId = window.requestAnimationFrame(stepTextIllumination);
+    } else {
+      textRafId = 0;
+    }
+  }
+
+  function generateBolt(startX, startY, endX, endY, roughness = 2.5) {
+    const dist = Math.hypot(endX - startX, endY - startY);
+    if (dist < 4) return [[startX, startY], [endX, endY]];
+
+    const midX = (startX + endX) / 2 + (Math.random() - 0.5) * roughness * dist * 0.4;
+    const midY = (startY + endY) / 2 + (Math.random() - 0.5) * roughness * dist * 0.2;
+
+    const left = generateBolt(startX, startY, midX, midY, roughness * 0.6);
+    const right = generateBolt(midX, midY, endX, endY, roughness * 0.6);
+    left.pop();
+    return left.concat(right);
+  }
+
+  function drawBolt(points, alpha, widthPx = 1) {
+    if (!points.length) return;
+    boltCtx.beginPath();
+    boltCtx.moveTo(points[0][0], points[0][1]);
+    for (let i = 1; i < points.length; i += 1) {
+      boltCtx.lineTo(points[i][0], points[i][1]);
+    }
+
+    boltCtx.strokeStyle = `rgba(220, 180, 80, ${alpha * 0.15})`;
+    boltCtx.lineWidth = widthPx * 6;
+    boltCtx.shadowBlur = 20;
+    boltCtx.shadowColor = "rgba(220, 180, 80, 0.3)";
+    boltCtx.stroke();
+
+    boltCtx.strokeStyle = `rgba(240, 220, 140, ${alpha * 0.6})`;
+    boltCtx.lineWidth = widthPx;
+    boltCtx.shadowBlur = 8;
+    boltCtx.stroke();
+
+    boltCtx.strokeStyle = `rgba(255, 245, 220, ${alpha * 0.3})`;
+    boltCtx.lineWidth = widthPx * 0.4;
+    boltCtx.shadowBlur = 0;
+    boltCtx.stroke();
+  }
+
+  function screenFlash() {
+    const flash = document.createElement("div");
+    flash.className = "lightning-flash";
+    document.body.appendChild(flash);
+    window.setTimeout(() => {
+      flash.remove();
+    }, 150);
+  }
+
+  function illuminateNearbyText(points) {
+    if (!fragments.length || !points.length || reducedMotion) return;
+    const sampleStep = Math.max(1, Math.floor(points.length / 36));
+    let touched = false;
+
+    fragments.forEach((fragment) => {
+      const fragX = fragment.x;
+      const fragY = fragment.y;
+      let nearBolt = false;
+
+      for (let i = 0; i < points.length; i += sampleStep) {
+        const [bx, by] = points[i];
+        if (Math.hypot(fragX - bx, fragY - by) < 180) {
+          nearBolt = true;
+          break;
+        }
+      }
+
+      if (nearBolt) {
+        const boosted = Math.min(fragment.maxOpacity, fragment.baseOpacity * 3);
+        fragment.currentOpacity = Math.max(fragment.currentOpacity, boosted);
+        fragment.litUntil = performance.now() + 60;
+        touched = true;
+      }
+    });
+
+    if (touched) {
+      illuminationActive = true;
+      textNeedsRender = true;
+      renderTextLayer();
+      if (!textRafId) {
+        textRafId = window.requestAnimationFrame(stepTextIllumination);
+      }
+    }
+  }
+
+  function renderBoltFrame() {
+    if (!running || !activeBolt) return;
+    clearBoltLayer();
+    drawBolt(activeBolt.main, activeBolt.alpha, 1.2);
+    activeBolt.branches.forEach((branch) => {
+      drawBolt(branch.points, activeBolt.alpha * 0.6, branch.width);
+    });
+
+    activeBolt.alpha -= 0.08;
+    if (activeBolt.alpha > 0) {
+      boltRafId = window.requestAnimationFrame(renderBoltFrame);
+    } else {
+      activeBolt = null;
+      clearBoltLayer();
+    }
+  }
+
+  function scheduleNextBolt() {
+    if (!running || reducedMotion) return;
+    const nextDelay = 4500 + Math.random() * 6500;
+    boltTimeoutId = window.setTimeout(triggerLightningEvent, nextDelay);
+  }
+
+  function triggerLightningEvent() {
+    if (!running || reducedMotion || document.hidden) return;
+
+    const startFromTop = Math.random() > 0.32;
+    const startX = startFromTop
+      ? width * (0.1 + Math.random() * 0.8)
+      : Math.random() > 0.5
+        ? 0
+        : width;
+    const startY = startFromTop ? 0 : height * (0.12 + Math.random() * 0.48);
+    const endX = startX + (Math.random() - 0.5) * width * 0.3;
+    const endY = height * (0.3 + Math.random() * 0.5);
+
+    const mainBolt = generateBolt(startX, startY, endX, endY);
+    const branches = [];
+    const branchCount = 2 + Math.floor(Math.random() * 3);
+
+    for (let b = 0; b < branchCount; b += 1) {
+      const branchStartIdx = Math.floor(mainBolt.length * (0.3 + Math.random() * 0.4));
+      const point = mainBolt[Math.max(0, Math.min(mainBolt.length - 1, branchStartIdx))];
+      if (!point) continue;
+      const [bx, by] = point;
+      const branchEndX = bx + (Math.random() - 0.5) * 200;
+      const branchEndY = by + Math.random() * 150;
+      branches.push({
+        points: generateBolt(bx, by, branchEndX, branchEndY, 1.8),
+        width: 0.5 + Math.random() * 0.3,
+      });
+    }
+
+    activeBolt = { main: mainBolt, branches, alpha: 1 };
+    const allBoltPoints = mainBolt.concat(...branches.map((branch) => branch.points));
+    illuminateNearbyText(allBoltPoints);
+    screenFlash();
+    if (boltRafId) window.cancelAnimationFrame(boltRafId);
+    boltRafId = window.requestAnimationFrame(renderBoltFrame);
+    scheduleNextBolt();
+  }
+
+  function stopAnimations() {
+    running = false;
+    if (ambientRafId) window.cancelAnimationFrame(ambientRafId);
+    if (textRafId) window.cancelAnimationFrame(textRafId);
+    if (boltRafId) window.cancelAnimationFrame(boltRafId);
+    if (boltTimeoutId) window.clearTimeout(boltTimeoutId);
+    ambientRafId = 0;
+    textRafId = 0;
+    boltRafId = 0;
+    boltTimeoutId = 0;
+    lastTs = 0;
+    activeBolt = null;
+    illuminationActive = false;
+    clearBoltLayer();
+  }
+
+  function startAnimations() {
+    if (running) return;
+    running = true;
+    ambientCanvas.style.opacity = reducedMotion ? "0.5" : "1";
+    textCanvas.style.opacity = "1";
+    boltCanvas.style.opacity = reducedMotion ? "0" : "1";
+    ambientRafId = window.requestAnimationFrame(drawAmbient);
+    if (textNeedsRender) renderTextLayer();
+    if (!reducedMotion) {
+      const firstDelay = 1200 + Math.random() * 2200;
+      boltTimeoutId = window.setTimeout(triggerLightningEvent, firstDelay);
+    }
+  }
+
+  function onResize() {
+    if (resizeTimeoutId) window.clearTimeout(resizeTimeoutId);
+    resizeTimeoutId = window.setTimeout(() => {
+      resizeCanvases();
+      renderTextLayer();
+    }, 140);
+  }
+
+  function onVisibilityChange() {
+    if (document.hidden) {
+      stopAnimations();
+    } else {
+      startAnimations();
+    }
+  }
+
+  function onReducedMotionChange(event) {
+    reducedMotion = event.matches;
+    stopAnimations();
+    startAnimations();
+  }
+
+  document.fonts.ready.then(() => {
+    resizeCanvases();
+    renderTextLayer();
+  });
+  resizeCanvases();
+  renderTextLayer();
+  window.addEventListener("resize", onResize, { passive: true });
+  document.addEventListener("visibilitychange", onVisibilityChange);
+  reducedMotionQuery.addEventListener("change", onReducedMotionChange);
+  startAnimations();
+}
+
+function initLandingPage() {
+  // Blog routes are handled by blog.js and must short-circuit landing rendering.
+  if (isBlogRoute || window.__OG_BLOG_ACTIVE) return;
+  window.addEventListener("scroll", setScrolledNav, { passive: true });
+  setScrolledNav();
+  setupMobileNav();
+  if (document.body) {
+    document.body.classList.add("js-reveal");
+  }
+  revealOnScroll();
+  animateHeroBracket();
+  animateHeroPrompt();
+  setupBracketInline();
+  setupLightningBackground();
+  runBracketDemo();
+  setupWatoDemoWidget();
+  setRotatingPlaceholder();
+  loadApiVersion();
+  setupMiniOddsForm();
+}
+
+initLandingPage();

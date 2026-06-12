@@ -7,15 +7,6 @@
 
   window.__OG_BLOG_ACTIVE = true;
 
-  const ensureBlogStyles = () => {
-    if (document.querySelector('link[data-og-blog-styles="true"]')) return;
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "/blog.css";
-    link.setAttribute("data-og-blog-styles", "true");
-    document.head.appendChild(link);
-  };
-
   const SUPABASE_URL = window.OG_SUPABASE_URL || "https://etmawpdabjkagpazerqf.supabase.co";
   const SUPABASE_ANON_KEY =
     window.OG_SUPABASE_ANON_KEY || "sb_publishable_AW8cDxLzpxWxbw3g-KfQ9A_gKfjK31d";
@@ -27,13 +18,6 @@
     currentPostId: null,
     htmlView: false,
     authUser: null,
-  };
-
-  const setBlogMode = (mode) => {
-    document.body.classList.remove("blog-index-mode", "blog-article-mode", "blog-admin-mode");
-    if (mode) {
-      document.body.classList.add(mode);
-    }
   };
 
   const escapeHtml = (value) =>
@@ -62,38 +46,8 @@
     });
   };
 
-  const formatDateCompact = (value) => {
-    if (!value) return "";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "";
-    return date
-      .toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-      .replace(",", "");
-  };
-
-  const estimateReadTime = (html) => {
-    const plainText = String(html || "")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (!plainText) return "1 min";
-    const words = plainText.split(" ").filter(Boolean).length;
-    const minutes = Math.max(1, Math.round(words / 225));
-    return `${minutes} min`;
-  };
-
-  const getCategoryLabel = (post) => {
-    const tag = Array.isArray(post?.tags) && post.tags.length ? String(post.tags[0]) : "Odds Gods";
-    return tag.replace(/[-_]+/g, " ").trim();
-  };
-
   const renderShell = () => {
     document.body.classList.add("blog-mode");
-    ensureBlogStyles();
 
     const main = document.querySelector("main");
     if (!main) return;
@@ -137,7 +91,7 @@
       <section class="blog-fallback">
         <h1>Article not found</h1>
         <p>The article you're looking for isn't published.</p>
-        <a class="blog-fallback-link" href="/blog">Back to the blog</a>
+        <a class="blog-fallback-link" href="/blog">Back to all articles</a>
       </section>
     `;
   };
@@ -145,7 +99,7 @@
   const loadBlogPosts = async () => {
     const { data, error } = await supabase
       .from("posts")
-      .select("id, slug, title, subtitle, excerpt, body, cover_image_url, cover_image_alt, author, tags, published_at, featured")
+      .select("id, slug, title, subtitle, excerpt, cover_image_url, cover_image_alt, author, tags, published_at, featured")
       .eq("status", "published")
       .order("published_at", { ascending: false });
 
@@ -168,56 +122,88 @@
     return data;
   };
 
-  const renderLedgerRow = (post) => `
-    <a href="/blog/${encodeURIComponent(post.slug)}" class="board-row blog-index-row" data-blog-link="true">
-      <span class="board-row__market">${escapeHtml(getCategoryLabel(post))}</span>
-      <span class="board-row__description">
-        <span class="board-row__description-text">${escapeHtml(post.title || "Untitled")}</span>
-        <span class="board-row__leader" aria-hidden="true"></span>
-      </span>
-      <time class="blog-index-row__date">${escapeHtml(formatDateCompact(post.published_at))}</time>
-      <span class="blog-index-row__readtime">${escapeHtml(estimateReadTime(post.body || post.excerpt || ""))}</span>
-    </a>
-  `;
+  const renderFeaturedPost = (post) => {
+    if (!post) {
+      return "";
+    }
+
+    const safeTitle = escapeHtml(post.title || "Untitled");
+    const safeSubtitle = escapeHtml(post.subtitle || "");
+    const safeExcerpt = escapeHtml(post.excerpt || "");
+    const safeCoverAlt = escapeHtml(post.cover_image_alt || post.title || "");
+    const safeAuthor = escapeHtml(post.author || "Odds Gods");
+
+    return `
+      <a href="/blog/${encodeURIComponent(post.slug)}" class="blog-hero-link" data-blog-link="true">
+        <div class="blog-hero-image-wrap">
+          ${
+            post.cover_image_url
+              ? `<img src="${escapeHtml(post.cover_image_url)}" alt="${safeCoverAlt}" class="blog-hero-image" />`
+              : '<div class="blog-hero-image-placeholder"></div>'
+          }
+          <div class="blog-hero-image-overlay"></div>
+        </div>
+        <div class="blog-hero-content">
+          ${
+            Array.isArray(post.tags) && post.tags.length
+              ? `<div class="blog-hero-tags">${post.tags
+                  .map((tag) => `<span class="blog-tag">${escapeHtml(tag)}</span>`)
+                  .join("")}</div>`
+              : ""
+          }
+          <h1 class="blog-hero-title">${safeTitle}</h1>
+          ${safeSubtitle ? `<p class="blog-hero-subtitle">${safeSubtitle}</p>` : ""}
+          ${safeExcerpt ? `<p class="blog-hero-excerpt">${safeExcerpt}</p>` : ""}
+          <div class="blog-hero-meta">
+            <span class="blog-meta-author">${safeAuthor}</span>
+            <span class="blog-meta-dot">/</span>
+            <time class="blog-meta-date">${formatDate(post.published_at)}</time>
+          </div>
+        </div>
+      </a>
+    `;
+  };
+
+  const renderPostCard = (post) => {
+    const safeTitle = escapeHtml(post.title || "Untitled");
+    const safeExcerpt = escapeHtml(post.excerpt || "");
+    const safeCoverAlt = escapeHtml(post.cover_image_alt || post.title || "");
+
+    return `
+      <a href="/blog/${encodeURIComponent(post.slug)}" class="blog-card" data-blog-link="true">
+        <div class="blog-card-image-wrap">
+          ${
+            post.cover_image_url
+              ? `<img src="${escapeHtml(post.cover_image_url)}" alt="${safeCoverAlt}" class="blog-card-image" loading="lazy" />`
+              : '<div class="blog-card-image-placeholder"></div>'
+          }
+        </div>
+        <div class="blog-card-content">
+          ${
+            Array.isArray(post.tags) && post.tags.length
+              ? `<div class="blog-card-tags">${post.tags
+                  .slice(0, 2)
+                  .map((tag) => `<span class="blog-tag blog-tag--sm">${escapeHtml(tag)}</span>`)
+                  .join("")}</div>`
+              : ""
+          }
+          <h2 class="blog-card-title">${safeTitle}</h2>
+          ${safeExcerpt ? `<p class="blog-card-excerpt">${safeExcerpt}</p>` : ""}
+          <div class="blog-card-meta"><time>${formatDate(post.published_at)}</time></div>
+        </div>
+      </a>
+    `;
+  };
 
   const renderBlogListing = async () => {
     const root = getRoot();
     if (!root) return;
 
-    setBlogMode("blog-index-mode");
-
     root.innerHTML = `
-      <div class="blog-page">
-        <section class="blog-shell blog-index-hero section-rule">
-          <div class="inscription"><span>the ledger</span></div>
-          <div class="blog-index-hero__grid">
-            <div class="blog-index-hero__copy">
-              <h1 class="display-eyeline blog-index-hero__headline">Dispatches from the book.</h1>
-              <p class="blog-index-hero__lede">Tournament analysis, model notes, and betting positions are posted here in the same house style as the board.</p>
-              <p class="blog-index-hero__note">The Bracket Lab remains live at <a href="https://bracket.oddsgods.net" target="_blank" rel="noopener">bracket.oddsgods.net</a>.</p>
-            </div>
-            <aside class="blog-index-hero__aside">
-              <div class="blog-index-engraving-stage">
-                <svg class="blog-index-engraving" viewBox="0 0 560 420" aria-hidden="true">
-                  <path d="M90 292c44-18 93-28 146-28 52 0 98 11 140 34" />
-                  <path d="M150 206c16-30 39-52 68-66 30-16 65-24 104-23" />
-                  <path d="M190 158c12 18 20 38 23 60" />
-                  <path d="M326 114c28 19 47 43 56 73" />
-                  <path d="M236 150c13-8 27-12 42-12 22 0 43 8 63 25" />
-                  <path d="M112 332c58 6 117-2 176-22 34-13 65-30 94-54" />
-                  <ellipse cx="176" cy="318" rx="18" ry="13" />
-                  <ellipse cx="240" cy="298" rx="18" ry="13" />
-                  <ellipse cx="304" cy="274" rx="18" ry="13" />
-                  <ellipse cx="370" cy="242" rx="18" ry="13" />
-                </svg>
-              </div>
-            </aside>
-          </div>
-        </section>
-        <section class="blog-shell blog-index-section">
-          <div class="blog-ledger" id="blog-ledger"></div>
-        </section>
-      </div>
+      <main class="blog-page">
+        <article class="blog-hero" id="blog-hero"></article>
+        <section class="blog-grid" id="blog-grid"></section>
+      </main>
     `;
 
     try {
@@ -232,10 +218,13 @@
         return;
       }
 
-      const ledger = document.getElementById("blog-ledger");
-      if (ledger) {
-        ledger.innerHTML = posts.map(renderLedgerRow).join("");
-      }
+      const featured = posts.find((post) => post.featured) || posts[0];
+      const rest = posts.filter((post) => post.id !== featured.id);
+
+      const hero = document.getElementById("blog-hero");
+      const grid = document.getElementById("blog-grid");
+      if (hero) hero.innerHTML = renderFeaturedPost(featured);
+      if (grid) grid.innerHTML = rest.map(renderPostCard).join("");
     } catch (error) {
       root.innerHTML = `
         <section class="blog-fallback">
@@ -250,53 +239,51 @@
     const root = getRoot();
     if (!root) return;
 
-    setBlogMode("blog-article-mode");
-
     const post = await loadArticle(slug);
     if (!post) {
       renderNotFound();
       return;
     }
 
-    document.title = `${post.title || "Article"} | Odds Gods`;
-
     const safeTitle = escapeHtml(post.title || "Untitled");
     const safeSubtitle = escapeHtml(post.subtitle || "");
     const safeAuthor = escapeHtml(post.author || "Odds Gods");
     const safeCoverAlt = escapeHtml(post.cover_image_alt || post.title || "");
-    const safeCategory = escapeHtml(getCategoryLabel(post));
-    const coverMarkup = post.cover_image_url
-      ? `
-        <div class="blog-article-cover">
-          <img src="${escapeHtml(post.cover_image_url)}" alt="${safeCoverAlt}" />
-        </div>
-      `
-      : "";
 
     root.innerHTML = `
-      <article class="blog-article blog-article-shell">
-        <a href="/blog" class="blog-article-back" data-blog-link="true">Back to the blog</a>
-
+      <article class="blog-article">
         <header class="blog-article-header">
-          <div class="inscription inscription--light blog-article-inscription"><span>${safeCategory}</span></div>
+          <div class="blog-article-tags">
+            ${(post.tags || []).map((tag) => `<span class="blog-tag">${escapeHtml(tag)}</span>`).join("")}
+          </div>
           <h1 class="blog-article-title">${safeTitle}</h1>
           ${safeSubtitle ? `<p class="blog-article-subtitle">${safeSubtitle}</p>` : ""}
           <div class="blog-article-meta">
             <span>${safeAuthor}</span>
-            <span class="blog-meta-separator">/</span>
+            <span>·</span>
             <time>${formatDate(post.published_at)}</time>
-            <span class="blog-meta-separator">/</span>
-            <span>${estimateReadTime(post.body || "")}</span>
           </div>
         </header>
 
-        ${coverMarkup}
+        <div class="blog-article-cover">
+          ${
+            post.cover_image_url
+              ? `<img src="${escapeHtml(post.cover_image_url)}" alt="${safeCoverAlt}" />`
+              : ""
+          }
+        </div>
 
         <div class="blog-article-body" id="article-body"></div>
 
         <footer class="blog-article-footer">
-          <p class="blog-article-note">The Bracket Lab is still live at <a href="https://bracket.oddsgods.net" target="_blank" rel="noopener">bracket.oddsgods.net</a>.</p>
-          <a href="/blog" class="blog-article-back" data-blog-link="true">Back to the blog</a>
+          <a href="https://bracket.oddsgods.net" class="blog-article-cta" target="_blank" rel="noopener">
+            <span class="blog-article-cta-icon">🏀</span>
+            <div>
+              <strong>Try Bracket Lab</strong>
+              <span>Pick any upset. Watch the entire tournament reprice.</span>
+            </div>
+          </a>
+          <a href="/blog" class="blog-article-back" data-blog-link="true">Back to all articles</a>
         </footer>
       </article>
     `;
@@ -355,7 +342,11 @@
   const insertBracketLabEmbed = () => {
     insertHtml(`
       <a class="og-bracketlab-cta" href="https://bracket.oddsgods.net" contenteditable="false" target="_blank" rel="noopener">
-        Open Bracket Lab
+        <span class="og-bracketlab-cta-icon">🏀</span>
+        <span class="og-bracketlab-cta-text">
+          <strong>Try it yourself in Bracket Lab</strong>
+          <span>Pick any upset and watch the entire tournament reprice.</span>
+        </span>
       </a>
     `);
   };
@@ -559,12 +550,11 @@
           <title>${escapeHtml(title.value || "Preview")}</title>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-          <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62.5..125,100..900&family=Bodoni+Moda:opsz,wght@6..96,400..900&family=Cinzel:wght@400..800&display=swap" rel="stylesheet" />
-          <link rel="stylesheet" href="/olympus-tokens.css" />
+          <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;700&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
           <link rel="stylesheet" href="/blog.css" />
         </head>
-        <body class="blog-mode blog-article-mode">
-          <article class="blog-article blog-article-shell">
+        <body class="blog-mode">
+          <article class="blog-article" style="padding-top:24px;">
             <h1 class="blog-article-title">${escapeHtml(title.value || "Preview")}</h1>
             <div class="blog-article-body">${body.innerHTML}</div>
           </article>
@@ -675,8 +665,6 @@
     const root = getRoot();
     if (!root) return;
 
-    setBlogMode("blog-admin-mode");
-
     root.innerHTML = `
       <div class="blog-admin">
         <aside class="blog-admin-sidebar">
@@ -712,11 +700,11 @@
                 <button type="button" id="admin-ol" title="Numbered List">1.</button>
                 <button type="button" id="admin-h2" title="Heading">H2</button>
                 <button type="button" id="admin-h3" title="Subheading">H3</button>
-                <button type="button" id="admin-link" title="Link">Link</button>
-                <button type="button" id="admin-image" title="Image">Image</button>
-                <button type="button" id="admin-quote" title="Pull Quote">Quote</button>
-                <button type="button" id="admin-odds" title="Odds Callout">Odds</button>
-                <button type="button" id="admin-cta" title="Bracket Lab CTA">CTA</button>
+                <button type="button" id="admin-link" title="Link">🔗</button>
+                <button type="button" id="admin-image" title="Image">📷</button>
+                <button type="button" id="admin-quote" title="Pull Quote">PQ</button>
+                <button type="button" id="admin-odds" title="Odds Callout">📊</button>
+                <button type="button" id="admin-cta" title="Bracket Lab CTA">🏀</button>
                 <button type="button" id="admin-html" title="View HTML">&lt;/&gt;</button>
               </div>
               <div class="blog-editor-content" id="post-body" contenteditable="true"></div>
@@ -764,21 +752,19 @@
     if (pathname === "/blog" || pathname === "/blog/") {
       document.title = "Blog | Odds Gods";
       await renderBlogListing();
-      window.scrollTo({ top: 0, behavior: "auto" });
       return;
     }
 
     if (pathname.startsWith("/blog/")) {
       const slug = decodeURIComponent(pathname.replace(/^\/blog\//, "").replace(/\/$/, ""));
+      document.title = "Article | Odds Gods";
       await renderArticle(slug);
-      window.scrollTo({ top: 0, behavior: "auto" });
       return;
     }
 
     if (pathname === "/admin/blog" || pathname === "/admin/blog/") {
       document.title = "Blog Admin | Odds Gods";
       await renderAdmin();
-      window.scrollTo({ top: 0, behavior: "auto" });
       return;
     }
 

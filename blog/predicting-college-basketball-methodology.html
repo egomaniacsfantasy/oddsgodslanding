@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Predicting College Basketball: A Complete Technical Methodology | Odds Gods Blog</title>
   <meta name="description" content="A complete account of the design, engineering, and statistical reasoning behind Odds Gods' full-stack college basketball prediction system. Custom Elo, gradient boosted trees, isotonic calibration, and 10,000-run Monte Carlo tournament simulations.">
-  <meta name="theme-color" content="#0C1210" />
   <!-- Open Graph -->
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://blog.oddsgods.net/predicting-college-basketball-methodology">
@@ -24,10 +23,9 @@
   <link rel="manifest" href="/site.webmanifest?v=20260315" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62.5..125,100..900&family=Bodoni+Moda:opsz,wght@6..96,400..900&family=Cinzel:wght@400..800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/olympus-tokens.css">
-  <link rel="stylesheet" href="/landing.css">
-  <link rel="stylesheet" href="/blog.css">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300..800&family=Schibsted+Grotesk:wght@400..700&family=Spline+Sans+Mono:wght@300..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./landing.css">
+  <link rel="stylesheet" href="./blog.css">
   <!-- Meta Pixel Code -->
   <script>
     !function(f,b,e,v,n,t,s)
@@ -43,11 +41,13 @@
   </script>
   <!-- End Meta Pixel Code -->
 </head>
-<body class="blog-article-page">
+<body>
   <noscript><img height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=2017816795810446&ev=PageView&noscript=1"
   alt=""
   /></noscript>
+  <div class="grain" aria-hidden="true"></div>
+
   <header class="og-nav" id="site-nav">
     <div class="og-nav-inner">
       <a class="brand-lockup" href="https://oddsgods.net" aria-label="Odds Gods">
@@ -57,26 +57,35 @@
       </a>
       <button class="og-menu-btn" id="menu-btn" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
       <nav class="og-links" id="nav-links">
-        <a href="https://bracket.oddsgods.net">The Bracket Lab</a>
-        <a href="https://blog.oddsgods.net">Blog</a>
+        <div class="og-dropdown">
+          <button class="og-dropdown-toggle" type="button" aria-haspopup="menu">
+            College Basketball <span class="og-dropdown-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="og-dropdown-menu" role="menu" aria-label="College basketball tools">
+            <a href="https://bracket.oddsgods.net/" role="menuitem">The Bracket Lab</a>
+            <a href="https://bracket.oddsgods.net/rankings" role="menuitem">Power Rankings</a>
+            <a href="https://bracket.oddsgods.net/predictor" role="menuitem">Matchup Predictor</a>
+          </div>
+        </div>
+        <a href="https://blog.oddsgods.net" style="color: var(--text);">Blog</a>
       </nav>
     </div>
   </header>
 
-  <article class="blog-article blog-article-shell">
-    <a href="/" class="blog-article-back">Back to the blog</a>
+  <article class="blog-article">
+    <a href="/" class="blog-back">Back to Blog</a>
 
     <header class="blog-article-header">
-      <div class="inscription inscription--light blog-article-inscription"><span>Technical Methodology</span></div>
+      <span class="blog-article-category">Technical Methodology</span>
       <h1 class="blog-article-title">Predicting College Basketball: A Complete Technical Methodology</h1>
       <div class="blog-article-meta">
-        <span>Franco Castagliuolo</span>
-        <span class="blog-meta-separator">/</span>
-        <span>B.S. Data Analytics and Mathematical Sciences, Bentley University</span>
-        <span class="blog-meta-separator">/</span>
-        <span>March 10, 2026</span>
-        <span class="blog-meta-separator">/</span>
-        <span>15 min read</span>
+        <span class="blog-article-author">Franco Castagliuolo</span>
+        <span class="blog-article-credential">B.S. Data Analytics and Mathematical Sciences, Bentley University</span>
+        <div class="blog-article-dateline">
+          <span>March 10, 2026</span>
+          <span class="blog-article-meta-dot"></span>
+          <span>15 min read</span>
+        </div>
       </div>
     </header>
 
@@ -151,7 +160,7 @@
     <div class="blog-cta">
       <h3 class="blog-cta-title">Try Bracket Lab</h3>
       <p class="blog-cta-text">Every pick reprices the entire tournament. See what your bracket actually means.</p>
-      <a href="https://bracket.oddsgods.net" class="btn-primary">Open Bracket Lab</a>
+      <a href="https://bracket.oddsgods.net" class="btn-primary">Build your bracket</a>
     </div>
   </article>
 
@@ -164,17 +173,16 @@
   </script>
 
   <footer class="og-footer">
-    <div class="footer-left">
-      <img src="/logo-icon.png?v=20260225" class="footer-logo-icon" alt="Odds Gods" />
-      <a class="footer-wordmark" href="https://oddsgods.net">Odds Gods</a>
+    <div class="footer-brand">
+      <img src="/logo-icon.png" class="footer-logo-icon" alt="Odds Gods" />
+      <a class="footer-wordmark" href="https://oddsgods.net"><span>ODDS</span> <strong>GODS</strong></a>
     </div>
-    <nav class="footer-tool-links">
+    <p class="footer-meta">&copy; 2026 Odds Gods &middot; For entertainment purposes only.</p>
+    <div class="footer-links">
       <a href="https://bracket.oddsgods.net">The Bracket Lab</a>
+      <a href="https://bracket.oddsgods.net/rankings">Power Rankings</a>
+      <a href="https://bracket.oddsgods.net/predictor">Matchup Predictor</a>
       <a href="https://blog.oddsgods.net">Blog</a>
-      <a href="https://instagram.com/realoddsgods/" target="_blank" rel="noopener">Instagram</a>
-    </nav>
-    <div class="footer-right">
-      <p class="footer-meta">&copy; 2026 Odds Gods</p>
     </div>
   </footer>
 </body>
