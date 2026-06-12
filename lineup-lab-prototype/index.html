@@ -1,0 +1,2138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Lineup Lab | Olympus</title>
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem("lineup-lab-theme") === "light") {
+            document.documentElement.setAttribute("data-theme", "light");
+          }
+        } catch (error) {
+          console.warn("Theme preference unavailable.", error);
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Staatliches&family=Hanken+Grotesk:wght@400;600;700&family=Saira:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0d0f11;
+        --surface: #15181b;
+        --surface-2: #1d2125;
+        --surface-3: #262b30;
+        --surface-4: #202429;
+        --line: #24282c;
+        --line-strong: #34393e;
+
+        --ink: #f4f5f2;
+        --ink-2: #a9ada5;
+        --ink-3: #787c75;
+
+        --ember: #e8541d;
+        --cash: #34d27b;
+        --loss: #ff5c4d;
+        --gold: #c9a227;
+
+        --display: "Staatliches", "Arial Narrow", sans-serif;
+        --ui: "Hanken Grotesk", system-ui, sans-serif;
+        --num: "Saira", system-ui, sans-serif;
+
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 14px;
+        --radius-xl: 18px;
+        --radius-full: 999px;
+
+        --content-width: 1240px;
+        --header-height-mobile: 64px;
+        --header-height-desktop: 76px;
+        --tabbar-height: 68px;
+
+        --wordmark-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 28'%3E%3Ctext x='0' y='22' font-family='Staatliches' font-size='24' letter-spacing='1.2'%3EOLYMPUS%3C/text%3E%3C/svg%3E");
+      }
+
+      [data-theme="light"] {
+        --bg: #f3f0e8;
+        --surface: #ffffff;
+        --surface-2: #f5f2ec;
+        --surface-3: #ece7de;
+        --surface-4: #f8f5f0;
+        --line: #d9d4ca;
+        --line-strong: #c8c0b4;
+
+        --ink: #181b1d;
+        --ink-2: #555b58;
+        --ink-3: #787c75;
+
+        --ember: #d74b1b;
+        --cash: #238857;
+        --loss: #d84436;
+        --gold: #ac8a22;
+      }
+
+      /*
+        TYPE ROLE TABLE (owner directive)
+        Wordmark "OLYMPUS"        | Staatliches | 19px    | 400 | ink          | +0.05em
+        Hero numeral              | Staatliches | 54px    | 400 | ember        | one per screen
+        Team names                | Staatliches | 21px    | 400 | ink          | default tracking
+        Secondary hero numeral    | Staatliches | 30px    | 400 | ember        | default tracking
+        Module header             | Hanken      | 15px    | 700 | ink          | sentence case
+        Eyebrow label             | Hanken      | 10.5px  | 600 | ink-3        | caps + 0.09em
+        Body / sub-copy           | Hanken      | 14px    | 400 | ink-2        | sentence case
+        Inline data value         | Saira       | 13-18px | 600 | ink/signal   | tabular nums
+        Meta / caption            | Hanken      | 12px    | 400 | ink-3        | sentence case
+        Buttons / links           | Hanken      | 13-14px | 600 | by state     | sentence case
+      */
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        color-scheme: dark;
+      }
+
+      [data-theme="light"] html {
+        color-scheme: light;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--ui);
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+        background: none;
+        color: inherit;
+        cursor: pointer;
+      }
+
+      img,
+      svg {
+        display: block;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--ember);
+        outline-offset: 2px;
+      }
+
+      .app-shell {
+        min-height: 100vh;
+        background: var(--bg);
+      }
+
+      .shell-header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: rgba(13, 15, 17, 0.94);
+        border-bottom: 1px solid var(--line);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+
+      [data-theme="light"] .shell-header {
+        background: rgba(243, 240, 232, 0.94);
+      }
+
+      .shell-header__inner {
+        max-width: var(--content-width);
+        margin: 0 auto;
+        padding: 14px 16px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .brand-stack {
+        min-width: 0;
+      }
+
+      .brand-over {
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        color: var(--ink-3);
+        text-transform: uppercase;
+      }
+
+      .wordmark {
+        width: 116px;
+        height: 24px;
+        background: currentColor;
+        color: var(--ink);
+        -webkit-mask: var(--wordmark-mask) center / contain no-repeat;
+        mask: var(--wordmark-mask) center / contain no-repeat;
+      }
+
+      .header-actions,
+      .header-tabs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .desktop-cluster {
+        display: none;
+        align-items: center;
+        gap: 28px;
+      }
+
+      .chip {
+        min-height: 22px;
+        padding: 4px 8px;
+        border-radius: 5px;
+        background: var(--surface-3);
+        color: var(--ink-2);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .chip--live {
+        background: rgba(232, 84, 29, 0.14);
+        color: var(--ember);
+      }
+
+      .chip--replay {
+        color: var(--gold);
+      }
+
+      .chip__dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+        flex: none;
+      }
+
+      .theme-toggle {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--surface-3);
+        border: 1px solid var(--line);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .theme-toggle svg {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+      }
+
+      .desktop-only {
+        display: none;
+      }
+
+      .mobile-only {
+        display: flex;
+      }
+
+      .app-main {
+        max-width: var(--content-width);
+        margin: 0 auto;
+        padding: 10px 12px calc(var(--tabbar-height) + env(safe-area-inset-bottom, 16px) + 12px);
+      }
+
+      .tab-panel {
+        display: none;
+      }
+
+      .tab-panel.is-active {
+        display: block;
+      }
+
+      .mod {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        padding: 14px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 10px;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .divider {
+        border: 0;
+        border-top: 1px solid var(--line);
+        margin: 12px 0;
+      }
+
+      .t-modhead {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .t-label {
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.09em;
+        color: var(--ink-3);
+        text-transform: uppercase;
+      }
+
+      .t-body {
+        font-size: 14px;
+        line-height: 1.45;
+        color: var(--ink-2);
+      }
+
+      .t-body strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      .t-meta {
+        font-size: 12px;
+        color: var(--ink-3);
+      }
+
+      .t-num {
+        font-family: var(--num);
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .team-name {
+        font-family: var(--display);
+        font-size: 21px;
+        line-height: 1.05;
+        letter-spacing: 0.02em;
+        color: var(--ink);
+        font-weight: 400;
+      }
+
+      .hero-num {
+        font-family: var(--display);
+        font-size: 54px;
+        line-height: 0.95;
+        letter-spacing: 0.01em;
+        color: var(--ember);
+        font-weight: 400;
+      }
+
+      .price-num {
+        font-family: var(--display);
+        font-size: 30px;
+        line-height: 1;
+        color: var(--ember);
+        font-weight: 400;
+      }
+
+      .strike {
+        text-decoration: line-through;
+        color: var(--ink-3);
+        font-weight: 500;
+      }
+
+      .crest {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        background: var(--surface-3);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+      }
+
+      .crest--lg {
+        width: 34px;
+        height: 34px;
+      }
+
+      .crest svg {
+        width: 14px;
+        height: 14px;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .headshot {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--surface-3);
+        border: 1px solid var(--line);
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        position: relative;
+      }
+
+      .headshot img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .headshot__fallback {
+        position: absolute;
+        inset: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--num);
+        font-weight: 600;
+        font-size: 12px;
+        color: var(--ink-2);
+      }
+
+      .headshot.sm {
+        width: 26px;
+        height: 26px;
+      }
+
+      .headshot.sm .headshot__fallback {
+        font-size: 10px;
+      }
+
+      .headshot.is-selected {
+        border-color: var(--ember);
+        box-shadow: 0 0 0 1px rgba(232, 84, 29, 0.25);
+      }
+
+      .headshot.is-selected img {
+        transform: scale(1.02);
+      }
+
+      .headshot-stack {
+        display: flex;
+        align-items: center;
+      }
+
+      .headshot-stack > * + * {
+        margin-left: -7px;
+      }
+
+      .market-hero__top {
+        margin-bottom: 10px;
+      }
+
+      .market-hero__team {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .market-hero__price {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin: 2px 0 4px;
+      }
+
+      .market-hero__opp {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .market-hero__opp-main {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .market-hero__spread-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .action-link {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ember);
+      }
+
+      .edge-card__avatars {
+        display: flex;
+        align-items: center;
+      }
+
+      .edge-card__avatars .headshot + .headshot {
+        margin-left: -8px;
+      }
+
+      .mover-row,
+      .kickoff-row,
+      .league-row,
+      .more-row,
+      .trade-row,
+      .season-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .mover-row:last-child,
+      .trade-row:last-child,
+      .season-row:last-child,
+      .league-row:last-child,
+      .more-row:last-child {
+        border-bottom: 0;
+      }
+
+      .mover-row__main,
+      .league-row__main,
+      .trade-row__main,
+      .season-row__main,
+      .more-row__main {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .kickoff-card__bar {
+        display: flex;
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        gap: 2px;
+        margin-bottom: 10px;
+      }
+
+      .kickoff-card__slice {
+        background: var(--surface-3);
+      }
+
+      .kickoff-card__slice.is-next {
+        background: var(--ember);
+      }
+
+      .kickoff-card__grid {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) auto auto;
+        gap: 9px 10px;
+        align-items: center;
+      }
+
+      .kickoff-card__day {
+        font-size: 12px;
+        color: var(--ink-3);
+      }
+
+      .kickoff-card__day.is-next {
+        color: var(--ember);
+        font-weight: 600;
+      }
+
+      .trajectory-card svg,
+      .season-chart svg {
+        width: 100%;
+        height: auto;
+      }
+
+      .lineup-card__header {
+        margin-bottom: 10px;
+      }
+
+      .vs-chip {
+        min-height: 28px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        color: var(--ink-2);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .vs-chip.is-armed {
+        border-color: var(--ember);
+        color: var(--ember);
+        background: rgba(232, 84, 29, 0.08);
+      }
+
+      .lineup-card__hint {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--ink-3);
+      }
+
+      .lineup-section-label {
+        margin: 12px 0 4px;
+      }
+
+      .lineup-row {
+        display: grid;
+        grid-template-columns: auto auto minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+        padding: 7px 0;
+        border-bottom: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .lineup-row:last-child {
+        border-bottom: 0;
+      }
+
+      .lineup-row[data-compare-row] {
+        cursor: default;
+      }
+
+      .lineup-row.is-armed {
+        cursor: pointer;
+      }
+
+      .lineup-row.is-selected {
+        background: rgba(232, 84, 29, 0.07);
+        margin: 0 -8px;
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      .pos {
+        min-width: 32px;
+        text-align: center;
+        font-family: var(--num);
+        font-size: 9.5px;
+        font-weight: 600;
+        color: var(--ink-3);
+        background: var(--surface-3);
+        border-radius: 4px;
+        padding: 2px 5px;
+        letter-spacing: 0.04em;
+      }
+
+      .lineup-row__name {
+        font-size: 14px;
+        color: var(--ink);
+      }
+
+      .lineup-row__meta {
+        font-size: 12px;
+        color: var(--ink-3);
+        line-height: 1.35;
+      }
+
+      .lineup-row__value {
+        font-size: 15px;
+        color: var(--ink);
+      }
+
+      .lineup-row__value.is-bench {
+        color: var(--ink-2);
+      }
+
+      .recap-card__actions {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .ghost-button {
+        min-height: 26px;
+        padding: 0 10px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        color: var(--ink-3);
+        font-size: 12px;
+      }
+
+      .screen-title {
+        margin: 0 0 10px;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .screen-copy {
+        margin: 0;
+      }
+
+      .screen-grid {
+        display: grid;
+        gap: 10px;
+      }
+
+      .hero-summary {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .hero-summary__copy {
+        min-width: 0;
+      }
+
+      .hero-summary__value {
+        text-align: right;
+      }
+
+      .list-note {
+        margin-top: 10px;
+      }
+
+      .compare-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.58);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 180ms ease;
+        z-index: 30;
+      }
+
+      .compare-overlay.is-open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .compare-sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 31;
+        max-width: 680px;
+        margin: 0 auto;
+        background: var(--surface-2);
+        border: 1px solid var(--line);
+        border-bottom: 0;
+        border-radius: 16px 16px 0 0;
+        transform: translateY(102%);
+        transition: transform 240ms ease;
+        padding: 6px 14px 14px;
+      }
+
+      .compare-sheet.is-open {
+        transform: translateY(0);
+      }
+
+      .compare-sheet__grabber {
+        width: 36px;
+        height: 4px;
+        border-radius: 999px;
+        background: var(--surface-3);
+        margin: 4px auto 10px;
+      }
+
+      .compare-sheet__header {
+        margin-bottom: 10px;
+      }
+
+      .compare-sheet__body {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .compare-sheet__col {
+        text-align: center;
+      }
+
+      .compare-sheet__col .headshot {
+        margin: 0 auto 6px;
+      }
+
+      .compare-sheet__verdict {
+        margin: 0;
+        text-align: center;
+      }
+
+      .bottom-tab-bar {
+        position: fixed;
+        inset-inline: 0;
+        bottom: 0;
+        z-index: 20;
+        background: rgba(21, 24, 27, 0.96);
+        border-top: 1px solid var(--line);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding-bottom: env(safe-area-inset-bottom, 8px);
+      }
+
+      [data-theme="light"] .bottom-tab-bar {
+        background: rgba(255, 255, 255, 0.96);
+      }
+
+      .bottom-tab-bar__grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+
+      .tab-button {
+        min-height: var(--tabbar-height);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink-3);
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .tab-button.is-active {
+        color: var(--ember);
+      }
+
+      .header-tab {
+        color: var(--ink-3);
+        font-size: 14px;
+        font-weight: 600;
+        padding-bottom: 4px;
+        border-bottom: 2px solid transparent;
+      }
+
+      .header-tab.is-active {
+        color: var(--ink);
+        border-bottom-color: var(--ember);
+      }
+
+      .header-tab[data-tab="more"] {
+        text-transform: none;
+      }
+
+      .matchup-layout {
+        display: grid;
+        gap: 10px;
+      }
+
+      @media (min-width: 1024px) {
+        .shell-header__inner {
+          padding: 16px 24px;
+          min-height: var(--header-height-desktop);
+        }
+
+        .desktop-only {
+          display: flex;
+        }
+
+        .mobile-only {
+          display: none;
+        }
+
+        .desktop-cluster {
+          display: flex;
+        }
+
+        .app-main {
+          padding: 18px 24px 28px;
+        }
+
+        .matchup-layout {
+          grid-template-columns: minmax(0, 1fr) 420px;
+          gap: 18px;
+        }
+
+        .story-column,
+        .rail-column {
+          display: grid;
+          gap: 14px;
+          align-content: start;
+        }
+
+        .compare-sheet {
+          top: 50%;
+          bottom: auto;
+          border-radius: 16px;
+          border-bottom: 1px solid var(--line);
+          transform: translateY(120%) translateY(-50%);
+          padding-top: 12px;
+        }
+
+        .compare-sheet.is-open {
+          transform: translateY(-50%);
+        }
+
+        .compare-sheet__grabber {
+          display: none;
+        }
+
+        .screen-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .bottom-tab-bar {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="compare-portal"></div>
+
+    <script>
+      const HEADSHOT_BASE = "https://a.espncdn.com/i/headshots/nfl/players/full/";
+
+      const CRESTS = {
+        zeus: { name: "Zeus's Bolts", icon: '<path d="M13 2 6 14h5l-2 8 9-13h-6l1-7Z"></path>' },
+        hermes: { name: "Hermes Express", icon: '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path>' },
+        apollo: { name: "Apollo Archers", icon: '<path d="M5 18c5-1 9-5 11-11M6 17l11-11M8 6h8l2 2-2 2"></path>' },
+        poseidon: { name: "Poseidon Tides", icon: '<path d="M12 3v18M8 7h8M6 11h12M9 21l3-4 3 4"></path>' },
+        athena: { name: "Athena Owls", icon: '<path d="M6 17c0-5 2.5-8 6-8s6 3 6 8M8 10l2-4h4l2 4"></path><circle cx="10" cy="14" r="1"></circle><circle cx="14" cy="14" r="1"></circle>' },
+        hera: { name: "Hera Crowns", icon: '<path d="M5 17h14l-1-8-4 3-2-4-2 4-4-3-1 8Z"></path>' },
+        demeter: { name: "Demeter Harvest", icon: '<path d="M8 5v14M12 4v15M16 5v14"></path><path d="M8 8c-2 1-3 2.5-3 4M12 7c-2 1-3 2.5-3 4M16 8c2 1 3 2.5 3 4"></path>' },
+        ares: { name: "Ares Spearpoint", icon: '<path d="M6 18 18 6M7 7l4-1-1 4M13 19l-1-4 4 1"></path>' },
+        artemis: { name: "Artemis Moons", icon: '<path d="M15.5 4.5A7 7 0 1 0 18 18c-3-1-5-4-5-7.5 0-2.5 1-4.6 2.5-6Z"></path>' },
+        dionysus: { name: "Dionysus Vines", icon: '<path d="M12 4v16M8 8c0-2 2-3 4-3M16 10c0 2-2 3-4 3M8 16c0-2 2-3 4-3"></path>' },
+        hephaestus: { name: "Hephaestus Forge", icon: '<path d="M6 18h8l4-8h-8l-4 8ZM10 6l2-2 4 4-2 2"></path>' },
+        hestia: { name: "Hestia Hearth", icon: '<path d="M12 4c2 2 3 4 3 6a3 3 0 1 1-6 0c0-2 1-4 3-6Zm0 8c2 1 3 2.5 3 4a3 3 0 1 1-6 0c0-1.5 1-3 3-4Z"></path>' },
+      };
+
+      const matchupData = {
+        week: 8,
+        state: "LIVE",
+        replay: true,
+        yourTeamId: "zeus",
+        opponentTeamId: "hermes",
+        yourManager: "Andre",
+        opponentManager: "Marcus",
+        yourRecord: "5-2",
+        opponentRecord: "4-3",
+        line: -260,
+        winProb: 72.2,
+        yourProjection: 170.1,
+        opponentProjection: 143.4,
+        spread: "You −26.7",
+        total: "313.5",
+        commentary: "Slight edge. One bad break away from sweating.",
+        titlePrice: 450,
+        titleOpened: 600,
+      };
+
+      const starters = [
+        {
+          id: "pm",
+          slot: "QB",
+          shortName: "Mahomes",
+          name: "P. Mahomes",
+          fullName: "Patrick Mahomes",
+          matchup: "KC @ BUF · Sun 4:25",
+          projection: 18.2,
+          headshotId: "3139477",
+          lineIfStarted: -260,
+          winIfStarted: 72.2,
+        },
+        {
+          id: "dh",
+          slot: "RB",
+          shortName: "Henry",
+          name: "D. Henry",
+          fullName: "Derrick Henry",
+          matchup: "BAL @ DET · Mon, Final 24-30",
+          projection: 14.7,
+          headshotId: "3043078",
+          lineIfStarted: -240,
+          winIfStarted: 70.8,
+        },
+        {
+          id: "jg",
+          slot: "RB",
+          shortName: "Gibbs",
+          name: "J. Gibbs",
+          fullName: "Jahmyr Gibbs",
+          matchup: "DET vs BAL · Mon 8:15",
+          projection: 16.4,
+          headshotId: "4427366",
+          lineIfStarted: -255,
+          winIfStarted: 71.9,
+        },
+        {
+          id: "jj",
+          slot: "WR",
+          shortName: "Jefferson",
+          name: "J. Jefferson",
+          fullName: "Justin Jefferson",
+          matchup: "MIN @ LAR · Thu 8:15 · locks first",
+          projection: 19.5,
+          headshotId: "4262921",
+          lineIfStarted: -275,
+          winIfStarted: 73.9,
+        },
+        {
+          id: "ds",
+          slot: "WR",
+          shortName: "Smith",
+          name: "D. Smith",
+          fullName: "DeVonta Smith",
+          matchup: "PHI @ NYG · Mon 8:15",
+          projection: 15.3,
+          headshotId: "4241478",
+          lineIfStarted: -210,
+          winIfStarted: 68.7,
+        },
+        {
+          id: "tk",
+          slot: "TE",
+          shortName: "Kelce",
+          name: "T. Kelce",
+          fullName: "Travis Kelce",
+          matchup: "KC @ BUF · Sun 4:25",
+          projection: 25.0,
+          headshotId: "2577417",
+          lineIfStarted: -285,
+          winIfStarted: 74.8,
+        },
+        {
+          id: "tm",
+          slot: "FLX",
+          shortName: "McLaurin",
+          name: "T. McLaurin",
+          fullName: "Terry McLaurin",
+          matchup: "WAS vs CHI · Sun 1:00 · swap edge +3.0%",
+          projection: 11.2,
+          headshotId: "3916148",
+          lineIfStarted: -230,
+          winIfStarted: 69.2,
+        },
+        {
+          id: "ba",
+          slot: "K",
+          shortName: "Aubrey",
+          name: "B. Aubrey",
+          fullName: "Brandon Aubrey",
+          matchup: "DAL @ SF · Sun 8:20 · swap edge +5.0%",
+          projection: 9.8,
+          headshotId: "3121422",
+          lineIfStarted: -260,
+          winIfStarted: 72.2,
+        },
+        {
+          id: "sfdst",
+          slot: "DEF",
+          shortName: "49ers D/ST",
+          name: "49ers D/ST",
+          fullName: "49ers D/ST",
+          matchup: "SF vs DAL · Sun 8:20",
+          projection: 6.0,
+          avatarText: "SF",
+          lineIfStarted: -250,
+          winIfStarted: 71.6,
+        },
+      ];
+
+      const bench = [
+        {
+          id: "jb",
+          slot: "QB",
+          shortName: "Burrow",
+          name: "J. Burrow",
+          fullName: "Joe Burrow",
+          matchup: "CIN vs CLE · Sun 1:00",
+          projection: 12.9,
+          headshotId: "3915511",
+          lineIfStarted: -180,
+          winIfStarted: 66.1,
+        },
+        {
+          id: "sb",
+          slot: "WR",
+          shortName: "St. Brown",
+          name: "A. St. Brown",
+          fullName: "Amon-Ra St. Brown",
+          matchup: "DET vs BAL · Mon 8:15 · start him: +2.1%",
+          projection: 8.7,
+          headshotId: "4374302",
+          lineIfStarted: -235,
+          winIfStarted: 70.8,
+        },
+        {
+          id: "kf",
+          slot: "K",
+          shortName: "Fairbairn",
+          name: "K. Fairbairn",
+          fullName: "Ka'imi Fairbairn",
+          matchup: "HOU @ TEN · Sun 1:00 · start him: +5.0%",
+          projection: 11.0,
+          headshotId: "2577419",
+          lineIfStarted: -310,
+          winIfStarted: 77.2,
+        },
+        {
+          id: "zc",
+          slot: "RB",
+          shortName: "Charbonnet",
+          name: "Z. Charbonnet",
+          fullName: "Zach Charbonnet",
+          matchup: "SEA @ SF · Sun 8:20 · start him: −2.7%",
+          projection: 7.9,
+          headshotId: "4428185",
+          lineIfStarted: -205,
+          winIfStarted: 68.1,
+        },
+        {
+          id: "dk",
+          slot: "TE",
+          shortName: "Kincaid",
+          name: "D. Kincaid",
+          fullName: "Dalton Kincaid",
+          matchup: "BUF vs KC · Sun 4:25 · start him: −1.9%",
+          projection: 9.4,
+          headshotId: "4426516",
+          lineIfStarted: -225,
+          winIfStarted: 69.0,
+        },
+        {
+          id: "rdst",
+          slot: "DEF",
+          shortName: "Ravens D/ST",
+          name: "Ravens D/ST",
+          fullName: "Ravens D/ST",
+          matchup: "BAL @ DET · Mon 8:15 · start them: −1.8%",
+          projection: 8.1,
+          avatarText: "BAL",
+          lineIfStarted: -238,
+          winIfStarted: 70.4,
+        },
+      ];
+
+      const allPlayers = [...starters, ...bench];
+
+      const exposureWindows = [
+        { code: "THU", label: "MIN @ LAR · locks 8:15 tonight", playerIds: ["jj"], pct: 31, highlight: true },
+        { code: "SUN", label: "Five games · locks 1:00 PM", playerIds: ["pm", "tk", "dh", "jg"], more: 4, pct: 58 },
+        { code: "MON", label: "PHI @ NYG · locks 8:15", playerIds: ["ds"], pct: 11 },
+      ];
+
+      const marketMovers = [
+        {
+          kind: "player",
+          playerId: "sb",
+          title: "Claim A. St. Brown off waivers",
+          meta: "Slots WR3, frees your flex",
+          from: 450,
+          to: 425,
+        },
+        {
+          kind: "crest",
+          crestId: "apollo",
+          title: "Trade lane: Apollo Archers want WR",
+          meta: "Smith + bench RB for L. Jackson prices at",
+          from: 450,
+          to: 390,
+        },
+      ];
+
+      const biggestEdge = {
+        fromId: "ba",
+        toId: "kf",
+        winFrom: 72.2,
+        winTo: 77.2,
+        lineFrom: -260,
+        lineTo: -310,
+        delta: 5.0,
+      };
+
+      const recap = {
+        close: -180,
+        margin: 12,
+        bestCall: "London over Smith",
+        points: 17.5,
+      };
+
+      const trajectory = {
+        current: 450,
+        opened: 600,
+        labels: ["W1", "W4", "W8"],
+        values: [600, 548, 490, 532, 478, 520, 462, 450],
+      };
+
+      const seasonModules = {
+        titlePrice: 450,
+        titleOpened: 600,
+        byePrice: 210,
+        playoffFrom: 58.1,
+        playoffTo: 78.4,
+        rows: [
+          { title: "Get to 6-3 by your bye week", meta: "Playoff probability", from: 58.1, to: 78.4, suffix: "%" },
+          { title: "Stand pat at the trade deadline", meta: "Title odds", from: 450, to: 800, odds: true },
+          { title: "Land one more WR before waivers clear", meta: "Title odds", from: 450, to: 390, odds: true },
+        ],
+      };
+
+      const tradeIdeas = [
+        {
+          crestId: "apollo",
+          title: "Smith + bench RB for Lamar Jackson",
+          meta: "Your title price",
+          from: 450,
+          to: 390,
+        },
+        {
+          crestId: "poseidon",
+          title: "Aubrey for Fairbairn plus FAAB",
+          meta: "This week line",
+          from: -260,
+          to: -310,
+          signed: true,
+        },
+        {
+          crestId: "athena",
+          title: "Move Burrow for a flex floor piece",
+          meta: "Playoff probability",
+          from: 72.4,
+          to: 74.0,
+          suffix: "%",
+        },
+      ];
+
+      const leagueRows = [
+        { crestId: "zeus", team: "Zeus's Bolts", record: "5-2", playoff: 72.4, title: 450, highlight: true },
+        { crestId: "hermes", team: "Hermes Express", record: "4-3", playoff: 58.6, title: 620 },
+        { crestId: "apollo", team: "Apollo Archers", record: "4-3", playoff: 55.8, title: 700 },
+        { crestId: "poseidon", team: "Poseidon Tides", record: "4-3", playoff: 51.3, title: 760 },
+        { crestId: "athena", team: "Athena Owls", record: "3-4", playoff: 43.1, title: 980 },
+      ];
+
+      const moreRows = [
+        { title: "Rankings", meta: "Power tier update", value: "+450 title board context" },
+        { title: "Draft archive", meta: "Keeper value snapshot", value: "+900 futures card" },
+        { title: "Recap archive", meta: "Last shareable price move", value: "−180 close" },
+        { title: "League settings", meta: "Scoring + lock rules", value: "Week 8 live" },
+      ];
+
+      const state = {
+        activeTab: "matchup",
+        theme: document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark",
+        compareArmed: false,
+        compareSelection: [],
+        compareOpen: false,
+        recapDismissed: false,
+        recapShared: false,
+        dragStartY: null,
+        dragCurrentY: 0,
+      };
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function formatAmerican(value) {
+        return value > 0 ? `+${Math.round(value)}` : `${Math.round(value)}`;
+      }
+
+      function formatPercent(value) {
+        return `${value.toFixed(1)}%`;
+      }
+
+      function formatStrikePair(from, to, options = {}) {
+        if (options.suffix) {
+          return `<span class="strike">${from.toFixed(1)}${options.suffix}</span> <span style="color:${to >= from ? "var(--cash)" : "var(--loss)"};">${to.toFixed(1)}${options.suffix}</span>`;
+        }
+        const fromValue = options.odds || options.signed ? formatAmerican(from) : from;
+        const toValue = options.odds || options.signed ? formatAmerican(to) : to;
+        return `<span class="strike">${fromValue}</span> <span style="color:${to < from ? "var(--cash)" : "var(--loss)"};">${toValue}</span>`;
+      }
+
+      function getPlayer(id) {
+        return allPlayers.find((player) => player.id === id);
+      }
+
+      function initialsFor(player) {
+        if (player.avatarText) return player.avatarText;
+        return player.fullName
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((part) => part[0].toUpperCase())
+          .join("");
+      }
+
+      function headshotMarkup(player, size = "", selected = false) {
+        const selectedClass = selected ? " is-selected" : "";
+        const className = `headshot${size ? ` ${size}` : ""}${selectedClass}`;
+        if (!player.headshotId) {
+          return `<div class="${className}"><span class="headshot__fallback">${escapeHtml(initialsFor(player))}</span></div>`;
+        }
+        return `
+          <div class="${className}">
+            <img src="${HEADSHOT_BASE}${player.headshotId}.png" alt="${escapeHtml(player.fullName)} headshot" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';" />
+            <span class="headshot__fallback" style="display:none;">${escapeHtml(initialsFor(player))}</span>
+          </div>
+        `;
+      }
+
+      function crestMarkup(crestId, highlight = false, large = false) {
+        const crest = CRESTS[crestId];
+        const stroke = highlight ? "var(--gold)" : "var(--ink-3)";
+        return `
+          <span class="crest${large ? " crest--lg" : ""}" aria-label="${escapeHtml(crest.name)} crest">
+            <svg viewBox="0 0 24 24" style="stroke:${stroke};">${crest.icon}</svg>
+          </span>
+        `;
+      }
+
+      function trajectorySvg(data) {
+        const width = 340;
+        const height = 110;
+        const left = 36;
+        const right = 324;
+        const top = 14;
+        const bottom = 90;
+        const values = data.values;
+        const max = Math.max(...values);
+        const min = Math.min(...values);
+        const mid = Math.round((max + min) / 2);
+        const step = (right - 44) / (values.length - 1);
+
+        function yFor(value) {
+          if (max === min) return bottom;
+          const ratio = (value - min) / (max - min);
+          return bottom - ratio * (bottom - top);
+        }
+
+        const points = values
+          .map((value, index) => `${44 + step * index},${yFor(value).toFixed(1)}`)
+          .join(" ");
+
+        return `
+          <svg viewBox="0 0 ${width} ${height}" aria-hidden="true">
+            <line x1="${left}" y1="${top}" x2="336" y2="${top}" stroke="var(--line)" stroke-width="1"></line>
+            <line x1="${left}" y1="${(top + bottom) / 2}" x2="336" y2="${(top + bottom) / 2}" stroke="var(--line)" stroke-width="1"></line>
+            <line x1="${left}" y1="${bottom}" x2="336" y2="${bottom}" stroke="var(--line)" stroke-width="1"></line>
+            <text x="30" y="${top + 3}" text-anchor="end" font-family="Saira" font-size="10" fill="var(--ink-3)">+${max}</text>
+            <text x="30" y="${(top + bottom) / 2 + 3}" text-anchor="end" font-family="Saira" font-size="10" fill="var(--ink-3)">+${mid}</text>
+            <text x="30" y="${bottom + 3}" text-anchor="end" font-family="Saira" font-size="10" fill="var(--ink-3)">+${min}</text>
+            <polyline points="${points}" fill="none" stroke="var(--ember)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline>
+            <circle cx="${44 + step * (values.length - 1)}" cy="${yFor(values[values.length - 1]).toFixed(1)}" r="4" fill="var(--ember)"></circle>
+            <text x="44" y="106" text-anchor="middle" font-family="Saira" font-size="10" fill="var(--ink-3)">${escapeHtml(data.labels[0])}</text>
+            <text x="${44 + step * Math.floor((values.length - 1) / 2)}" y="106" text-anchor="middle" font-family="Saira" font-size="10" fill="var(--ink-3)">${escapeHtml(data.labels[1])}</text>
+            <text x="${44 + step * (values.length - 1)}" y="106" text-anchor="middle" font-family="Saira" font-size="10" fill="var(--ink-3)">${escapeHtml(data.labels[2])}</text>
+          </svg>
+        `;
+      }
+
+      function compareVerdict(first, second) {
+        const delta = Math.abs(first.winIfStarted - second.winIfStarted).toFixed(1);
+        if (first.winIfStarted >= second.winIfStarted) {
+          return `${first.shortName} holds the slot. Starting ${second.shortName} costs <span class="t-num" style="color:var(--loss);">−${delta}%</span> win probability.`;
+        }
+        return `Start ${second.shortName}. It adds <span class="t-num" style="color:var(--cash);">+${delta}%</span> win probability over ${first.shortName}.`;
+      }
+
+      function renderLineupRow(player, selected) {
+        const isBench = bench.some((item) => item.id === player.id);
+        return `
+          <button class="lineup-row${state.compareArmed ? " is-armed" : ""}${selected ? " is-selected" : ""}" type="button" data-compare-row="${escapeHtml(player.id)}">
+            <span class="pos">${escapeHtml(player.slot)}</span>
+            ${headshotMarkup(player, "", selected)}
+            <span>
+              <span class="lineup-row__name">${escapeHtml(player.name)}</span>
+              <span class="lineup-row__meta">${escapeHtml(player.matchup)}</span>
+            </span>
+            <span class="t-num lineup-row__value${isBench ? " is-bench" : ""}">${player.projection.toFixed(1)}</span>
+          </button>
+        `;
+      }
+
+      function renderLineupCard() {
+        const selected = new Set(state.compareSelection);
+        return `
+          <section class="mod lineup-card">
+            <div class="row lineup-card__header">
+              <span class="t-modhead">Your lineup</span>
+              <button class="vs-chip${state.compareArmed ? " is-armed" : ""}" type="button" data-compare-arm>${state.compareArmed ? "Exit compare" : "VS compare"}</button>
+            </div>
+            <div class="lineup-card__hint">${state.compareArmed ? "Tap any two rows to price the decision." : "Full lineup open. No collapsing."}</div>
+            ${starters.map((player) => renderLineupRow(player, selected.has(player.id))).join("")}
+            <div class="t-label lineup-section-label">Bench</div>
+            ${bench.map((player) => renderLineupRow(player, selected.has(player.id))).join("")}
+          </section>
+        `;
+      }
+
+      function renderHeroModule(desktop) {
+        return `
+          <section class="mod market-hero">
+            <div class="row market-hero__top">
+              <span class="t-label">Matchup market</span>
+              <span class="chip chip--live"><span class="chip__dot" aria-hidden="true"></span>${escapeHtml(matchupData.state)}</span>
+            </div>
+            <div style="${desktop ? "display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end;" : ""}">
+              <div>
+                <div class="market-hero__team">
+                  ${crestMarkup(matchupData.yourTeamId, true)}
+                  <div class="team-name"${desktop ? ' style="font-size:24px;"' : ""}>${escapeHtml(CRESTS[matchupData.yourTeamId].name)}</div>
+                </div>
+                <div class="market-hero__price">
+                  <span class="hero-num"${desktop ? ' style="font-size:64px;"' : ""}>${formatAmerican(matchupData.line)}</span>
+                  <span class="t-num" style="font-size:${desktop ? 19 : 17}px;color:var(--ink);">${formatPercent(matchupData.winProb)}</span>
+                </div>
+                <div class="t-meta">Proj ${matchupData.yourProjection.toFixed(1)} pts · ${escapeHtml(matchupData.yourManager)}, ${escapeHtml(matchupData.yourRecord)}</div>
+              </div>
+              <div${desktop ? ' style="text-align:right;padding-bottom:6px;"' : ""}>
+                ${desktop ? `
+                  <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;">
+                    <div>
+                      <div style="font-weight:600;font-size:15px;color:var(--ink-2);">${escapeHtml(CRESTS[matchupData.opponentTeamId].name)}</div>
+                      <div class="t-meta">Proj ${matchupData.opponentProjection.toFixed(1)} · ${escapeHtml(matchupData.opponentManager)}, ${escapeHtml(matchupData.opponentRecord)}</div>
+                    </div>
+                    ${crestMarkup(matchupData.opponentTeamId)}
+                  </div>
+                  <div class="t-num" style="font-size:24px;color:var(--ink-2);margin-top:6px;">${formatAmerican(210)}</div>
+                ` : `
+                  <hr class="divider" />
+                  <div class="market-hero__opp">
+                    <div class="market-hero__opp-main">
+                      ${crestMarkup(matchupData.opponentTeamId)}
+                      <div>
+                        <div style="font-weight:600;font-size:14px;color:var(--ink-2);">${escapeHtml(CRESTS[matchupData.opponentTeamId].name)}</div>
+                        <div class="t-meta">Proj ${matchupData.opponentProjection.toFixed(1)} · ${escapeHtml(matchupData.opponentManager)}, ${escapeHtml(matchupData.opponentRecord)}</div>
+                      </div>
+                    </div>
+                    <span class="t-num" style="font-size:20px;color:var(--ink-2);">${formatAmerican(210)}</span>
+                  </div>
+                `}
+              </div>
+            </div>
+            <hr class="divider" />
+            <div class="market-hero__spread-row">
+              <span class="t-meta">Spread <span class="t-num" style="color:var(--ink-2);">${escapeHtml(matchupData.spread)}</span></span>
+              <span class="t-meta">Total <span class="t-num" style="color:var(--ink-2);">${escapeHtml(matchupData.total)}</span></span>
+            </div>
+            <p class="t-body" style="margin-top:10px;">${escapeHtml(matchupData.commentary)}</p>
+          </section>
+        `;
+      }
+
+      function renderBiggestEdgeModule() {
+        const from = getPlayer(biggestEdge.fromId);
+        const to = getPlayer(biggestEdge.toId);
+        return `
+          <section class="mod edge-card">
+            <div class="row" style="margin-bottom:8px;">
+              <span class="t-modhead">Biggest edge</span>
+              <span class="t-label" style="color:var(--ember);letter-spacing:.06em;">Swap</span>
+            </div>
+            <div class="row">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                <div class="edge-card__avatars">
+                  ${headshotMarkup(from)}
+                  ${headshotMarkup(to)}
+                </div>
+                <div>
+                  <div class="t-body" style="color:var(--ink);">${escapeHtml(from.name)} → ${escapeHtml(to.name)}</div>
+                  <div class="t-meta">Win prob <span class="t-num">${formatStrikePair(biggestEdge.winFrom, biggestEdge.winTo, { suffix: "%" })}</span> · line <span class="t-num">${formatStrikePair(biggestEdge.lineFrom, biggestEdge.lineTo, { signed: true })}</span></div>
+                </div>
+              </div>
+              <span class="t-num" style="font-size:18px;color:var(--cash);">+${biggestEdge.delta.toFixed(1)}%</span>
+            </div>
+            <div style="margin-top:10px;"><button class="action-link" type="button" data-compare-shortcut="${escapeHtml(from.id)}:${escapeHtml(to.id)}">All swap targets ▸</button></div>
+          </section>
+        `;
+      }
+
+      function renderMarketMoversModule() {
+        return `
+          <section class="mod">
+            <div class="row" style="margin-bottom:4px;">
+              <span class="t-modhead">Market movers</span>
+              <span class="t-meta">title odds <span class="t-num">+${matchupData.titlePrice}</span></span>
+            </div>
+            ${marketMovers
+              .map((item, index) => {
+                const icon =
+                  item.kind === "player"
+                    ? headshotMarkup(getPlayer(item.playerId))
+                    : crestMarkup(item.crestId, false, true);
+                return `
+                  <div class="mover-row"${index === marketMovers.length - 1 ? ' style="border-bottom:0;"' : ""}>
+                    <div class="mover-row__main">
+                      ${icon}
+                      <div>
+                        <div class="t-body" style="color:var(--ink);">${escapeHtml(item.title)}</div>
+                        <div class="t-meta">${escapeHtml(item.meta)}</div>
+                      </div>
+                    </div>
+                    <span class="t-num" style="font-size:14px;">${formatStrikePair(item.from, item.to, { odds: true })}</span>
+                  </div>
+                `;
+              })
+              .join("")}
+          </section>
+        `;
+      }
+
+      function renderExposureModule() {
+        return `
+          <section class="mod kickoff-card">
+            <div class="row" style="margin-bottom:8px;">
+              <span class="t-modhead">When your week locks</span>
+              <span class="t-meta">% of projection</span>
+            </div>
+            <div class="kickoff-card__bar">
+              ${exposureWindows
+                .map((window) => `<span class="kickoff-card__slice${window.highlight ? " is-next" : ""}" style="flex:${window.pct};"></span>`)
+                .join("")}
+            </div>
+            <div class="kickoff-card__grid">
+              ${exposureWindows
+                .map((window) => {
+                  const players = window.playerIds.map((playerId) => headshotMarkup(getPlayer(playerId), "sm")).join("");
+                  const extra = window.more ? `<div class="headshot sm"><span class="headshot__fallback">+${window.more}</span></div>` : "";
+                  return `
+                    <span class="kickoff-card__day${window.highlight ? " is-next" : ""}">${window.code}</span>
+                    <span class="t-body" style="color:var(--ink);">${escapeHtml(window.label)}</span>
+                    <span class="headshot-stack">${players}${extra}</span>
+                    <span class="t-num" style="font-size:14px;color:${window.highlight ? "var(--ember)" : "var(--ink-2)"};">${window.pct}%</span>
+                  `;
+                })
+                .join("")}
+            </div>
+            <p class="t-meta" style="margin-top:10px;">A bad Thursday drops your line to <span class="t-num">${formatStrikePair(-260, -150, { signed: true })}</span>. Sunday decides it.</p>
+          </section>
+        `;
+      }
+
+      function renderTrajectoryModule() {
+        return `
+          <section class="mod trajectory-card">
+            <div class="row" style="margin-bottom:2px;">
+              <span class="t-modhead">Title price, week by week</span>
+              <span class="t-meta">Week ${matchupData.week}</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+              <span class="price-num">+${trajectory.current}</span>
+              <span class="t-meta">opened <span class="t-num">+${trajectory.opened}</span></span>
+            </div>
+            ${trajectorySvg(trajectory)}
+          </section>
+        `;
+      }
+
+      function renderRecapModule() {
+        if (state.recapDismissed) return "";
+        const shareLabel = state.recapShared ? "Copied recap ▸" : "Share recap ▸";
+        return `
+          <section class="mod recap-card">
+            <div class="row" style="margin-bottom:4px;">
+              <span class="t-label">Week 7 recap</span>
+              <button class="ghost-button" type="button" data-dismiss-recap>Dismiss</button>
+            </div>
+            <p class="t-body recap-card__sentence">You closed at <span class="t-num" style="color:var(--ink);">−180</span> and won by <span class="t-num" style="color:var(--ink);">12</span>. Best call: London over Smith, <span class="t-num" style="color:var(--cash);">+17.5</span> pts.</p>
+            <div class="recap-card__actions">
+              <button class="action-link" type="button" data-share-recap>${shareLabel}</button>
+              <span class="t-meta">${escapeHtml(`Closed ${recap.close}, won by ${recap.margin}`)}</span>
+            </div>
+          </section>
+        `;
+      }
+
+      function renderMatchupTab() {
+        const desktop = window.innerWidth >= 1024;
+        const hero = renderHeroModule(desktop);
+        const edge = renderBiggestEdgeModule();
+        const movers = renderMarketMoversModule();
+        const exposure = renderExposureModule();
+        const trajectoryCard = renderTrajectoryModule();
+        const lineupCard = renderLineupCard();
+        const recapCard = renderRecapModule();
+
+        if (desktop) {
+          return `
+            <div class="matchup-layout">
+              <div class="story-column">
+                ${hero}
+                ${edge}
+                ${movers}
+                ${exposure}
+                ${recapCard}
+              </div>
+              <aside class="rail-column">
+                ${lineupCard}
+                ${trajectoryCard}
+              </aside>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="stack">
+            ${hero}
+            ${edge}
+            ${movers}
+            ${exposure}
+            ${trajectoryCard}
+            ${lineupCard}
+            ${recapCard}
+          </div>
+        `;
+      }
+
+      function renderSeasonTab() {
+        return `
+          <div class="stack">
+            <section class="mod">
+              <div class="row">
+                <span class="t-label">Season board</span>
+                <span class="chip">Week ${matchupData.week}</span>
+              </div>
+              <div class="hero-summary" style="margin-top:10px;">
+                <div class="hero-summary__copy">
+                  <div class="t-modhead">Title price</div>
+                  <p class="t-body screen-copy">Every weekly result moves the same board you see on Matchup.</p>
+                </div>
+                <div class="hero-summary__value">
+                  <div class="hero-num">+${seasonModules.titlePrice}</div>
+                  <div class="t-meta">opened <span class="t-num">+${seasonModules.titleOpened}</span></div>
+                </div>
+              </div>
+            </section>
+            <section class="mod season-chart">
+              <div class="row" style="margin-bottom:2px;">
+                <span class="t-modhead">Title price, week by week</span>
+                <span class="t-meta">Week ${matchupData.week}</span>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+                <span class="price-num">+${seasonModules.titlePrice}</span>
+                <span class="t-meta">opened <span class="t-num">+${seasonModules.titleOpened}</span></span>
+              </div>
+              ${trajectorySvg(trajectory)}
+            </section>
+            <section class="mod">
+              <div class="row" style="margin-bottom:4px;">
+                <span class="t-modhead">Priced paths</span>
+                <span class="t-meta">what the next month costs</span>
+              </div>
+              ${seasonModules.rows
+                .map((row) => `
+                  <div class="season-row">
+                    <div class="season-row__main">
+                      ${crestMarkup("zeus")}
+                      <div>
+                        <div class="t-body" style="color:var(--ink);">${escapeHtml(row.title)}</div>
+                        <div class="t-meta">${escapeHtml(row.meta)}</div>
+                      </div>
+                    </div>
+                    <span class="t-num" style="font-size:14px;">${formatStrikePair(row.from, row.to, { odds: row.odds, suffix: row.suffix || "" })}</span>
+                  </div>
+                `)
+                .join("")}
+            </section>
+          </div>
+        `;
+      }
+
+      function renderTradeTab() {
+        return `
+          <div class="stack">
+            <section class="mod">
+              <div class="row">
+                <span class="t-label">Trade board</span>
+                <span class="chip chip--live"><span class="chip__dot" aria-hidden="true"></span>Priced</span>
+              </div>
+              <div class="hero-summary" style="margin-top:10px;">
+                <div class="hero-summary__copy">
+                  <div class="t-modhead">Best live lane</div>
+                  <p class="t-body screen-copy">Apollo wants a WR. The clean deal is already priced on your board.</p>
+                </div>
+                <div class="hero-summary__value">
+                  <div class="hero-num">+390</div>
+                  <div class="t-meta">from <span class="t-num">+450</span></div>
+                </div>
+              </div>
+            </section>
+            <section class="mod">
+              <div class="row" style="margin-bottom:4px;">
+                <span class="t-modhead">Active lanes</span>
+                <span class="t-meta">sorted by price impact</span>
+              </div>
+              ${tradeIdeas
+                .map((row) => `
+                  <div class="trade-row">
+                    <div class="trade-row__main">
+                      ${crestMarkup(row.crestId, row.crestId === "zeus", true)}
+                      <div>
+                        <div class="t-body" style="color:var(--ink);">${escapeHtml(row.title)}</div>
+                        <div class="t-meta">${escapeHtml(row.meta)}</div>
+                      </div>
+                    </div>
+                    <span class="t-num" style="font-size:14px;">${formatStrikePair(row.from, row.to, { odds: !row.suffix, signed: row.signed, suffix: row.suffix || "" })}</span>
+                  </div>
+                `)
+                .join("")}
+            </section>
+          </div>
+        `;
+      }
+
+      function renderLeagueTab() {
+        return `
+          <div class="stack">
+            <section class="mod">
+              <div class="row">
+                <span class="t-label">League market</span>
+                <span class="chip">12 teams</span>
+              </div>
+              <div class="hero-summary" style="margin-top:10px;">
+                <div class="hero-summary__copy">
+                  <div class="t-modhead">Your place on the board</div>
+                  <p class="t-body screen-copy">The order below is standings plus price, not just record.</p>
+                </div>
+                <div class="hero-summary__value">
+                  <div class="hero-num">#1</div>
+                  <div class="t-meta">title <span class="t-num">+450</span></div>
+                </div>
+              </div>
+            </section>
+            <section class="mod">
+              <div class="row" style="margin-bottom:4px;">
+                <span class="t-modhead">Standings and price</span>
+                <span class="t-meta">playoff probability</span>
+              </div>
+              ${leagueRows
+                .map((row) => `
+                  <div class="league-row">
+                    <div class="league-row__main">
+                      ${crestMarkup(row.crestId, row.highlight)}
+                      <div>
+                        <div class="t-body" style="color:var(--ink);">${escapeHtml(row.team)}</div>
+                        <div class="t-meta">${escapeHtml(row.record)} · playoff <span class="t-num">${formatPercent(row.playoff)}</span></div>
+                      </div>
+                    </div>
+                    <span class="t-num" style="font-size:14px;">+${row.title}</span>
+                  </div>
+                `)
+                .join("")}
+            </section>
+          </div>
+        `;
+      }
+
+      function renderMoreTab() {
+        return `
+          <div class="stack">
+            <section class="mod">
+              <div class="row">
+                <span class="t-label">More</span>
+                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 9 9 0 1 0 20 14.5Z"></path>
+                  </svg>
+                </button>
+              </div>
+              <div class="t-modhead" style="margin-top:10px;">Rankings, Draft, and utility screens live here.</div>
+              <p class="t-body screen-copy" style="margin-top:8px;">Nothing ships without price context, so even the menu carries the live number it points to.</p>
+            </section>
+            <section class="mod">
+              <div class="row" style="margin-bottom:4px;">
+                <span class="t-modhead">Tools</span>
+                <span class="t-meta">context before you tap through</span>
+              </div>
+              ${moreRows
+                .map((row) => `
+                  <div class="more-row">
+                    <div class="more-row__main">
+                      ${crestMarkup("hestia")}
+                      <div>
+                        <div class="t-body" style="color:var(--ink);">${escapeHtml(row.title)}</div>
+                        <div class="t-meta">${escapeHtml(row.meta)}</div>
+                      </div>
+                    </div>
+                    <span class="t-num" style="font-size:13px;color:var(--ink-2);">${escapeHtml(row.value)}</span>
+                  </div>
+                `)
+                .join("")}
+            </section>
+          </div>
+        `;
+      }
+
+      function renderTabs(location) {
+        const tabs = [
+          { key: "matchup", label: "Matchup" },
+          { key: "season", label: "Season" },
+          { key: "trade", label: "Trade" },
+          { key: "league", label: "League" },
+          { key: "more", label: "More" },
+        ];
+
+        if (location === "header") {
+          return `
+            <nav class="header-tabs" aria-label="Primary">
+              ${tabs
+                .map(
+                  (tab) => `
+                    <button class="header-tab${state.activeTab === tab.key ? " is-active" : ""}" type="button" data-tab="${tab.key}">
+                      ${tab.label}
+                    </button>
+                  `
+                )
+                .join("")}
+            </nav>
+          `;
+        }
+
+        return `
+          <nav class="bottom-tab-bar" aria-label="Primary">
+            <div class="bottom-tab-bar__grid">
+              ${tabs
+                .map(
+                  (tab) => `
+                    <button class="tab-button${state.activeTab === tab.key ? " is-active" : ""}" type="button" data-tab="${tab.key}">
+                      ${tab.label}
+                    </button>
+                  `
+                )
+                .join("")}
+            </div>
+          </nav>
+        `;
+      }
+
+      function renderApp() {
+        const root = document.getElementById("app");
+        root.innerHTML = `
+          <div class="app-shell">
+            <header class="shell-header">
+              <div class="shell-header__inner">
+                <div class="brand-stack">
+                  <div class="brand-over">ODDS GODS</div>
+                  <div class="wordmark" aria-label="Olympus"></div>
+                </div>
+                <div class="mobile-only header-actions">
+                  <span class="chip">Week ${matchupData.week}</span>
+                  <span class="chip chip--replay">Replay</span>
+                  <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M12 2.6v2.2M12 19.2v2.2M4.7 4.7l1.6 1.6M17.7 17.7l1.6 1.6M2.6 12h2.2M19.2 12h2.2"></path>
+                      <circle cx="12" cy="12" r="4.2"></circle>
+                    </svg>
+                  </button>
+                </div>
+                <div class="desktop-cluster">
+                  ${renderTabs("header")}
+                </div>
+                <div class="desktop-only header-actions">
+                  <span class="chip chip--live"><span class="chip__dot" aria-hidden="true"></span>${matchupData.state}</span>
+                  <span class="chip">Week ${matchupData.week}</span>
+                  <span class="chip chip--replay">Replay</span>
+                  <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 9 9 0 1 0 20 14.5Z"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </header>
+            <main class="app-main">
+              <section class="tab-panel${state.activeTab === "matchup" ? " is-active" : ""}" data-panel="matchup">
+                ${renderMatchupTab()}
+              </section>
+              <section class="tab-panel${state.activeTab === "season" ? " is-active" : ""}" data-panel="season">
+                ${renderSeasonTab()}
+              </section>
+              <section class="tab-panel${state.activeTab === "trade" ? " is-active" : ""}" data-panel="trade">
+                ${renderTradeTab()}
+              </section>
+              <section class="tab-panel${state.activeTab === "league" ? " is-active" : ""}" data-panel="league">
+                ${renderLeagueTab()}
+              </section>
+              <section class="tab-panel${state.activeTab === "more" ? " is-active" : ""}" data-panel="more">
+                ${renderMoreTab()}
+              </section>
+            </main>
+            ${renderTabs("bottom")}
+          </div>
+        `;
+
+        renderComparePortal();
+      }
+
+      function renderComparePortal() {
+        const portal = document.getElementById("compare-portal");
+        const [firstId, secondId] = state.compareSelection;
+        const first = firstId ? getPlayer(firstId) : null;
+        const second = secondId ? getPlayer(secondId) : null;
+        const desktop = window.innerWidth >= 1024;
+
+        portal.innerHTML = `
+          <button class="compare-overlay${state.compareOpen ? " is-open" : ""}" type="button" data-close-compare aria-label="Close compare"></button>
+          <section class="compare-sheet${state.compareOpen ? " is-open" : ""}" aria-hidden="${state.compareOpen ? "false" : "true"}">
+            ${desktop ? "" : '<div class="compare-sheet__grabber" data-drag-handle></div>'}
+            ${
+              first && second
+                ? `
+                  <div class="row compare-sheet__header">
+                    <span class="t-modhead">${escapeHtml(first.name)} vs ${escapeHtml(second.name)}</span>
+                    <button class="ghost-button" type="button" data-close-compare>Close</button>
+                  </div>
+                  <div class="compare-sheet__body">
+                    <div class="compare-sheet__col">
+                      ${headshotMarkup(first, "", true)}
+                      <div class="t-body" style="color:var(--ink);">${escapeHtml(first.shortName)}</div>
+                      <div class="t-num" style="font-size:18px;color:var(--ink);">${first.projection.toFixed(1)}</div>
+                      <div class="t-meta">line if started <span class="t-num" style="color:var(--ink-2);">${formatAmerican(first.lineIfStarted)}</span></div>
+                    </div>
+                    <span class="vs-chip is-armed" style="justify-self:center;">VS</span>
+                    <div class="compare-sheet__col">
+                      ${headshotMarkup(second)}
+                      <div class="t-body" style="color:var(--ink);">${escapeHtml(second.shortName)}</div>
+                      <div class="t-num" style="font-size:18px;color:var(--ink);">${second.projection.toFixed(1)}</div>
+                      <div class="t-meta">line if started <span class="t-num" style="color:var(--ink-2);">${formatAmerican(second.lineIfStarted)}</span></div>
+                    </div>
+                  </div>
+                  <hr class="divider" />
+                  <p class="t-body compare-sheet__verdict">${compareVerdict(first, second)}</p>
+                `
+                : ""
+            }
+          </section>
+        `;
+      }
+
+      function setActiveTab(tab) {
+        state.activeTab = tab;
+        window.location.hash = tab;
+        renderApp();
+      }
+
+      function toggleTheme() {
+        if (state.theme === "dark") {
+          state.theme = "light";
+          document.documentElement.setAttribute("data-theme", "light");
+          localStorage.setItem("lineup-lab-theme", "light");
+        } else {
+          state.theme = "dark";
+          document.documentElement.removeAttribute("data-theme");
+          localStorage.setItem("lineup-lab-theme", "dark");
+        }
+        renderApp();
+      }
+
+      function armCompare(selection = []) {
+        state.compareArmed = true;
+        state.compareOpen = false;
+        state.compareSelection = selection.slice(0, 2);
+        renderApp();
+      }
+
+      function clearCompare() {
+        state.compareArmed = false;
+        state.compareSelection = [];
+        state.compareOpen = false;
+        renderApp();
+      }
+
+      function toggleCompareMode() {
+        if (state.compareArmed || state.compareOpen) {
+          clearCompare();
+          return;
+        }
+        armCompare([]);
+      }
+
+      function openCompareFromShortcut(value) {
+        const [first, second] = value.split(":");
+        state.compareArmed = true;
+        state.compareSelection = [first, second];
+        state.compareOpen = true;
+        renderApp();
+      }
+
+      function selectCompareRow(id) {
+        if (!state.compareArmed) return;
+        if (state.compareSelection.includes(id)) {
+          state.compareSelection = state.compareSelection.filter((item) => item !== id);
+          state.compareOpen = false;
+          renderApp();
+          return;
+        }
+        if (state.compareSelection.length === 0) {
+          state.compareSelection = [id];
+          renderApp();
+          return;
+        }
+        state.compareSelection = [state.compareSelection[0], id];
+        state.compareOpen = true;
+        renderApp();
+      }
+
+      function closeCompare() {
+        state.compareOpen = false;
+        state.compareSelection = [];
+        state.compareArmed = false;
+        renderApp();
+      }
+
+      async function shareRecap() {
+        const text = `You closed at -180 and won by 12. Best call: London over Smith, +17.5 pts.`;
+        try {
+          if (navigator.share) {
+            await navigator.share({ title: "Week 7 recap", text });
+          } else if (navigator.clipboard) {
+            await navigator.clipboard.writeText(text);
+          }
+          state.recapShared = true;
+        } catch (error) {
+          console.warn("Share canceled.", error);
+        }
+        renderApp();
+      }
+
+      function dismissRecap() {
+        state.recapDismissed = true;
+        renderApp();
+      }
+
+      function handleClick(event) {
+        const tab = event.target.closest("[data-tab]");
+        if (tab) {
+          setActiveTab(tab.dataset.tab);
+          return;
+        }
+
+        if (event.target.closest("[data-theme-toggle]")) {
+          toggleTheme();
+          return;
+        }
+
+        if (event.target.closest("[data-compare-arm]")) {
+          toggleCompareMode();
+          return;
+        }
+
+        const shortcut = event.target.closest("[data-compare-shortcut]");
+        if (shortcut) {
+          openCompareFromShortcut(shortcut.dataset.compareShortcut);
+          return;
+        }
+
+        const row = event.target.closest("[data-compare-row]");
+        if (row) {
+          selectCompareRow(row.dataset.compareRow);
+          return;
+        }
+
+        if (event.target.closest("[data-close-compare]")) {
+          closeCompare();
+          return;
+        }
+
+        if (event.target.closest("[data-share-recap]")) {
+          shareRecap();
+          return;
+        }
+
+        if (event.target.closest("[data-dismiss-recap]")) {
+          dismissRecap();
+        }
+      }
+
+      function handleHashRoute() {
+        const next = window.location.hash.replace("#", "");
+        const valid = ["matchup", "season", "trade", "league", "more"];
+        state.activeTab = valid.includes(next) ? next : "matchup";
+        renderApp();
+      }
+
+      function attachDragHandlers() {
+        const portal = document.getElementById("compare-portal");
+        portal.addEventListener("pointerdown", (event) => {
+          const handle = event.target.closest("[data-drag-handle]");
+          if (!handle || window.innerWidth >= 1024) return;
+          state.dragStartY = event.clientY;
+          state.dragCurrentY = 0;
+        });
+
+        portal.addEventListener("pointermove", (event) => {
+          if (state.dragStartY === null) return;
+          state.dragCurrentY = Math.max(0, event.clientY - state.dragStartY);
+          const sheet = portal.querySelector(".compare-sheet");
+          if (sheet) {
+            sheet.style.transform = `translateY(${state.dragCurrentY}px)`;
+          }
+        });
+
+        function endDrag() {
+          if (state.dragStartY === null) return;
+          const shouldClose = state.dragCurrentY > 80;
+          state.dragStartY = null;
+          state.dragCurrentY = 0;
+          if (shouldClose) {
+            closeCompare();
+            return;
+          }
+          const sheet = portal.querySelector(".compare-sheet");
+          if (sheet) {
+            sheet.style.transform = "";
+          }
+        }
+
+        portal.addEventListener("pointerup", endDrag);
+        portal.addEventListener("pointercancel", endDrag);
+      }
+
+      function initialize() {
+        handleHashRoute();
+        document.addEventListener("click", handleClick);
+        window.addEventListener("hashchange", handleHashRoute);
+        window.addEventListener("resize", () => {
+          renderApp();
+        });
+        window.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && state.compareOpen) {
+            closeCompare();
+          }
+        });
+        attachDragHandlers();
+      }
+
+      initialize();
+    </script>
+  </body>
+</html>
