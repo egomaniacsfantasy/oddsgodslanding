@@ -1,0 +1,44 @@
+:root {
+  --ground-0: #0C1210;
+  --ground-1: #111A16;
+  --ground-2: #18241E;
+
+  --ivory: #F2EDE0;
+  --ivory-2: #C9C4B4;
+
+  --verdigris: #5FA893;
+  --verdigris-deep: #2E5E4E;
+  --verdigris-pale: #A8CFC0;
+
+  --bronze: #8A6B42;
+  --gold-leaf: #C9A227;
+
+  --flame: #E8541D;
+  --oxblood: #A03325;
+  --oxblood-text: #D45B44;
+
+  --rule: #243B31;
+
+  --font-display: "Bodoni Moda", serif;
+  --font-inscription: "Cinzel", serif;
+  --font-ui: "Archivo", sans-serif;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  --site-max: 78rem;
+  --reading-max: 68ch;
+  --hero-max: 92rem;
+  --button-radius: 2px;
+  --line-hair: 1px;
+
+  --section-pad-y: clamp(3rem, 7vw, 6rem);
+  --section-pad-x: clamp(1rem, 3vw, 2rem);
+}

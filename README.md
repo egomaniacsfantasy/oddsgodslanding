@@ -1,62 +1,63 @@
-# Egomaniacs "What Are the Odds?" MVP
+# Odds Gods Workspace
 
-This version uses the OpenAI API through a local backend server.
+This root repository powers the public Odds Gods shell:
 
-## 1) One-time setup
+- `oddsgods.net` marketing
+- `blog.oddsgods.net` blog shell and article templates
+- `odds-gods-wato` Node service
 
-1. Open Terminal.
-2. Go to your folder:
-   `cd "~/Desktop/EgomaniacsWidget"`
-3. Install dependencies:
-   `npm install`
-4. Create your env file:
-   `cp .env.example .env`
-5. Open `.env` and paste your real OpenAI API key.
+The live Bracket Lab is a separate GitHub repo and a separate Render product. It is checked out locally at [`EgomaniacsBracketOdds/`](/Users/andrevlahakis/Documents/New%20project/EgomaniacsBracketOdds) for convenience, but it is not part of this repository's git history.
 
-## 2) Run
+More detail lives in [docs/REPO_TOPOLOGY.md](/Users/andrevlahakis/Documents/New%20project/docs/REPO_TOPOLOGY.md).
 
-1. In Terminal:
-   `npm start`
-2. Open this URL in your browser:
-   `http://localhost:3000`
+## Product Map
 
-## 2.5) Phase 2 calibration
+| Host / product | Repo | Render service | Local entry |
+| --- | --- | --- | --- |
+| `oddsgods.net` | this repo | `odds-gods-landing` | [`index.html`](/Users/andrevlahakis/Documents/New%20project/index.html) |
+| `blog.oddsgods.net` | this repo | `odds-gods-landing` shell + blog routing | [`blog/index.html`](/Users/andrevlahakis/Documents/New%20project/blog/index.html), [`blog.js`](/Users/andrevlahakis/Documents/New%20project/blog.js) |
+| `odds-gods-wato` API | this repo | `odds-gods-wato` | [`server.js`](/Users/andrevlahakis/Documents/New%20project/server.js) |
+| `bracket.oddsgods.net` | `EgomaniacsBracket` repo | `odds-gods-bracket` | [`EgomaniacsBracketOdds/src/App.tsx`](/Users/andrevlahakis/Documents/New%20project/EgomaniacsBracketOdds/src/App.tsx) |
 
-Build/rebuild the Phase 2 calibration artifact:
-`npm run phase2:rebuild`
+## Root Repo Layout
 
-Run golden regression checks:
-`npm run test:regression`
+- Marketing shell: [`index.html`](/Users/andrevlahakis/Documents/New%20project/index.html), [`landing.css`](/Users/andrevlahakis/Documents/New%20project/landing.css), [`landing.js`](/Users/andrevlahakis/Documents/New%20project/landing.js), [`olympus-tokens.css`](/Users/andrevlahakis/Documents/New%20project/olympus-tokens.css)
+- Blog shell: [`blog/index.html`](/Users/andrevlahakis/Documents/New%20project/blog/index.html), [`blog.css`](/Users/andrevlahakis/Documents/New%20project/blog.css), [`blog.js`](/Users/andrevlahakis/Documents/New%20project/blog.js)
+- Static article templates: [`blog/`](/Users/andrevlahakis/Documents/New%20project/blog)
+- WATO backend: [`server.js`](/Users/andrevlahakis/Documents/New%20project/server.js), [`engine/`](/Users/andrevlahakis/Documents/New%20project/engine), [`scripts/`](/Users/andrevlahakis/Documents/New%20project/scripts)
+- Render config: [`render.yaml`](/Users/andrevlahakis/Documents/New%20project/render.yaml)
 
-Run expanded golden suite:
-`npm run test:golden`
+## Local Development
 
-Optional strict startup gate:
-`STRICT_BOOT_SELFTEST=true npm start`
+Run the WATO backend:
 
-Architecture + rollout blueprint:
-`docs/ARCHITECTURE.md`
+```bash
+npm install
+npm start
+```
 
-Phase 2 API endpoints:
-- `GET /api/phase2/status`
-- `POST /api/phase2/reload`
-- `GET /api/metrics`
-- `GET /api/version`
-- `POST /api/player/outcomes` body: `{"player":"Joe Burrow"}`
-- `POST /api/player/performance-threshold` body:
-  `{"player":"Joe Burrow","metric":"passing_tds","threshold":40}`
+The backend reads `.env` values from `.env` or `.env.local`.
 
-Version handshake:
-- Frontend sends `x-ewa-client-version` on `/api/odds`.
-- If frontend and backend are out of sync, API returns `409 outdated_client`.
-- Hard refresh browser (`Cmd+Shift+R`) after backend updates.
+Preview the static landing/blog shell with any simple file server from the repo root, for example:
 
-## 3) If you see errors
+```bash
+python3 -m http.server 4173
+```
 
-- `npm: command not found`: install Node.js from https://nodejs.org then retry.
-- `Missing OPENAI_API_KEY in .env`: your key is missing or not saved.
-- If port 3000 is busy, set `PORT=3001` in `.env` and rerun.
+Preview Bracket Lab from its own repo:
 
-## Important
+```bash
+cd EgomaniacsBracketOdds
+npm install
+npm run dev
+```
 
-Do not put your API key in `app.js` or `index.html`. Keep it in `.env` only.
+## Phase 2 Utilities
+
+The historical WATO calibration and regression scripts are still available here:
+
+```bash
+npm run phase2:rebuild
+npm run test:regression
+npm run test:golden
+```
